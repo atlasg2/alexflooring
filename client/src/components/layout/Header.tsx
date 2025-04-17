@@ -30,8 +30,8 @@ const Header = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-primary font-montserrat">APS Flooring</span>
-            <span className="text-secondary ml-1 font-montserrat">LLC</span>
+            <span className="text-2xl font-bold text-primary" style={{ fontFamily: 'Montserrat, sans-serif' }}>APS Flooring</span>
+            <span className="text-secondary ml-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>LLC</span>
           </Link>
           
           {/* Desktop Navigation */}
