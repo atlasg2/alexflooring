@@ -2,8 +2,8 @@
 import { Link } from "wouter";
 import { services } from "@/data/services";
 import { 
-  Layers, Brush, Grid, Building, Fence, Wood,
-  ArrowRight 
+  Layers, Brush, Grid, Building, Fence, 
+  ArrowRight, Hammer
 } from "lucide-react";
 
 // Map service icon names to Lucide icons
@@ -13,7 +13,7 @@ const iconComponents: Record<string, React.ReactNode> = {
   Brush: <Brush className="h-10 w-10 text-secondary" />,
   Grid: <Grid className="h-10 w-10 text-secondary" />,
   Building: <Building className="h-10 w-10 text-secondary" />,
-  Wood: <Wood className="h-10 w-10 text-secondary" />
+  Hammer: <Hammer className="h-10 w-10 text-secondary" />
 };
 
 const ServicesOverview = () => {
