@@ -7,6 +7,7 @@ export interface Service {
   image: string;
   slug: string;
   metaDescription: string;
+  category: 'residential' | 'commercial';
 }
 
 export const services: Service[] = [
@@ -45,7 +46,8 @@ export const services: Service[] = [
     icon: "Layers",
     image: "https://images.unsplash.com/photo-1584285405450-dff1bffc5eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "hardwood",
-    metaDescription: "Professional hardwood floor installation, sanding, and finishing services in Louisiana and Alabama. Premium materials, expert craftsmanship."
+    metaDescription: "Professional hardwood floor installation, sanding, and finishing services in Louisiana and Alabama. Premium materials, expert craftsmanship.",
+    category: "residential"
   },
   {
     id: "2",
@@ -85,7 +87,8 @@ export const services: Service[] = [
     icon: "Layers",
     image: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "lvp",
-    metaDescription: "Professional luxury vinyl plank installation in Louisiana and Alabama. Waterproof, durable flooring solutions for kitchens, bathrooms, and throughout your home."
+    metaDescription: "Professional luxury vinyl plank installation in Louisiana and Alabama. Waterproof, durable flooring solutions for kitchens, bathrooms, and throughout your home.",
+    category: "residential"
   },
   {
     id: "3",
@@ -136,7 +139,8 @@ export const services: Service[] = [
     icon: "Brush",
     image: "https://images.unsplash.com/photo-1581782250144-25fdb783c355?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "refinishing",
-    metaDescription: "Professional hardwood floor refinishing in Louisiana and Alabama. Restore your worn hardwood floors to like-new condition with our expert refinishing services."
+    metaDescription: "Professional hardwood floor refinishing in Louisiana and Alabama. Restore your worn hardwood floors to like-new condition with our expert refinishing services.",
+    category: "residential"
   },
   {
     id: "4",
@@ -193,7 +197,8 @@ export const services: Service[] = [
     icon: "Grid",
     image: "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "tile",
-    metaDescription: "Expert tile installation services for floors, showers, and backsplashes in Louisiana and Alabama. Beautiful, durable custom tile solutions for your home."
+    metaDescription: "Expert tile installation services for floors, showers, and backsplashes in Louisiana and Alabama. Beautiful, durable custom tile solutions for your home.",
+    category: "residential"
   },
   {
     id: "5",
