@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import BeforeAfterSlider from "@/components/ui/before-after-slider";
 import { projects } from "@/data/projects";
+import { MapPin } from "lucide-react";
 
 // Select just 2 featured projects
 const featuredProjects = projects.slice(0, 2);
