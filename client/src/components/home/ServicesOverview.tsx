@@ -20,9 +20,8 @@ const iconComponents: Record<string, React.ReactNode> = {
 const residentialServices = services.filter(service => service.category === 'residential');
 const commercialServices = services.filter(service => service.category === 'commercial');
 
-// Get a limited number of services for preview
-const featuredResidentialServices = residentialServices.slice(0, 3);
-const featuredCommercialServices = commercialServices.slice(0, 3);
+// For residential, we want to show all services
+// For commercial, we just show the commercial flooring service
 
 const ServiceCard = ({ service }: { service: typeof services[0] }) => (
   <div 
@@ -61,16 +60,13 @@ const ServiceCard = ({ service }: { service: typeof services[0] }) => (
   </div>
 );
 
-const ServiceCategory = ({ 
-  title, 
-  description, 
-  services, 
+// Residential services layout - grid of all services
+const ResidentialServices = ({ 
+  services,
   icon, 
   bgColor = "bg-white"
 }: { 
-  title: string; 
-  description: string; 
-  services: typeof services; 
+  services: typeof import("@/data/services").services; 
   icon: React.ReactNode;
   bgColor?: string;
 }) => (
@@ -81,14 +77,15 @@ const ServiceCategory = ({
           {icon}
         </div>
         <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
-          {title}
+          Residential
           <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
         </h2>
       </div>
       <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
-        {description}
+        Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations.
       </p>
-      
+
+      {/* Grid layout showing all residential services */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {services.map((service) => (
           <ServiceCard key={service.id} service={service} />
@@ -97,10 +94,98 @@ const ServiceCategory = ({
 
       <div className="text-center mt-10">
         <Link 
-          href={`/services?category=${title.toLowerCase()}`}
+          href="/services?category=residential"
           className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
         >
-          View All {title} Services
+          View All Residential Services
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+
+// Commercial services layout - single service with more details
+const CommercialServices = ({ 
+  service,
+  icon, 
+  bgColor = "bg-white"
+}: { 
+  service: typeof import("@/data/services").services[0]; 
+  icon: React.ReactNode;
+  bgColor?: string;
+}) => (
+  <div className={`py-16 ${bgColor}`}>
+    <div className="container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-center mb-10 gap-4">
+        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
+          {icon}
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
+          Commercial
+          <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
+        </h2>
+      </div>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
+        Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic.
+      </p>
+
+      {/* Featured commercial service in a horizontal layout */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl border border-gray-100 mb-12">
+        <div className="grid md:grid-cols-2 gap-0">
+          <div 
+            className="h-96 bg-cover bg-center relative"
+            style={{ backgroundImage: `url(${service.image})` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute bottom-4 left-4 right-4">
+              <h3 className="text-2xl font-bold text-white">
+                {service.title}
+              </h3>
+            </div>
+          </div>
+          <div className="p-8 flex flex-col justify-center">
+            <div className="mb-6">
+              <div className="p-4 rounded-full bg-primary/10 inline-flex items-center justify-center mb-4">
+                {iconComponents[service.icon]}
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">{service.title}</h3>
+              <p className="text-gray-600">
+                {service.shortDescription}
+              </p>
+              <div className="mt-6">
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">✓</span>
+                    <span>Minimal business disruption with flexible scheduling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">✓</span>
+                    <span>ADA compliance and safety considerations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">✓</span>
+                    <span>Professional installation for maximum durability</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <Link 
+              href={`/services/${service.slug}`}
+              className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 hover:underline"
+            >
+              Learn More About Commercial Flooring <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center">
+        <Link 
+          href="/services?category=commercial"
+          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+        >
+          View Commercial Services
           <ArrowRight className="ml-2 h-5 w-5" />
         </Link>
       </div>
@@ -109,6 +194,9 @@ const ServiceCategory = ({
 );
 
 const ServicesOverview = () => {
+  // Get the commercial service - there should be just one
+  const commercialService = commercialServices[0];
+
   return (
     <section id="services">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
@@ -123,18 +211,16 @@ const ServicesOverview = () => {
         </div>
       </div>
       
-      <ServiceCategory 
-        title="Residential"
-        description="Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations."
-        services={featuredResidentialServices}
+      {/* Residential services with grid layout */}
+      <ResidentialServices 
+        services={residentialServices}
         icon={<Home className="h-10 w-10 text-secondary" />}
         bgColor="bg-gray-50"
       />
       
-      <ServiceCategory 
-        title="Commercial"
-        description="Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic."
-        services={featuredCommercialServices}
+      {/* Commercial services with horizontal layout */}
+      <CommercialServices 
+        service={commercialService}
         icon={<Store className="h-10 w-10 text-secondary" />}
       />
 

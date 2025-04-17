@@ -63,16 +63,13 @@ const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
   </div>
 );
 
-const ProjectCategory = ({ 
-  title, 
-  description, 
-  project, 
+// Residential projects - showing a grid of projects
+const ResidentialProjects = ({ 
+  projects,
   icon, 
   bgColor = "bg-white"
 }: { 
-  title: string; 
-  description: string; 
-  project: typeof projects[0]; 
+  projects: typeof import("@/data/projects").projects; 
   icon: React.ReactNode;
   bgColor?: string;
 }) => (
@@ -83,22 +80,96 @@ const ProjectCategory = ({
           {icon}
         </div>
         <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
-          {title} Projects
+          Residential Projects
           <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
         </h2>
       </div>
       <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
-        {description}
+        Premium flooring solutions for homes, from hardwood installations to bathroom remodels and floor refinishing.
       </p>
       
+      {/* Show top 2 residential projects in a grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {projects.slice(0, 2).map(project => (
+          <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+            {/* Before/After Image */}
+            <div className="relative h-64 overflow-hidden">
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${project.afterImage})` }}
+              />
+              <div className="absolute top-4 right-4 bg-white/90 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                {project.type}
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{project.title}</h3>
+              <div className="flex items-center text-gray-500 mb-3">
+                <MapPin className="h-4 w-4 mr-1 text-secondary" /> 
+                {project.location}
+              </div>
+              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.description}</p>
+              
+              <Link 
+                href={`/projects/${project.id}`}
+                className="inline-flex items-center text-secondary font-medium hover:text-primary transition-colors duration-300 hover:underline"
+              >
+                View Project <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center mt-10">
+        <Link 
+          href="/projects?category=residential"
+          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+        >
+          View All Residential Projects
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+
+// Commercial projects - showing a single featured project
+const CommercialProjects = ({ 
+  project,
+  icon, 
+  bgColor = "bg-white"
+}: { 
+  project: typeof import("@/data/projects").projects[0]; 
+  icon: React.ReactNode;
+  bgColor?: string;
+}) => (
+  <div className={`py-16 ${bgColor}`}>
+    <div className="container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-center mb-10 gap-4">
+        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
+          {icon}
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
+          Commercial Projects
+          <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
+        </h2>
+      </div>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
+        Long-lasting, high-performance flooring for offices, restaurants, retail spaces, and other commercial environments.
+      </p>
+      
+      {/* Show featured commercial project with before/after comparison */}
       <ProjectCard project={project} />
 
       <div className="text-center mt-10">
         <Link 
-          href={`/projects?category=${title.toLowerCase()}`}
+          href="/projects?category=commercial"
           className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
         >
-          View All {title} Projects
+          View All Commercial Projects
           <ArrowRight className="ml-2 h-5 w-5" />
         </Link>
       </div>
@@ -121,17 +192,15 @@ const FeaturedProjects = () => {
         </div>
       </div>
       
-      <ProjectCategory 
-        title="Residential"
-        description="Premium flooring solutions for homes, from hardwood installations to bathroom remodels and floor refinishing."
-        project={featuredResidentialProject}
+      {/* Grid layout for residential projects */}
+      <ResidentialProjects 
+        projects={residentialProjects}
         icon={<Home className="h-10 w-10 text-secondary" />}
         bgColor="bg-gray-50"
       />
       
-      <ProjectCategory 
-        title="Commercial"
-        description="Long-lasting, high-performance flooring for offices, restaurants, retail spaces, and other commercial environments."
+      {/* Before/after layout for commercial project */}
+      <CommercialProjects 
         project={featuredCommercialProject}
         icon={<Store className="h-10 w-10 text-secondary" />}
       />
