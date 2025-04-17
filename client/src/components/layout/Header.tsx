@@ -15,8 +15,8 @@ const Header = () => {
   const navLinks = [
     { text: "Services", href: "/#services" },
     { text: "Projects", href: "/projects" },
-    { text: "Birmingham", href: "/birmingham" },
     { text: "New Orleans", href: "/new-orleans" },
+    { text: "Chalmette", href: "/chalmette" },
     { text: "Blog", href: "/blog" },
     { text: "Contact", href: "/contact" },
   ];
@@ -56,7 +56,7 @@ const Header = () => {
                 <span className="text-2xl font-bold text-primary transition-colors duration-300 group-hover:text-primary/90 font-montserrat">APS Flooring</span>
                 <span className="text-secondary font-bold ml-1 transition-colors duration-300 group-hover:text-secondary/90 font-montserrat">LLC</span>
               </div>
-              <span className="text-xs text-gray-600">Professional Flooring Solutions in LA & AL</span>
+              <span className="text-xs text-gray-600">Professional Flooring Solutions in Louisiana</span>
             </div>
           </Link>
           

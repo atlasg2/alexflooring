@@ -15,19 +15,19 @@ interface Slide {
 const heroSlides: Slide[] = [
   {
     id: "1",
-    image: "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Flooring That Speaks to You",
-    subtitle: "Transforming Spaces in Louisiana and Alabama"
+    subtitle: "Transforming Spaces Throughout Louisiana"
   },
   {
     id: "2",
-    image: "https://images.unsplash.com/photo-1604014056359-c3be0894c0f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    image: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Creating Spaces That Reflect Your Style",
     subtitle: "Premium Quality Materials & Exceptional Craftsmanship"
   },
   {
     id: "3",
-    image: "https://images.unsplash.com/photo-1581922819941-6ab31ab79afc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    image: "https://images.unsplash.com/photo-1560440021-33f9b867899d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "From Cozy Homes to Bustling Offices",
     subtitle: "Expert Installation with Passion and Precision"
   }
@@ -80,26 +80,26 @@ const HeroSlider = () => {
           style={{ backgroundImage: `url(${slide.image})` }}
           aria-hidden={index !== currentSlide}
         >
-          <div className="absolute inset-0 bg-dark bg-opacity-50"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
           <div className="slide-content absolute inset-0 flex items-center justify-center text-center p-8">
             <div className="max-w-3xl">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 font-montserrat leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-montserrat leading-tight">
                 {slide.title}
               </h1>
-              <p className="text-xl md:text-2xl text-white mb-8 font-light">
+              <p className="text-xl md:text-2xl text-white mb-10 font-light">
                 {slide.subtitle}
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button 
                   asChild
                   variant="secondary" 
-                  className="bg-white text-primary hover:bg-gray-100 py-3 px-8 rounded-lg text-lg"
+                  className="bg-white text-primary hover:bg-gray-100 py-4 px-8 rounded-lg text-lg"
                 >
                   <a href="#services">Learn More</a>
                 </Button>
                 <Button 
                   asChild
-                  className="bg-secondary text-white hover:bg-yellow-500 py-3 px-8 rounded-lg text-lg"
+                  className="bg-secondary text-black hover:bg-secondary/90 py-4 px-8 rounded-lg text-lg"
                 >
                   <Link href="/contact">Get a Free Estimate</Link>
                 </Button>

@@ -66,23 +66,13 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-6 text-white/90">Service Areas</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/birmingham" className="text-white/70 hover:text-secondary transition duration-300">
-                  Birmingham, AL
-                </Link>
-              </li>
-              <li>
                 <Link href="/new-orleans" className="text-white/70 hover:text-secondary transition duration-300">
                   New Orleans, LA
                 </Link>
               </li>
               <li>
-                <Link href="/birmingham#areas" className="text-white/70 hover:text-secondary transition duration-300">
-                  Hoover, AL
-                </Link>
-              </li>
-              <li>
-                <Link href="/birmingham#areas" className="text-white/70 hover:text-secondary transition duration-300">
-                  Vestavia Hills, AL
+                <Link href="/chalmette" className="text-white/70 hover:text-secondary transition duration-300">
+                  Chalmette, LA
                 </Link>
               </li>
               <li>
@@ -92,7 +82,17 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="/new-orleans#areas" className="text-white/70 hover:text-secondary transition duration-300">
-                  Chalmette, LA
+                  Kenner, LA
+                </Link>
+              </li>
+              <li>
+                <Link href="/new-orleans#areas" className="text-white/70 hover:text-secondary transition duration-300">
+                  Slidell, LA
+                </Link>
+              </li>
+              <li>
+                <Link href="/new-orleans#areas" className="text-white/70 hover:text-secondary transition duration-300">
+                  Gretna, LA
                 </Link>
               </li>
             </ul>
