@@ -3,190 +3,102 @@ import { Link } from "wouter";
 import { services } from "@/data/services";
 import { 
   Layers, Brush, Grid, Building, Fence, 
-  ArrowRight, Hammer, Home, Store
+  ArrowRight, Hammer, Home, Store, Check
 } from "lucide-react";
 
 // Map service icon names to Lucide icons
 const iconComponents: Record<string, React.ReactNode> = {
-  Fence: <Fence className="h-10 w-10 text-secondary" />,
-  Layers: <Layers className="h-10 w-10 text-secondary" />,
-  Brush: <Brush className="h-10 w-10 text-secondary" />,
-  Grid: <Grid className="h-10 w-10 text-secondary" />,
-  Building: <Building className="h-10 w-10 text-secondary" />,
-  Hammer: <Hammer className="h-10 w-10 text-secondary" />
+  Fence: <Fence className="h-8 w-8 text-secondary" />,
+  Layers: <Layers className="h-8 w-8 text-secondary" />,
+  Brush: <Brush className="h-8 w-8 text-secondary" />,
+  Grid: <Grid className="h-8 w-8 text-secondary" />,
+  Building: <Building className="h-8 w-8 text-secondary" />,
+  Hammer: <Hammer className="h-8 w-8 text-secondary" />
 };
 
 // Filter services by category
 const residentialServices = services.filter(service => service.category === 'residential');
 const commercialServices = services.filter(service => service.category === 'commercial');
 
-// For residential, we want to show all services
-// For commercial, we just show the commercial flooring service
-
-const ServiceCard = ({ service }: { service: typeof services[0] }) => (
-  <div 
-    key={service.id}
-    className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group border border-gray-100"
-  >
-    <div 
-      className="h-64 bg-cover bg-center relative"
+// A simpler service card with large image focus
+const ServiceItem = ({ service }: { service: typeof services[0] }) => (
+  <div className="group relative h-96 overflow-hidden rounded-lg">
+    {/* Background Image */}
+    <div
+      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
       style={{ backgroundImage: `url(${service.image})` }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80"></div>
-      <div className="absolute bottom-4 left-4 right-4">
-        <h3 className="text-xl font-bold text-white">
-          {service.title}
-        </h3>
-      </div>
+    />
+    
+    {/* Overlay */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60" />
+    
+    {/* Icon */}
+    <div className="absolute top-5 right-5 p-3 rounded-full bg-white/10 backdrop-blur-md">
+      {iconComponents[service.icon]}
     </div>
-    <div className="p-6">
-      <div className="flex items-start gap-4 mb-4">
-        <div className="p-3 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
-          {iconComponents[service.icon]}
-        </div>
-        <div>
-          <p className="text-gray-600">
-            {service.shortDescription}
-          </p>
-        </div>
-      </div>
-      <Link 
+    
+    {/* Content */}
+    <div className="absolute inset-x-0 bottom-0 p-6">
+      <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
+      <p className="text-white/80 text-sm line-clamp-2 mb-4">
+        {service.shortDescription}
+      </p>
+      <Link
         href={`/services/${service.slug}`}
-        className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 group-hover:underline"
+        className="inline-flex items-center bg-secondary text-black py-2 px-4 rounded text-sm font-medium transition-all duration-300 hover:bg-secondary/90"
       >
-        Learn More <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+        Learn More <ArrowRight className="ml-1 h-4 w-4" />
       </Link>
     </div>
   </div>
 );
 
-// Residential services layout - grid of all services
-const ResidentialServices = ({ 
-  services,
-  icon, 
-  bgColor = "bg-white"
-}: { 
-  services: typeof import("@/data/services").services; 
-  icon: React.ReactNode;
-  bgColor?: string;
-}) => (
-  <div className={`py-16 ${bgColor}`}>
-    <div className="container mx-auto px-4 md:px-6 lg:px-8">
-      <div className="flex items-center justify-center mb-10 gap-4">
-        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-          {icon}
-        </div>
-        <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
-          Residential
-          <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-        </h2>
+// Featured service with details (used for commercial)
+const FeaturedService = ({ service }: { service: typeof services[0] }) => (
+  <div className="relative overflow-hidden rounded-lg bg-black">
+    <div className="grid grid-cols-1 md:grid-cols-3">
+      {/* Large Image - Takes 2/3 of the width on desktop */}
+      <div className="relative col-span-2 h-96 md:h-[500px]">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${service.image})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/30" />
       </div>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
-        Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations.
-      </p>
-
-      {/* Grid layout showing all residential services */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {services.map((service) => (
-          <ServiceCard key={service.id} service={service} />
-        ))}
-      </div>
-
-      <div className="text-center mt-10">
-        <Link 
-          href="/services?category=residential"
-          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
-        >
-          View All Residential Services
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Link>
-      </div>
-    </div>
-  </div>
-);
-
-// Commercial services layout - single service with more details
-const CommercialServices = ({ 
-  service,
-  icon, 
-  bgColor = "bg-white"
-}: { 
-  service: typeof import("@/data/services").services[0]; 
-  icon: React.ReactNode;
-  bgColor?: string;
-}) => (
-  <div className={`py-16 ${bgColor}`}>
-    <div className="container mx-auto px-4 md:px-6 lg:px-8">
-      <div className="flex items-center justify-center mb-10 gap-4">
-        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-          {icon}
-        </div>
-        <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
-          Commercial
-          <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-        </h2>
-      </div>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
-        Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic.
-      </p>
-
-      {/* Featured commercial service in a horizontal layout */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl border border-gray-100 mb-12">
-        <div className="grid md:grid-cols-2 gap-0">
-          <div 
-            className="h-96 bg-cover bg-center relative"
-            style={{ backgroundImage: `url(${service.image})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div className="absolute bottom-4 left-4 right-4">
-              <h3 className="text-2xl font-bold text-white">
-                {service.title}
-              </h3>
-            </div>
+      
+      {/* Content - Takes 1/3 of the width on desktop */}
+      <div className="p-8 md:p-10 flex flex-col justify-center bg-black text-white">
+        <div className="mb-6 inline-flex items-center">
+          <div className="p-3 rounded-full bg-secondary/20 mr-4">
+            {iconComponents[service.icon]}
           </div>
-          <div className="p-8 flex flex-col justify-center">
-            <div className="mb-6">
-              <div className="p-4 rounded-full bg-primary/10 inline-flex items-center justify-center mb-4">
-                {iconComponents[service.icon]}
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">{service.title}</h3>
-              <p className="text-gray-600">
-                {service.shortDescription}
-              </p>
-              <div className="mt-6">
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-secondary mt-1">✓</span>
-                    <span>Minimal business disruption with flexible scheduling</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-secondary mt-1">✓</span>
-                    <span>ADA compliance and safety considerations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-secondary mt-1">✓</span>
-                    <span>Professional installation for maximum durability</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <Link 
-              href={`/services/${service.slug}`}
-              className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 hover:underline"
-            >
-              Learn More About Commercial Flooring <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
+          <h3 className="text-2xl font-bold">{service.title}</h3>
+        </div>
+        
+        <p className="text-white/80 mb-8">
+          {service.shortDescription}
+        </p>
+        
+        <div className="space-y-4 mb-8">
+          <div className="flex items-start gap-3">
+            <Check className="h-5 w-5 text-secondary mt-0.5" />
+            <span>Minimal business disruption with flexible scheduling</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <Check className="h-5 w-5 text-secondary mt-0.5" />
+            <span>ADA compliance and safety considerations</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <Check className="h-5 w-5 text-secondary mt-0.5" />
+            <span>Professional installation for maximum durability</span>
           </div>
         </div>
-      </div>
-
-      <div className="text-center">
+        
         <Link 
-          href="/services?category=commercial"
-          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+          href={`/services/${service.slug}`}
+          className="inline-flex items-center bg-secondary text-black py-3 px-6 rounded text-sm font-medium transition-all duration-300 hover:bg-secondary/90"
         >
-          View Commercial Services
-          <ArrowRight className="ml-2 h-5 w-5" />
+          Learn More <ArrowRight className="ml-1 h-4 w-4" />
         </Link>
       </div>
     </div>
@@ -198,10 +110,10 @@ const ServicesOverview = () => {
   const commercialService = commercialServices[0];
 
   return (
-    <section id="services">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
+    <section id="services" className="bg-gradient-to-b from-white to-gray-50 py-20">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative inline-block">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary relative inline-block">
             Our Services
             <span className="absolute -bottom-3 left-1/2 w-24 h-1 bg-secondary transform -translate-x-1/2"></span>
           </h2>
@@ -209,130 +121,70 @@ const ServicesOverview = () => {
             Professional flooring solutions tailored to your needs and style preferences.
           </p>
         </div>
-      </div>
-      
-      {/* Residential services with grid layout */}
-      <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-center mb-10 gap-4">
+        
+        {/* Residential section with heading */}
+        <div className="mb-20">
+          <div className="flex items-center mb-6 gap-4">
             <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
               <Home className="h-10 w-10 text-secondary" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
+            <h2 className="text-3xl font-bold text-primary relative">
               Residential
               <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
             </h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
+          
+          <p className="text-gray-600 max-w-3xl mb-10">
             Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations.
           </p>
-
-          {/* Grid layout showing all residential services */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          
+          {/* Grid of service cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {residentialServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceItem key={service.id} service={service} />
             ))}
           </div>
-
-          <div className="text-center mt-10">
+          
+          <div className="mt-10 flex justify-center">
             <Link 
               href="/services?category=residential"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
             >
               View All Residential Services
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
         </div>
-      </div>
-      
-      {/* Commercial services with horizontal layout */}
-      <div className="py-16">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-center mb-10 gap-4">
+        
+        {/* Commercial section with heading */}
+        <div className="pt-10 mt-20 border-t border-gray-200">
+          <div className="flex items-center mb-6 gap-4">
             <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
               <Store className="h-10 w-10 text-secondary" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
+            <h2 className="text-3xl font-bold text-primary relative">
               Commercial
               <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
             </h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
+          
+          <p className="text-gray-600 max-w-3xl mb-10">
             Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic.
           </p>
-
-          {/* Featured commercial service in a horizontal layout */}
-          <div className="bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl border border-gray-100 mb-12">
-            <div className="grid md:grid-cols-2 gap-0">
-              <div 
-                className="h-96 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${commercialService.image})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80"></div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-2xl font-bold text-white">
-                    {commercialService.title}
-                  </h3>
-                  <p className="text-white/80 text-sm mt-1">Perfect for businesses & offices</p>
-                </div>
-              </div>
-              <div className="p-8 md:p-10 flex flex-col justify-center bg-gray-50">
-                <div className="mb-6">
-                  <div className="p-4 rounded-full bg-white border border-gray-100 inline-flex items-center justify-center mb-4 shadow-md">
-                    {iconComponents[commercialService.icon]}
-                  </div>
-                  <h3 className="text-2xl font-bold text-primary mb-4">{commercialService.title}</h3>
-                  <p className="text-gray-600 mb-6">
-                    {commercialService.shortDescription}
-                  </p>
-                  <div className="mt-6 bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-3">
-                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
-                        <span>Minimal business disruption with flexible scheduling</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
-                        <span>ADA compliance and safety considerations</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
-                        <span>Professional installation for maximum durability</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <Link 
-                  href={`/services/${commercialService.slug}`}
-                  className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 hover:underline"
-                >
-                  Learn More About Commercial Flooring <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center">
+          
+          {/* Featured commercial service */}
+          <FeaturedService service={commercialService} />
+          
+          <div className="mt-10 flex justify-center">
             <Link 
               href="/services?category=commercial"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
             >
               View Commercial Services
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
         </div>
-      </div>
-
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 text-center">
-        <Link 
-          href="/services"
-          className="inline-flex items-center px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg text-lg"
-        >
-          View All Services
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Link>
       </div>
     </section>
   );
