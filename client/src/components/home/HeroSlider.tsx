@@ -39,10 +39,10 @@ const HeroSlider = () => {
 
   const goToSlide = useCallback((index: number) => {
     if (isTransitioning) return;
-    
+
     setIsTransitioning(true);
     setCurrentSlide(index);
-    
+
     // Reset transition state after animation completes
     setTimeout(() => {
       setIsTransitioning(false);
@@ -108,7 +108,7 @@ const HeroSlider = () => {
           </div>
         </div>
       ))}
-      
+
       {/* Slide Navigation */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
         {heroSlides.map((_, index) => (
@@ -122,7 +122,7 @@ const HeroSlider = () => {
           />
         ))}
       </div>
-      
+
       {/* Arrow Controls (optional) */}
       <button 
         className="absolute left-4 top-1/2 z-20 w-10 h-10 rounded-full bg-white/30 flex items-center justify-center text-white backdrop-blur-sm hover:bg-white/50 transition-all"

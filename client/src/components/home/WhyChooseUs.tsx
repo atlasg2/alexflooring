@@ -58,7 +58,7 @@ const WhyChooseUs = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Free In-Home Estimates</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">Free In-Home Estimates</h3>
                   <p className="text-gray-600">Personalized service with transparent, no-obligation quotes.</p>
                 </div>
               </div>
@@ -66,15 +66,18 @@ const WhyChooseUs = () => {
           </div>
           
           <div className="lg:w-1/2">
-            <div className="relative rounded-xl overflow-hidden shadow-xl">
+            <div className="relative rounded-xl overflow-hidden shadow-xl transform transition-all duration-700 hover:scale-[1.02]">
               <img 
                 src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                 alt="APS Flooring Team at Work" 
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-8 transform transition-transform duration-500 hover:translate-y-[-8px]">
+                <div className="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium mb-3">Master Craftsman</div>
                 <h3 className="text-2xl font-bold text-white">Alex Smith</h3>
                 <p className="text-white/90">Owner & Master Installer</p>
+                <p className="text-white/80 mt-2 max-w-md">With over 15 years of experience in premium flooring installation, Alex leads our team with expertise and dedication to quality.</p>
               </div>
             </div>
           </div>

@@ -13,16 +13,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    --primary: 211 32% 35%;
+    --primary: 210 65% 25%;
     --primary-foreground: 210 40% 98%;
  
-    --secondary: 40 94% 56%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 38 95% 55%;
+    --secondary-foreground: 210 20% 12%;
  
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    --accent: 210 40% 96.1%;
+    --accent: 210 60% 95%;
     --accent-foreground: 222.2 47.4% 11.2%;
  
     --destructive: 0 84.2% 60.2%;
@@ -30,26 +30,32 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 210 65% 25%;
+
+    --chart-1: 210 65% 25%;
+    --chart-2: 38 95% 55%;
+    --chart-3: 160 60% 40%;
+    --chart-4: 340 70% 50%;
+    --chart-5: 260 60% 55%;
  
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 20% 12%;
     --foreground: 210 40% 98%;
  
-    --card: 222.2 84% 4.9%;
+    --card: 220 20% 10%;
     --card-foreground: 210 40% 98%;
  
-    --popover: 222.2 84% 4.9%;
+    --popover: 220 20% 12%;
     --popover-foreground: 210 40% 98%;
  
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 60% 60%;
+    --primary-foreground: 220 20% 10%;
  
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 38 90% 55%;
+    --secondary-foreground: 220 20% 10%;
  
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -62,7 +68,13 @@
  
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 210 60% 60%;
+
+    --chart-1: 210 60% 60%;
+    --chart-2: 38 90% 55%;
+    --chart-3: 160 70% 50%;
+    --chart-4: 340 70% 60%;
+    --chart-5: 260 70% 65%;
   }
 
   * {
@@ -72,10 +84,36 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Open Sans', sans-serif;
+    scroll-behavior: smooth;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', sans-serif;
+    @apply font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container {
+    @apply px-4 md:px-6 lg:px-8;
   }
 
   .hero-slider {
@@ -87,18 +125,125 @@
   }
 
   .before-after {
-    @apply relative overflow-hidden;
+    @apply relative overflow-hidden rounded-t-xl;
   }
 
   .before-after .before {
-    @apply absolute top-0 left-0 h-full w-1/2 overflow-hidden;
+    @apply absolute top-0 left-0 h-full w-1/2 overflow-hidden transition-all duration-300;
   }
 
   .before-after .slider {
-    @apply absolute top-0 bottom-0 left-1/2 w-1 bg-secondary cursor-ew-resize -translate-x-1/2;
+    @apply absolute top-0 bottom-0 left-1/2 w-0.5 bg-white shadow-lg cursor-ew-resize -translate-x-1/2 transition-all duration-300;
   }
 
   .before-after .slider-button {
-    @apply absolute top-1/2 left-1/2 w-10 h-10 rounded-full bg-secondary flex items-center justify-center -translate-x-1/2 -translate-y-1/2 text-white;
+    @apply absolute top-1/2 left-1/2 w-12 h-12 rounded-full bg-secondary flex items-center justify-center -translate-x-1/2 -translate-y-1/2 text-white shadow-lg transition-all duration-300 hover:scale-110 z-10;
   }
+
+  .before-after::before,
+  .before-after::after {
+    @apply absolute z-10 top-4 text-white bg-black/50 px-3 py-1 rounded-full text-sm font-medium shadow-md;
+    content: "Before";
+  }
+  
+  .before-after::before {
+    left: 4%;
+  }
+  
+  .before-after::after {
+    content: "After";
+    right: 4%;
+  }
+  
+  .before-after img {
+    @apply transition-transform duration-300 hover:scale-[1.03];
+  }
+}
+
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.6s ease-out forwards;
+}
+
+.stagger-animation > * {
+  opacity: 0;
+}
+
+.stagger-animation > *:nth-child(1) { animation: slideUp 0.5s ease-out 0.1s forwards; }
+.stagger-animation > *:nth-child(2) { animation: slideUp 0.5s ease-out 0.2s forwards; }
+.stagger-animation > *:nth-child(3) { animation: slideUp 0.5s ease-out 0.3s forwards; }
+.stagger-animation > *:nth-child(4) { animation: slideUp 0.5s ease-out 0.4s forwards; }
+.stagger-animation > *:nth-child(5) { animation: slideUp 0.5s ease-out 0.5s forwards; }
+.stagger-animation > *:nth-child(6) { animation: slideUp 0.5s ease-out 0.6s forwards; }
+
+.hover-float {
+  transition: transform 0.3s ease-out;
+}
+
+.hover-float:hover {
+  transform: translateY(-8px);
+}
+
+/* Improved button styles */
+.btn-primary {
+  @apply bg-primary text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 
+    shadow-md hover:shadow-lg hover:bg-primary/90 active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-300 
+    shadow-md hover:shadow-lg hover:bg-secondary/90 active:scale-95;
+}
+
+.btn-outline {
+  @apply border-2 border-primary text-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 
+    hover:bg-primary hover:text-white active:scale-95;
+}
+
+/* Card styles */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+/* Section styles */
+.section-title {
+  @apply text-3xl md:text-4xl font-bold text-primary relative inline-block mb-12;
+}
+
+.section-title::after {
+  content: "";
+  @apply absolute -bottom-3 left-0 w-16 h-1 bg-secondary;
+}
+
+.section-title-center {
+  @apply text-3xl md:text-4xl font-bold text-primary relative inline-block mb-12;
+}
+
+.section-title-center::after {
+  content: "";
+  @apply absolute -bottom-3 left-1/2 w-16 h-1 bg-secondary transform -translate-x-1/2;
 }

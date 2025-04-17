@@ -3,8 +3,8 @@ import { Facebook, Instagram, Linkedin, Dribbble } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-dark text-white">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
+    <footer className="bg-primary/95 text-white">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <h3 className="text-2xl font-bold mb-6 text-white/90 font-montserrat">
@@ -14,17 +14,17 @@ const Footer = () => {
               Professional flooring solutions serving Louisiana and Alabama homeowners with quality installations.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-white/70 hover:text-secondary transition duration-300" aria-label="Facebook">
-                <Facebook />
+              <a href="#" className="text-white/70 hover:text-secondary hover:scale-110 transition-all duration-300 p-2 rounded-full bg-white/10 hover:bg-white/20" aria-label="Facebook">
+                <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white/70 hover:text-secondary transition duration-300" aria-label="Instagram">
-                <Instagram />
+              <a href="#" className="text-white/70 hover:text-secondary hover:scale-110 transition-all duration-300 p-2 rounded-full bg-white/10 hover:bg-white/20" aria-label="Instagram">
+                <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white/70 hover:text-secondary transition duration-300" aria-label="LinkedIn">
-                <Linkedin />
+              <a href="#" className="text-white/70 hover:text-secondary hover:scale-110 transition-all duration-300 p-2 rounded-full bg-white/10 hover:bg-white/20" aria-label="LinkedIn">
+                <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white/70 hover:text-secondary transition duration-300" aria-label="Dribbble">
-                <Dribbble />
+              <a href="#" className="text-white/70 hover:text-secondary hover:scale-110 transition-all duration-300 p-2 rounded-full bg-white/10 hover:bg-white/20" aria-label="Dribbble">
+                <Dribbble className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -131,15 +131,15 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white/50 text-sm mb-4 md:mb-0">© {new Date().getFullYear()} APS Flooring LLC. All rights reserved.</p>
-          <div className="flex space-x-6">
-            <Link href="/privacy-policy" className="text-white/50 text-sm hover:text-secondary transition duration-300">
+          <p className="text-white/60 text-sm mb-4 md:mb-0">© {new Date().getFullYear()} APS Flooring LLC. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link href="/privacy-policy" className="text-white/60 text-sm hover:text-secondary transition-all duration-300 hover:underline underline-offset-4">
               Privacy Policy
             </Link>
-            <Link href="/terms-of-service" className="text-white/50 text-sm hover:text-secondary transition duration-300">
+            <Link href="/terms-of-service" className="text-white/60 text-sm hover:text-secondary transition-all duration-300 hover:underline underline-offset-4">
               Terms of Service
             </Link>
-            <Link href="/sitemap" className="text-white/50 text-sm hover:text-secondary transition duration-300">
+            <Link href="/sitemap" className="text-white/60 text-sm hover:text-secondary transition-all duration-300 hover:underline underline-offset-4">
               Sitemap
             </Link>
           </div>
