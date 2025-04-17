@@ -29,10 +29,10 @@ const ServiceCard = ({ service }: { service: typeof services[0] }) => (
     className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group border border-gray-100"
   >
     <div 
-      className="h-56 bg-cover bg-center relative"
+      className="h-64 bg-cover bg-center relative"
       style={{ backgroundImage: `url(${service.image})` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80"></div>
       <div className="absolute bottom-4 left-4 right-4">
         <h3 className="text-xl font-bold text-white">
           {service.title}
@@ -41,7 +41,7 @@ const ServiceCard = ({ service }: { service: typeof services[0] }) => (
     </div>
     <div className="p-6">
       <div className="flex items-start gap-4 mb-4">
-        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
+        <div className="p-3 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
           {iconComponents[service.icon]}
         </div>
         <div>

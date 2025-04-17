@@ -11,8 +11,8 @@ const Home = () => {
     <>
       <Helmet>
         <title>APS Flooring LLC - Flooring That Speaks to Your Style</title>
-        <meta name="description" content="We create spaces that feel uniquely yours. Expert flooring installation for homes and offices in Louisiana and Alabama with hardwood, luxury vinyl, tile and commercial options." />
-        <meta name="keywords" content="flooring, hardwood, luxury vinyl, tile, flooring installation, Birmingham, New Orleans, Alabama, Louisiana, custom flooring" />
+        <meta name="description" content="We create spaces that feel uniquely yours. Expert flooring installation for homes and offices throughout Louisiana with hardwood, laminate, tile, and vinyl flooring options." />
+        <meta name="keywords" content="flooring, hardwood, luxury vinyl, tile, flooring installation, New Orleans, Chalmette, Metairie, Louisiana, custom flooring" />
       </Helmet>
 
       <HeroSlider />
