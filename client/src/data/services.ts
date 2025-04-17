@@ -42,7 +42,7 @@ export const services: Service[] = [
       <h3>Maintenance and Care</h3>
       <p>We'll provide detailed instructions on how to maintain your new hardwood floors to ensure they remain beautiful for years to come.</p>
     `,
-    icon: "Wood",
+    icon: "Layers",
     image: "https://images.unsplash.com/photo-1584285405450-dff1bffc5eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "hardwood",
     metaDescription: "Professional hardwood floor installation, sanding, and finishing services in Louisiana and Alabama. Premium materials, expert craftsmanship."

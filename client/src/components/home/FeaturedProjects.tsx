@@ -1,6 +1,6 @@
+
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import BeforeAfterSlider from "@/components/ui/before-after-slider";
 import { projects } from "@/data/projects";
 import { MapPin } from "lucide-react";
 
@@ -9,7 +9,7 @@ const featuredProjects = projects.slice(0, 2);
 
 const FeaturedProjects = () => {
   return (
-    <section id="projects" className="py-20 bg-gradient-to-b from-white to-accent/30">
+    <section id="projects" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative inline-block">
@@ -21,26 +21,53 @@ const FeaturedProjects = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 gap-16">
           {featuredProjects.map((project) => (
-            <div key={project.id} className="rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group">
-              <BeforeAfterSlider
-                beforeImage={project.beforeImage}
-                afterImage={project.afterImage}
-                beforeAlt={`Before: ${project.title}`}
-                afterAlt={`After: ${project.title}`}
-              />
-              <div className="p-6 bg-white border-t-4 border-secondary">
-                <h3 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors duration-300">{project.title}</h3>
-                <p className="text-gray-600 mt-2">{project.description}</p>
-                <div className="flex items-center mt-4">
-                  <span className="text-sm bg-primary text-white py-1 px-3 rounded-full shadow-sm">
+            <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-xl">
+              <div className="grid md:grid-cols-2 gap-0">
+                <div className="relative overflow-hidden h-80 cursor-ew-resize border-r border-white group">
+                  <div 
+                    className="absolute inset-0 w-full h-full bg-cover bg-center z-10"
+                    style={{ backgroundImage: `url(${project.beforeImage})` }}
+                  >
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">Before</span>
+                    </div>
+                  </div>
+                  <div className="absolute top-0 bottom-0 w-px bg-white right-0 z-30"></div>
+                </div>
+                
+                <div className="relative overflow-hidden h-80 cursor-ew-resize group">
+                  <div 
+                    className="absolute inset-0 w-full h-full bg-cover bg-center z-10"
+                    style={{ backgroundImage: `url(${project.afterImage})` }}
+                  >
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">After</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-8 border-t-4 border-secondary">
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">{project.title}</h3>
+                <p className="text-gray-600 mb-4">{project.description}</p>
+                
+                <div className="flex flex-wrap items-center gap-4 mt-6">
+                  <span className="px-4 py-2 bg-primary/10 text-primary rounded-full font-medium text-sm">
                     {project.type}
                   </span>
-                  <span className="text-sm text-gray-500 ml-auto flex items-center">
-                    <MapPin className="h-3.5 w-3.5 mr-1 text-secondary" /> 
+                  <span className="flex items-center text-gray-500">
+                    <MapPin className="h-4 w-4 mr-1 text-secondary" /> 
                     {project.location}
                   </span>
+                  
+                  {project.testimonial && (
+                    <div className="w-full mt-4 italic text-gray-600 border-l-4 border-secondary pl-4 py-2 bg-gray-50">
+                      "{project.testimonial.substring(0, 120)}..."
+                      {project.clientName && <span className="block mt-1 font-medium text-gray-700">— {project.clientName}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
