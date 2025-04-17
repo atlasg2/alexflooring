@@ -1,84 +1,87 @@
-import { Home, Star, Shield, Calculator } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Heart, Star, ThumbsUp, Shield } from "lucide-react";
 
 const WhyChooseUs = () => {
   return (
-    <section className="py-20 bg-gray-100">
+    <section className="bg-gradient-to-b from-white to-primary/5 py-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
-          <div className="lg:w-1/2">
-            <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary mb-6">
-              Why Choose APS Flooring
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              With years of experience and a commitment to quality, we deliver exceptional flooring services 
-              that transform your spaces while providing excellent customer service every step of the way.
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary relative inline-block">
+            Why Choose APS Flooring
+            <span className="absolute -bottom-3 left-1/2 w-24 h-1 bg-secondary transform -translate-x-1/2"></span>
+          </h2>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+            <p className="text-xl text-gray-700 italic mb-8 leading-relaxed">
+              "Hey there! At APs Flooring, we're all about flooring that speaks to you. Imagine walking into a space 
+              that feels uniquely yours—we make that happen. Our team pours passion and expertise into every floor 
+              installation, treating your project like it's our own."
             </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <Home className="h-5 w-5 text-white" />
-                  </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="flex gap-4">
+                <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
+                  <Heart className="h-6 w-6 text-primary" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Locally Owned & Operated</h3>
-                  <p className="text-gray-600">Supporting our local communities in Louisiana and Alabama.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <Star className="h-5 w-5 text-white" />
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">5-Star Google Reviews</h3>
-                  <p className="text-gray-600">Consistently rated 5 stars by our satisfied customers.</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Passion for Perfection</h3>
+                  <p className="text-gray-600">
+                    We pour passion and expertise into every floor installation, treating your project like it's our own.
+                  </p>
                 </div>
               </div>
               
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-white" />
-                  </div>
+              <div className="flex gap-4">
+                <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
+                  <Star className="h-6 w-6 text-primary" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Fully Licensed & Insured</h3>
-                  <p className="text-gray-600">Professional installations with complete peace of mind.</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Versatile Solutions</h3>
+                  <p className="text-gray-600">
+                    From cozy homes to bustling offices, we've got you covered with top-notch hardwood, laminate, tile, or vinyl options.
+                  </p>
                 </div>
               </div>
               
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <Calculator className="h-5 w-5 text-white" />
-                  </div>
+              <div className="flex gap-4">
+                <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
+                  <ThumbsUp className="h-6 w-6 text-primary" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">Free In-Home Estimates</h3>
-                  <p className="text-gray-600">Personalized service with transparent, no-obligation quotes.</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Customer Satisfaction</h3>
+                  <p className="text-gray-600">
+                    We work closely with you to ensure your vision becomes a stunning reality that reflects your style and story.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Quality Guarantee</h3>
+                  <p className="text-gray-600">
+                    We stand behind our work with professional installation and quality materials that last.
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div className="lg:w-1/2">
-            <div className="relative rounded-xl overflow-hidden shadow-xl transform transition-all duration-700 hover:scale-[1.02]">
-              <img 
-                src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                alt="APS Flooring Team at Work" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-8 transform transition-transform duration-500 hover:translate-y-[-8px]">
-                <div className="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium mb-3">Master Craftsman</div>
-                <h3 className="text-2xl font-bold text-white">Alex Smith</h3>
-                <p className="text-white/90">Owner & Master Installer</p>
-                <p className="text-white/80 mt-2 max-w-md">With over 15 years of experience in premium flooring installation, Alex leads our team with expertise and dedication to quality.</p>
-              </div>
+
+            <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+              Let's turn your vision into a stunning reality together. Come join us in creating spaces that reflect your style and story!
+            </p>
+
+            <div className="text-center">
+              <Button 
+                asChild
+                className="bg-primary text-white hover:bg-primary/80 py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <Link href="/contact">Get Your Free Estimate</Link>
+              </Button>
             </div>
           </div>
         </div>

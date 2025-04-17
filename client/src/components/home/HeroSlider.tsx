@@ -16,20 +16,20 @@ const heroSlides: Slide[] = [
   {
     id: "1",
     image: "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Transform Your Space with Beautiful Flooring",
-    subtitle: "Serving Homeowners in Louisiana and Alabama"
+    title: "Flooring That Speaks to You",
+    subtitle: "Transforming Spaces in Louisiana and Alabama"
   },
   {
     id: "2",
     image: "https://images.unsplash.com/photo-1604014056359-c3be0894c0f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Premium Flooring Solutions",
-    subtitle: "Quality Materials & Expert Installation"
+    title: "Creating Spaces That Reflect Your Style",
+    subtitle: "Premium Quality Materials & Exceptional Craftsmanship"
   },
   {
     id: "3",
     image: "https://images.unsplash.com/photo-1581922819941-6ab31ab79afc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Experience the APS Flooring Difference",
-    subtitle: "Professional Service from Start to Finish"
+    title: "From Cozy Homes to Bustling Offices",
+    subtitle: "Expert Installation with Passion and Precision"
   }
 ];
 

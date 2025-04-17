@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
+import apsLogoPath from "@assets/aps_logo.png";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,15 +28,40 @@ const Header = () => {
 
   return (
     <header className="fixed w-full bg-white/95 backdrop-blur-sm shadow-lg z-50 transition-all duration-300">
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center py-4">
+      {/* Top bar with contact info */}
+      <div className="bg-primary/10 py-1.5">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center">
+            <a 
+              href="tel:5044023895" 
+              className="flex items-center text-primary hover:text-secondary transition-colors duration-300"
+            >
+              <Phone className="h-4 w-4 mr-1.5" />
+              <span className="font-medium">(504) 402-3895</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center py-3">
           <Link href="/" className="flex items-center group">
-            <span className="text-2xl font-bold text-primary transition-colors duration-300 group-hover:text-primary/90 font-montserrat">APS Flooring</span>
-            <span className="text-secondary font-bold ml-1 transition-colors duration-300 group-hover:text-secondary/90 font-montserrat">LLC</span>
+            <img 
+              src={apsLogoPath} 
+              alt="APS Flooring LLC Logo" 
+              className="h-12 w-12 mr-3 rounded-full shadow-sm" 
+            />
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <span className="text-2xl font-bold text-primary transition-colors duration-300 group-hover:text-primary/90 font-montserrat">APS Flooring</span>
+                <span className="text-secondary font-bold ml-1 transition-colors duration-300 group-hover:text-secondary/90 font-montserrat">LLC</span>
+              </div>
+              <span className="text-xs text-gray-600">Professional Flooring Solutions in LA & AL</span>
+            </div>
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-6">
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 
@@ -78,6 +104,14 @@ const Header = () => {
                 {link.text}
               </Link>
             ))}
+            <a 
+              href="tel:5044023895" 
+              className="flex items-center text-primary hover:text-secondary transition-colors duration-300 border-l-2 border-transparent pl-3 py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              <span className="font-medium">Call Us: (504) 402-3895</span>
+            </a>
           </nav>
         </div>
       )}
