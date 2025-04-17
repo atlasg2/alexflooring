@@ -1,0 +1,105 @@
+✅ Part 1: Website Structure + SEO-Optimized Frontend Design
+This is what the frontend of the website should look like. It will be clean, modern, visual-first, SEO-rich, and built for conversion.
+
+1. Homepage (Root Page: apsflooringllc.com)
+Hero Section (Slideshow)
+
+Full-screen image slideshow of recent floor installations (hardwood, tile, LVP, carpet).
+
+Overlay headline:
+“Transform Your Space with Beautiful Flooring”
+Subheadline: “Serving Homeowners in Louisiana and Alabama”
+
+CTA Buttons:
+
+[Learn More] → Scrolls to Services section
+
+[Get a Free Estimate] → Opens Contact form or takes to /contact
+
+Second Section: Services Overview
+
+4-5 visual cards with service icons/images:
+
+Hardwood Installation
+
+Luxury Vinyl Plank
+
+Floor Refinishing
+
+Tile & Custom Showers
+
+Commercial Flooring
+
+Each card links to a dedicated service page
+
+Third Section: Featured Projects
+
+2–3 “before & after” sliders or a 3-column gallery grid
+
+Button: [View Full Portfolio] → /projects
+
+Fourth Section: Why Choose Us
+
+Short bullets or icons:
+
+Locally Owned & Operated
+
+5-Star Google Reviews
+
+Fully Licensed & Insured
+
+Free In-Home Estimates
+
+Could include a trust-building photo of Alex or the team
+
+Fifth Section: Testimonials
+
+Google review carousel or stylized quote blocks
+
+Pull dynamically from Google using backend tools
+
+Sixth Section: CTA Banner
+
+Bold CTA to get an estimate with phone number, form button
+
+Repeated footer with navigation + social links
+
+2. Individual Service Pages (/services/hardwood, /services/lvp, etc.)
+SEO-optimized structure:
+
+600–800 words per service, explaining process, benefits, FAQs
+
+Include 2–3 project photos specific to that service
+
+Add “service area” mentions in footer: “Now installing hardwood flooring in New Orleans, Metairie, Chalmette, Birmingham, Hoover, Vestavia Hills…”
+
+3. Projects Portfolio Page (/projects)
+Grid of high-res images, filterable by type (e.g., Hardwood, Vinyl, Tile)
+
+Optional “case study” view with a testimonial + 2-3 sentences per project
+
+4. Location Pages (/birmingham, /new-orleans)
+~300–500 words on local service
+
+Highlight local testimonials, reviews, and photo examples
+
+Add a map and location-specific contact info
+
+5. Contact Page (/contact)
+Contact form
+
+Phone number
+
+Embedded map
+
+Chat widget (see backend)
+
+6. Blog (/blog)
+Article examples:
+
+“Luxury Vinyl vs. Hardwood in 2025”
+
+“How to Prep for a Flooring Installation”
+
+“Our Favorite Jobs This Month in Birmingham”
+
