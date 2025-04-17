@@ -8,6 +8,7 @@ export interface Project {
   afterImage: string;
   testimonial?: string;
   clientName?: string;
+  category: 'residential' | 'commercial';
 }
 
 export const projects: Project[] = [
@@ -20,7 +21,8 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1504898770365-14faca6a7320?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1591465709840-2c91ab42fc75?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "We couldn't be happier with our new hardwood floors. The transformation is incredible, and the installation was smooth and professional.",
-    clientName: "Williams Family"
+    clientName: "Williams Family",
+    category: "residential"
   },
   {
     id: "2",
@@ -31,7 +33,8 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1517176821879-0f1478c0d082?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "The luxury vinyl is perfect for our busy kitchen. It looks like real wood but stands up to spills and our pets much better. Great recommendation by the APS team!",
-    clientName: "Thompson Family"
+    clientName: "Thompson Family",
+    category: "residential"
   },
   {
     id: "3",
@@ -42,7 +45,8 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1584622650111-993a426bcf0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "Our new master bathroom is a spa-like retreat! The tile work is absolutely gorgeous, and every detail was carefully handled.",
-    clientName: "Johnson Residence"
+    clientName: "Johnson Residence",
+    category: "residential"
   },
   {
     id: "4",
@@ -53,7 +57,8 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1497215842964-222b430dc094?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "APS made our office renovation painless with minimal disruption to our business. The floors are both beautiful and durable.",
-    clientName: "Smith Consulting Group"
+    clientName: "Smith Consulting Group",
+    category: "commercial"
   },
   {
     id: "5",
@@ -64,7 +69,8 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1582643381669-3300872ca92e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "We're amazed at how our old floors turned out. The APS team took great care with our historic home and brought these original floors back to life.",
-    clientName: "Historic Garden District Home"
+    clientName: "Historic Garden District Home",
+    category: "residential"
   },
   {
     id: "6",
@@ -75,6 +81,7 @@ export const projects: Project[] = [
     beforeImage: "https://images.unsplash.com/photo-1512817307808-b1684be9e197?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "The floor had to withstand heavy foot traffic and frequent cleaning. APS recommended the perfect solution and installed it on our tight timeline.",
-    clientName: "Local Bistro"
+    clientName: "Local Bistro",
+    category: "commercial"
   }
 ];

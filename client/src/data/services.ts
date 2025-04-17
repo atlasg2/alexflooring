@@ -258,6 +258,7 @@ export const services: Service[] = [
     icon: "Building",
     image: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "commercial",
-    metaDescription: "Professional commercial flooring solutions in Louisiana and Alabama. Durable, attractive flooring for offices, retail, healthcare, and other business spaces."
+    metaDescription: "Professional commercial flooring solutions in Louisiana and Alabama. Durable, attractive flooring for offices, retail, healthcare, and other business spaces.",
+    category: "commercial"
   }
 ];

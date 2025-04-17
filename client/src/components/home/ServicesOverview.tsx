@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { services } from "@/data/services";
 import { 
   Layers, Brush, Grid, Building, Fence, 
-  ArrowRight, Hammer
+  ArrowRight, Hammer, Home, Store
 } from "lucide-react";
 
 // Map service icon names to Lucide icons
@@ -16,10 +16,102 @@ const iconComponents: Record<string, React.ReactNode> = {
   Hammer: <Hammer className="h-10 w-10 text-secondary" />
 };
 
+// Filter services by category
+const residentialServices = services.filter(service => service.category === 'residential');
+const commercialServices = services.filter(service => service.category === 'commercial');
+
+// Get a limited number of services for preview
+const featuredResidentialServices = residentialServices.slice(0, 3);
+const featuredCommercialServices = commercialServices.slice(0, 3);
+
+const ServiceCard = ({ service }: { service: typeof services[0] }) => (
+  <div 
+    key={service.id}
+    className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group border border-gray-100"
+  >
+    <div 
+      className="h-56 bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${service.image})` }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+      <div className="absolute bottom-4 left-4 right-4">
+        <h3 className="text-xl font-bold text-white">
+          {service.title}
+        </h3>
+      </div>
+    </div>
+    <div className="p-6">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
+          {iconComponents[service.icon]}
+        </div>
+        <div>
+          <p className="text-gray-600">
+            {service.shortDescription}
+          </p>
+        </div>
+      </div>
+      <Link 
+        href={`/services/${service.slug}`}
+        className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 group-hover:underline"
+      >
+        Learn More <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+      </Link>
+    </div>
+  </div>
+);
+
+const ServiceCategory = ({ 
+  title, 
+  description, 
+  services, 
+  icon, 
+  bgColor = "bg-white"
+}: { 
+  title: string; 
+  description: string; 
+  services: typeof services; 
+  icon: React.ReactNode;
+  bgColor?: string;
+}) => (
+  <div className={`py-16 ${bgColor}`}>
+    <div className="container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-center mb-10 gap-4">
+        <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
+          {icon}
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative">
+          {title}
+          <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
+        </h2>
+      </div>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mb-12">
+        {description}
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {services.map((service) => (
+          <ServiceCard key={service.id} service={service} />
+        ))}
+      </div>
+
+      <div className="text-center mt-10">
+        <Link 
+          href={`/services?category=${title.toLowerCase()}`}
+          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
+        >
+          View All {title} Services
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+
 const ServicesOverview = () => {
   return (
-    <section id="services" className="py-24 bg-white">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+    <section id="services">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary relative inline-block">
             Our Services
@@ -29,55 +121,31 @@ const ServicesOverview = () => {
             Professional flooring solutions tailored to your needs and style preferences.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {services.map((service) => (
-            <div 
-              key={service.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group border border-gray-100"
-            >
-              <div 
-                className="h-56 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${service.image})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-xl font-bold text-white">
-                    {service.title}
-                  </h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-                    {iconComponents[service.icon]}
-                  </div>
-                  <div>
-                    <p className="text-gray-600">
-                      {service.shortDescription}
-                    </p>
-                  </div>
-                </div>
-                <Link 
-                  href={`/services/${service.slug}`}
-                  className="inline-flex items-center mt-2 text-secondary font-medium hover:text-primary transition-colors duration-300 group-hover:underline"
-                >
-                  Learn More <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+      </div>
+      
+      <ServiceCategory 
+        title="Residential"
+        description="Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations."
+        services={featuredResidentialServices}
+        icon={<Home className="h-10 w-10 text-secondary" />}
+        bgColor="bg-gray-50"
+      />
+      
+      <ServiceCategory 
+        title="Commercial"
+        description="Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic."
+        services={featuredCommercialServices}
+        icon={<Store className="h-10 w-10 text-secondary" />}
+      />
 
-        <div className="text-center mt-16">
-          <Link 
-            href="/services"
-            className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg"
-          >
-            View All Services
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 text-center">
+        <Link 
+          href="/services"
+          className="inline-flex items-center px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors duration-300 shadow-md hover:shadow-lg text-lg"
+        >
+          View All Services
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
       </div>
     </section>
   );
