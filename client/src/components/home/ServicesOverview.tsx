@@ -263,40 +263,41 @@ const ServicesOverview = () => {
           </p>
 
           {/* Featured commercial service in a horizontal layout */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl border border-gray-100 mb-12">
+          <div className="bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl border border-gray-100 mb-12">
             <div className="grid md:grid-cols-2 gap-0">
               <div 
                 className="h-96 bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${commercialService.image})` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80"></div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <h3 className="text-2xl font-bold text-white">
                     {commercialService.title}
                   </h3>
+                  <p className="text-white/80 text-sm mt-1">Perfect for businesses & offices</p>
                 </div>
               </div>
-              <div className="p-8 flex flex-col justify-center">
+              <div className="p-8 md:p-10 flex flex-col justify-center bg-gray-50">
                 <div className="mb-6">
-                  <div className="p-4 rounded-full bg-primary/10 inline-flex items-center justify-center mb-4">
+                  <div className="p-4 rounded-full bg-white border border-gray-100 inline-flex items-center justify-center mb-4 shadow-md">
                     {iconComponents[commercialService.icon]}
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">{commercialService.title}</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-2xl font-bold text-primary mb-4">{commercialService.title}</h3>
+                  <p className="text-gray-600 mb-6">
                     {commercialService.shortDescription}
                   </p>
-                  <div className="mt-6">
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-secondary mt-1">✓</span>
+                  <div className="mt-6 bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
                         <span>Minimal business disruption with flexible scheduling</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-secondary mt-1">✓</span>
+                      <li className="flex items-start gap-3">
+                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
                         <span>ADA compliance and safety considerations</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-secondary mt-1">✓</span>
+                      <li className="flex items-start gap-3">
+                        <span className="text-secondary font-bold mt-1 text-lg">✓</span>
                         <span>Professional installation for maximum durability</span>
                       </li>
                     </ul>

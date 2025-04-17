@@ -13,7 +13,7 @@ const featuredResidentialProject = residentialProjects[0];
 const featuredCommercialProject = commercialProjects[0];
 
 const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
-  <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-xl">
+  <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-xl border border-gray-100">
     <div className="grid md:grid-cols-2 gap-0">
       <div className="relative overflow-hidden h-80 cursor-ew-resize border-r border-white group">
         <div 
@@ -24,7 +24,7 @@ const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
             <span className="bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">Before</span>
           </div>
         </div>
-        <div className="absolute top-0 bottom-0 w-px bg-white right-0 z-30"></div>
+        <div className="absolute top-0 bottom-0 w-0.5 bg-secondary right-0 z-30"></div>
       </div>
       
       <div className="relative overflow-hidden h-80 cursor-ew-resize group">
@@ -40,11 +40,11 @@ const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
     </div>
     
     <div className="p-8 border-t-4 border-secondary">
-      <h3 className="text-2xl font-bold text-gray-800 mb-3">{project.title}</h3>
+      <h3 className="text-2xl font-bold text-primary mb-3">{project.title}</h3>
       <p className="text-gray-600 mb-4">{project.description}</p>
       
       <div className="flex flex-wrap items-center gap-4 mt-6">
-        <span className="px-4 py-2 bg-primary/10 text-primary rounded-full font-medium text-sm">
+        <span className="px-4 py-2 bg-gray-100 text-primary rounded-full font-medium text-sm">
           {project.type}
         </span>
         <span className="flex items-center text-gray-500">
@@ -53,9 +53,9 @@ const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
         </span>
         
         {project.testimonial && (
-          <div className="w-full mt-4 italic text-gray-600 border-l-4 border-secondary pl-4 py-2 bg-gray-50">
+          <div className="w-full mt-4 italic text-gray-600 border-l-4 border-secondary pl-4 py-3 bg-gray-50">
             "{project.testimonial.substring(0, 120)}..."
-            {project.clientName && <span className="block mt-1 font-medium text-gray-700">— {project.clientName}</span>}
+            {project.clientName && <span className="block mt-1 font-medium text-primary">— {project.clientName}</span>}
           </div>
         )}
       </div>
@@ -211,26 +211,29 @@ const FeaturedProjects = () => {
           {/* Show top 2 residential projects in a grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {residentialProjects.slice(0, 2).map(project => (
-              <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <div key={project.id} className="bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-100 group">
                 {/* Before/After Image */}
                 <div className="relative h-64 overflow-hidden">
                   <div 
-                    className="absolute inset-0 w-full h-full bg-cover bg-center"
+                    className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                     style={{ backgroundImage: `url(${project.afterImage})` }}
                   />
-                  <div className="absolute top-4 right-4 bg-white/90 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
+                  <div className="absolute top-4 right-4 bg-white/90 text-primary px-3 py-1 rounded-full text-sm font-medium shadow-md">
                     {project.type}
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-xl font-bold text-white mb-1">{project.title}</h3>
+                    <div className="flex items-center text-white/80 text-sm">
+                      <MapPin className="h-4 w-4 mr-1 text-secondary" /> 
+                      {project.location}
+                    </div>
                   </div>
                 </div>
                 
                 {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{project.title}</h3>
-                  <div className="flex items-center text-gray-500 mb-3">
-                    <MapPin className="h-4 w-4 mr-1 text-secondary" /> 
-                    {project.location}
-                  </div>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.description}</p>
+                <div className="p-6 border-t-4 border-secondary">
+                  <p className="text-gray-600 mb-5">{project.description.substring(0, 120)}...</p>
                   
                   <Link 
                     href={`/projects/${project.id}`}
@@ -287,23 +290,26 @@ const FeaturedProjects = () => {
       </div>
 
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 text-center">
-        <Button 
-          asChild
-          className="bg-primary text-white hover:bg-primary/80 py-6 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
-        >
-          <Link href="/projects" className="flex items-center gap-2">
-            View Full Portfolio
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </Link>
-        </Button>
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 blur-2xl opacity-30 rounded-full transform scale-150"></div>
+          <Button 
+            asChild
+            className="bg-primary hover:bg-primary/90 text-white py-6 px-12 rounded-lg text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group relative"
+          >
+            <Link href="/projects" className="flex items-center gap-3">
+              View Full Portfolio
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   );
