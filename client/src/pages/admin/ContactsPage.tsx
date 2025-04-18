@@ -124,12 +124,12 @@ const ContactsPage = () => {
   });
 
   return (
-    <AdminLayout title="Contact Management">
+    <AdminLayout title="Website Inquiries">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Contact Submissions</CardTitle>
+          <CardTitle>Website Inquiries</CardTitle>
           <CardDescription>
-            Manage inquiries from the website contact form
+            Manage inquiries submitted through your website contact form
           </CardDescription>
         </CardHeader>
         <CardContent>
