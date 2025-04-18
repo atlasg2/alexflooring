@@ -37,6 +37,9 @@ import CustomerUsersPage from "@/pages/admin/customer-portal/UsersPage";
 // Customer Portal
 import CustomerAuth from "@/pages/customer/CustomerAuth";
 import CustomerDashboard from "@/pages/customer/CustomerDashboard";
+import CustomerEstimates from "@/pages/customer/CustomerEstimates";
+import CustomerContracts from "@/pages/customer/CustomerContracts";
+import CustomerInvoices from "@/pages/customer/CustomerInvoices";
 import { CustomerAuthProvider } from "@/hooks/use-customer-auth";
 import { ProtectedCustomerRoute } from "@/components/customer/ProtectedCustomerRoute";
 
@@ -63,6 +66,9 @@ function Router() {
       {/* Customer Portal Routes */}
       <Route path="/customer/auth" component={CustomerAuth} />
       <ProtectedCustomerRoute path="/customer/dashboard" component={CustomerDashboard} />
+      <ProtectedCustomerRoute path="/customer/estimates" component={CustomerEstimates} />
+      <ProtectedCustomerRoute path="/customer/contracts" component={CustomerContracts} />
+      <ProtectedCustomerRoute path="/customer/invoices" component={CustomerInvoices} />
       
       {/* Admin Routes - Core */}
       <Route path="/admin/login" component={AdminLoginPage} />

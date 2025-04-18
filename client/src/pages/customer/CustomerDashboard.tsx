@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
-import { useCustomerAuth } from "@/hooks/use-customer-auth";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +10,9 @@ import {
   DialogContent,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Loader2, FileText, Image, Calendar, Clock, LogOut, Eye, Download, ExternalLink } from "lucide-react";
+import { Loader2, FileText, Image, Calendar, Clock, Eye, Download, ExternalLink } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import CustomerLayout from "@/layouts/CustomerLayout";
 
 // Type definitions
 interface Project {
@@ -41,16 +40,6 @@ interface Project {
 }
 
 export default function CustomerDashboard() {
-  const { user, logout } = useCustomerAuth();
-  const [, setLocation] = useLocation();
-  
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!user) {
-      setLocation("/customer/auth");
-    }
-  }, [user, setLocation]);
-  
   // Fetch customer projects
   const { data: projects, isLoading } = useQuery<Project[]>({
     queryKey: ["/api/customer/projects"],
@@ -60,39 +49,11 @@ export default function CustomerDashboard() {
         throw new Error("Failed to fetch projects");
       }
       return res.json();
-    },
-    enabled: !!user, // Only run if user is logged in
+    }
   });
   
-  const handleLogout = async () => {
-    await logout();
-    setLocation("/customer/auth");
-  };
-  
-  if (!user) {
-    return null; // Don't render if not logged in
-  }
-  
   return (
-    <div className="min-h-screen bg-muted/20">
-      {/* Header */}
-      <header className="bg-background border-b">
-        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">Customer Portal</h1>
-              <p className="text-muted-foreground">Welcome back, {user.name}</p>
-            </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Log out
-            </Button>
-          </div>
-        </div>
-      </header>
-      
-      {/* Main content */}
-      <main className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <CustomerLayout>
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -124,8 +85,7 @@ export default function CustomerDashboard() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+    </CustomerLayout>
   );
 }
 
@@ -590,3 +550,4 @@ function getDocumentIcon(type: string) {
       return <FileText className="h-10 w-10 text-primary" />;
   }
 }
+
