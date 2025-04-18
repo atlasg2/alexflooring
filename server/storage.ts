@@ -176,7 +176,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
-    const [result] = await db.insert(contactSubmissions).values(submission).returning();
+    // Ensure consistent handling of the type field
+    if (!submission.type) {
+      submission.type = 'contact';
+    }
+    
+    // Ensure we have a status
+    if (!submission.status) {
+      submission.status = 'new';
+    }
+    
+    const [result] = await db.insert(contactSubmissions).values({
+      name: submission.name,
+      email: submission.email,
+      phone: submission.phone || null,
+      message: submission.message,
+      service: submission.service || null,
+      type: submission.type,
+      status: submission.status
+    }).returning();
+    
     return result;
   }
   

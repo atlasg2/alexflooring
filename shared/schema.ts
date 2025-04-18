@@ -53,7 +53,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  phone: text("phone").notNull(),
+  phone: text("phone"), // Made nullable for chat messages
   message: text("message").notNull(),
   service: text("service"),
   status: text("status").default("new").notNull(), // new, contacted, scheduled, completed
@@ -62,15 +62,19 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).pick({
-  name: true,
-  email: true,
-  phone: true,
-  message: true,
-  service: true,
-  type: true,
-  status: true,
-});
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions)
+  .pick({
+    name: true,
+    email: true,
+    phone: true,
+    message: true,
+    service: true,
+    type: true,
+    status: true,
+  })
+  .partial({
+    phone: true, // Make phone optional for chat messages
+  });
 
 // Communication logs - track all emails, calls, texts
 export const communicationLogs = pgTable("communication_logs", {
