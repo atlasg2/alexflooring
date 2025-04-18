@@ -93,15 +93,18 @@ const ChatWidget = () => {
     try {
       // Create a chat message using the correct API endpoint for contact submissions
       // The 'type: chat' field is important for the backend to identify this as a chat message
-      await apiRequest('POST', '/api/contact', {
+      const response = await apiRequest('POST', '/api/contact', {
         name,
         email,
         phone,
         message,
         subject: 'Chat Message',
         type: 'chat',
-        service: 'Chat Widget'
+        service: 'Chat Widget',
+        status: 'new' // Explicitly set status to ensure it's captured as a new message
       });
+      
+      console.log('Chat message sent successfully:', response);
       
       toast({
         title: "Message sent!",

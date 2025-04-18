@@ -71,7 +71,8 @@ const MessagesPage = () => {
       // Get all contact submissions and filter for those with type 'chat'
       console.log("Fetching contact submissions...");
       const response = await fetch('/api/admin/contacts', {
-        credentials: 'include' // Ensure cookies are sent
+        credentials: 'include', // Ensure cookies are sent
+        cache: 'no-cache' // Ensure we don't get cached data
       });
       
       console.log("Response status:", response.status);
@@ -103,7 +104,11 @@ const MessagesPage = () => {
             isRead: submission.status !== 'new',
             createdAt: submission.createdAt,
             contactId: submission.contactId
-          }));
+          }))
+          .sort((a: any, b: any) => {
+            // Sort by creation date, newest first
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
         
         console.log("Filtered chat messages:", chatMessages);
         setMessages(chatMessages);

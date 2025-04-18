@@ -176,6 +176,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
+    console.log('Creating contact submission:', JSON.stringify(submission, null, 2));
+    
     // Ensure consistent handling of the type field
     if (!submission.type) {
       submission.type = 'contact';
@@ -190,6 +192,8 @@ export class DatabaseStorage implements IStorage {
     let contactId: number | null = null;
     
     if (submission.type === 'chat' && submission.email) {
+      console.log('Processing chat message, attempting to create or find contact for:', submission.email);
+      
       // Try to find an existing contact with this email
       const [existingContact] = await db
         .select()
@@ -197,18 +201,24 @@ export class DatabaseStorage implements IStorage {
         .where(eq(contacts.email, submission.email));
       
       if (existingContact) {
+        console.log('Found existing contact with ID:', existingContact.id);
         contactId = existingContact.id;
       } else {
         // Create a new contact
         try {
-          const [newContact] = await db.insert(contacts).values({
+          console.log('Creating new contact from chat message');
+          const contactData = {
             name: submission.name || 'Unknown',
             email: submission.email,
             phone: submission.phone || null,
             source: 'chat',
             notes: `Initial contact via chat widget: ${submission.message}`,
             leadStage: 'new'
-          }).returning();
+          };
+          console.log('New contact data:', JSON.stringify(contactData, null, 2));
+          
+          const [newContact] = await db.insert(contacts).values(contactData).returning();
+          console.log('Successfully created new contact with ID:', newContact.id);
           
           contactId = newContact.id;
         } catch (error) {
@@ -218,7 +228,9 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Create the contact submission with the contact ID if available
-    const [result] = await db.insert(contactSubmissions).values({
+    console.log('Creating contact submission with contactId:', contactId);
+    
+    const submissionData = {
       name: submission.name,
       email: submission.email,
       phone: submission.phone || null,
@@ -227,8 +239,13 @@ export class DatabaseStorage implements IStorage {
       type: submission.type,
       status: submission.status,
       contactId: contactId
-    }).returning();
+    };
     
+    console.log('Submission data:', JSON.stringify(submissionData, null, 2));
+    
+    const [result] = await db.insert(contactSubmissions).values(submissionData).returning();
+    
+    console.log('Successfully created contact submission with ID:', result.id);
     return result;
   }
   
