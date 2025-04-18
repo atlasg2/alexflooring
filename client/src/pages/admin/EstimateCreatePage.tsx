@@ -135,7 +135,7 @@ const estimateFormSchema = z.object({
   contactId: z.number({
     required_error: "Customer is required",
   }),
-  title: z.string().min(1, "Title is required"),
+  title: z.string().default("Flooring Estimate").optional(),
   description: z.string().optional(),
   validUntil: z.date().optional(),
   notes: z.string().optional(),
@@ -167,6 +167,12 @@ export default function EstimateCreatePage() {
   const [selectedFlooringType, setSelectedFlooringType] = useState<string>("");
   const [squareFootage, setSquareFootage] = useState<number>(0);
   
+  // Get pre-selected customer ID from session storage
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(() => {
+    const storedId = sessionStorage.getItem('selectedCustomerId');
+    return storedId ? parseInt(storedId, 10) : null;
+  });
+  
   // Default line item
   const defaultLineItem: LineItem = {
     id: uuidv4(),
@@ -181,7 +187,8 @@ export default function EstimateCreatePage() {
   const form = useForm<EstimateFormValues>({
     resolver: zodResolver(estimateFormSchema),
     defaultValues: {
-      title: '',
+      contactId: selectedCustomerId || undefined,
+      title: 'Flooring Estimate',  // Default title
       description: '',
       lineItems: [defaultLineItem],
       subtotal: '0.00',
@@ -203,6 +210,15 @@ export default function EstimateCreatePage() {
       }
       return response.json();
     },
+    onSuccess: (data) => {
+      // If we have a selectedCustomerId and it's in the contacts list, set it in the form
+      if (selectedCustomerId) {
+        const contactExists = data.some((contact: Contact) => contact.id === selectedCustomerId);
+        if (contactExists) {
+          form.setValue('contactId', selectedCustomerId);
+        }
+      }
+    }
   });
   
   // Mutation to create estimate
@@ -507,7 +523,7 @@ export default function EstimateCreatePage() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Estimate Title</FormLabel>
+                          <FormLabel>Estimate Title (Optional)</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Hardwood Flooring Installation" {...field} />
                           </FormControl>

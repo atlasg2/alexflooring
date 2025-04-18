@@ -60,6 +60,73 @@ export function setupSalesWorkflowRoutes(app: Express) {
         
         const estimate = await storage.createEstimate(validatedData);
         console.log("Successfully created estimate:", estimate.id);
+        
+        // Send email notification to customer if we have customerUserId
+        if (estimate.customerUserId) {
+          try {
+            const customer = await storage.getCustomerUser(estimate.customerUserId);
+            if (customer && customer.email) {
+              console.log(`Sending notification email to customer ${customer.name} (${customer.email})`);
+              
+              await emailService.sendCustomEmail({
+                to: customer.email,
+                subject: `New Estimate Available: ${estimate.title || 'Flooring Estimate'}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>New Estimate Available</h2>
+                    <p>Dear ${customer.name},</p>
+                    <p>A new estimate (#${estimate.estimateNumber}) has been created for you.</p>
+                    <p><strong>Amount:</strong> $${estimate.total}</p>
+                    <p>You can view your estimate and provide approval through your customer portal.</p>
+                    <p><a href="${process.env.APP_URL || 'https://apsflooring.info'}/customer/estimates/${estimate.id}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px;">View Estimate</a></p>
+                    <p>Thank you for choosing APS Flooring.</p>
+                  </div>
+                `
+              });
+              console.log(`Email notification sent successfully to ${customer.email}`);
+            }
+          } catch (emailError) {
+            console.error("Failed to send email notification:", emailError);
+            // Continue despite email error
+          }
+        } else if (estimate.contactId) {
+          // If no customer user exists, create one for the contact
+          try {
+            const contact = await storage.getContact(estimate.contactId);
+            
+            if (contact && contact.email && !contact.isCustomer) {
+              console.log(`Creating customer portal account for contact ${contact.name} (${contact.email})`);
+              
+              // Generate a temporary password
+              const { generatePassword } = require('./customer-auth');
+              const tempPassword = generatePassword(10);
+              
+              // Create customer user
+              const customerUser = await storage.createCustomerUser({
+                email: contact.email,
+                username: contact.email.split('@')[0],
+                password: tempPassword,
+                name: contact.name,
+                phone: contact.phone || null,
+                contactId: contact.id
+              });
+              
+              // Update the estimate with the new customerUserId
+              await storage.updateEstimate(estimate.id, { customerUserId: customerUser.id });
+              
+              // Update contact to mark as customer
+              await storage.updateContact(contact.id, { isCustomer: true });
+              
+              console.log(`Customer portal account created with ID ${customerUser.id}`);
+              
+              // Don't send login credentials yet - we'll do that later
+            }
+          } catch (customerError) {
+            console.error("Failed to create customer portal account:", customerError);
+            // Continue despite customer creation error
+          }
+        }
+        
         res.status(201).json(estimate);
       } catch (validationError: any) {
         console.error("Validation error details:", 

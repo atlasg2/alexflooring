@@ -482,20 +482,25 @@ export default function EstimatesPage() {
         </Dialog>
       )}
 
-      {/* Create/Edit Estimate Dialog placeholder - this would link to a dedicated page */}
+      {/* Create/Edit Estimate Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Estimate</DialogTitle>
             <DialogDescription>
-              Start creating a new estimate for your customer.
+              Select a customer to create an estimate for.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="customer">Select Customer</Label>
-              <Select>
+              <Select
+                onValueChange={(value) => {
+                  // Set the selected customer ID in session storage
+                  sessionStorage.setItem('selectedCustomerId', value);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
@@ -507,11 +512,6 @@ export default function EstimatesPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="title">Estimate Title</Label>
-              <Input id="title" placeholder="e.g., Hardwood Floor Installation" />
             </div>
           </div>
           
