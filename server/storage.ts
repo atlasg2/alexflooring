@@ -427,6 +427,7 @@ export class DatabaseStorage implements IStorage {
       service: submission.service || null,
       type: submission.type,
       status: submission.status,
+      smsOptIn: submission.smsOptIn || false,
       contactId: contactId
     };
     
