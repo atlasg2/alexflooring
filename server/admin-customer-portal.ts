@@ -84,7 +84,31 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
       // Remove password from the response
       const { password: _, ...safeUserData } = newUser;
       
-      // TODO: Send welcome email with login credentials if generatePassword is true
+      // Email template for future integration - for customer users created in admin interface
+      if (generatePassword) {
+        const emailSubject = `Your APS Flooring Customer Portal Account`;
+        const emailContent = `
+          <h2>Welcome to APS Flooring Customer Portal</h2>
+          <p>Hello ${userData.name},</p>
+          <p>An account has been created for you on the APS Flooring customer portal where you can track your project's progress.</p>
+          <p><strong>Login Details:</strong></p>
+          <ul>
+            <li>Email: ${userData.email}</li>
+            <li>Temporary Password: ${password}</li>
+          </ul>
+          <p>Please login at <a href="${process.env.BASE_URL || 'https://apsflooring.com'}/customer/auth">Customer Portal</a> to view your project details.</p>
+          <p>If you have any questions, feel free to contact us.</p>
+          <p>Thank you for choosing APS Flooring!</p>
+        `;
+        
+        // TODO: When email service is integrated:
+        // await sendEmail({
+        //   to: userData.email,
+        //   from: 'projects@apsflooring.com',
+        //   subject: emailSubject,
+        //   html: emailContent
+        // });
+      }
       
       res.status(201).json({
         ...safeUserData,
@@ -133,7 +157,30 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
       // Update the user's password
       await storage.updateCustomerUser(userId, { password: hashedPassword });
       
-      // TODO: Send email with new credentials
+      // Email template for future integration - password reset
+      if (generatePassword) {
+        const emailSubject = `Your APS Flooring Password Has Been Reset`;
+        const emailContent = `
+          <h2>APS Flooring Customer Portal Password Reset</h2>
+          <p>Hello,</p>
+          <p>Your password for the APS Flooring customer portal has been reset.</p>
+          <p><strong>New Login Details:</strong></p>
+          <ul>
+            <li>Your new temporary password: ${password}</li>
+          </ul>
+          <p>Please login at <a href="${process.env.BASE_URL || 'https://apsflooring.com'}/customer/auth">Customer Portal</a> with this temporary password.</p>
+          <p>For security reasons, we recommend changing your password after logging in.</p>
+          <p>If you did not request this password reset, please contact us immediately.</p>
+        `;
+        
+        // TODO: When email service is integrated:
+        // await sendEmail({
+        //   to: user.email,
+        //   from: 'projects@apsflooring.com',
+        //   subject: emailSubject,
+        //   html: emailContent
+        // });
+      }
       
       res.json({
         message: generatePassword ? 
@@ -380,7 +427,29 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
       // Remove password from the response
       const { password: _, ...safeUserData } = newUser;
       
-      // TODO: Send welcome email with login credentials
+      // Email template for future integration
+      const emailSubject = `Your APS Flooring Customer Portal Account`;
+      const emailContent = `
+        <h2>Welcome to APS Flooring Customer Portal</h2>
+        <p>Hello ${contact.name},</p>
+        <p>An account has been created for you on the APS Flooring customer portal where you can track your project's progress.</p>
+        <p><strong>Login Details:</strong></p>
+        <ul>
+          <li>Email: ${contact.email}</li>
+          <li>Temporary Password: ${password}</li>
+        </ul>
+        <p>Please login at <a href="${process.env.BASE_URL || 'https://apsflooring.com'}/customer/auth">Customer Portal</a> to view your project details.</p>
+        <p>If you have any questions, feel free to contact us.</p>
+        <p>Thank you for choosing APS Flooring!</p>
+      `;
+      
+      // TODO: When email service is integrated:
+      // await sendEmail({
+      //   to: contact.email,
+      //   from: 'projects@apsflooring.com',
+      //   subject: emailSubject,
+      //   html: emailContent
+      // });
       
       res.status(201).json({
         ...safeUserData,
