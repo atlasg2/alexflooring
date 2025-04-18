@@ -294,6 +294,42 @@ export const emailService = {
   },
 
   /**
+   * Send customer portal credentials during project creation
+   */
+  sendCustomerPortalCredentials: async (options: {
+    to: string;
+    name: string;
+    username: string;
+    password: string;
+    loginUrl?: string;
+  }) => {
+    const baseUrl = process.env.APP_URL || 'https://apsflooring.info';
+    const loginUrl = options.loginUrl || `${baseUrl}/customer/auth`;
+    
+    // Reuse the welcome template with slight modifications
+    const template = EMAIL_TEMPLATES.customerPortalWelcome({
+      name: options.name,
+      email: options.username,  // Use username instead of email
+      password: options.password,
+      loginUrl,
+    });
+
+    try {
+      const result = await resend.emails.send({
+        ...BASE_CONFIG,
+        to: options.to,
+        subject: 'Your APS Flooring Customer Portal Credentials',
+        html: template.html,
+      });
+      console.log('Sent portal credentials email to', options.to, 'with result:', result);
+      return { success: true, messageId: result.data?.id || 'unknown' };
+    } catch (error) {
+      console.error('Failed to send portal credentials email:', error);
+      return { success: false, error };
+    }
+  },
+
+  /**
    * Send a custom email with any template
    */
   sendCustomEmail: async (options: {
