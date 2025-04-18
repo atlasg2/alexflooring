@@ -185,7 +185,7 @@ const ServicesOverview = () => {
       </div>
       
       {/* Featured image for visual interest */}
-      <div className="relative container mx-auto px-4 md:px-6 lg:px-8 mb-16">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 mb-16">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="w-full md:w-7/12 mb-10 md:mb-0 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block mb-4">
@@ -215,6 +215,7 @@ const ServicesOverview = () => {
         </div>
       </div>
         
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
         {/* 3x3 Services Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {allServices.map((service, index) => (
