@@ -153,9 +153,11 @@ export const emailTemplates = pgTable("email_templates", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   subject: text("subject").notNull(),
+  body: text("body").notNull(), // Main content of the email
   htmlContent: text("html_content").notNull(),
   textContent: text("text_content").notNull(),
   category: text("category").default("general").notNull(), // general, follow-up, review-request, etc.
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -172,6 +174,7 @@ export const smsTemplates = pgTable("sms_templates", {
   name: text("name").notNull(),
   content: text("content").notNull(),
   category: text("category").default("general").notNull(), // general, follow-up, review-request, etc.
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -187,8 +190,13 @@ export const automationWorkflows = pgTable("automation_workflows", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  trigger: text("trigger").notNull(), // new-contact, appointment-scheduled, etc.
-  actions: json("actions").notNull(),
+  triggerType: text("trigger_type").default("manual").notNull(), // manual, lead_stage_change, appointment, form_submission, review_request
+  triggerCondition: text("trigger_condition"), // When lead stage changes to "qualified", 1 day before appointment, etc.
+  emailTemplateId: integer("email_template_id").references(() => emailTemplates.id),
+  smsTemplateId: integer("sms_template_id").references(() => smsTemplates.id),
+  delay: integer("delay").default(0), // Delay in hours
+  trigger: text("trigger").notNull(), // Legacy field - for compatibility
+  actions: json("actions").notNull(), // Legacy field - for compatibility 
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
