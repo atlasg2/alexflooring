@@ -1,0 +1,41 @@
+> rest-express@1.0.0 dev
+[DB] Connecting to PostgreSQL database in production
+*******************************************
+* SERVER STARTING - TEST VERSION 12345678 *
+* TIMESTAMP: 2025-04-18T14:31:31.633Z *
+*******************************************
+2:31:31 PM [express] Running in production environment
+2:31:31 PM [REPLIT_PID1_FLAG_REPLIT_RTLD_LOADER, npm_command, npm_config_userconfig, COLORTERM, npm_config_cache, NIX_BUILD_CORES, REPL_OWNER, DATABASE_URL, configureFlags, NIXPKGS_ALLOW_UNFREE, mesonFlags, HOSTNAME, __EGL_VENDOR_LIBRARY_FILENAMES, shell, depsHostHost, NODE, REPLIT_DOMAINS, LD_AUDIT, PGPORT, XDG_DATA_HOME, REPL_OWNER_ID, STRINGS, RESEND_KEY, PGPASSWORD, XDG_CONFIG_HOME, depsTargetTarget, REPLIT_LD_AUDIT, stdenv, COLOR, npm_config_local_prefix, builder, REPLIT_CLI, shellHook, npm_config_globalconfig, EDITOR, REPLIT_USER, phases, REPLIT_SUBCLUSTER, PWD, NIX_PROFILES, SOURCE_DATE_EPOCH, NIX_ENFORCE_NO_NATIVE, REPLIT_DB_URL, REPLIT_SESSION, NIX_PATH, npm_config_init_module, NODE_ENV, CXX, REPL_ID, system, HOST_PATH, doInstallCheck, HOME, NIX_BINTOOLS, LANG, GITHUB_TOKEN, REPL_IDENTITY, LS_COLORS, depsTargetTargetPropagated, REPLIT_RIPPKGS_INDICES, npm_package_version, cmakeFlags, outputs, NIX_STORE, GIT_ASKPASS, PGUSER, REPL_IMAGE, LD, buildPhase, DIRENV_CONFIG, INIT_CWD, READELF, REPLIT_PID1_FLAG_NIXMODULES_BEFORE_REPLIT_NIX, XDG_CACHE_HOME, NIX_PS1, npm_lifecycle_script, doCheck, REPLIT_RTLD_LOADER, npm_config_npm_version, depsBuildBuild, REPLIT_DEV_DOMAIN, TERM, npm_package_name, REPLIT_CLUSTER, REPLIT_BASHRC, SIZE, propagatedNativeBuildInputs, npm_config_prefix, REPL_LANGUAGE, USER, strictDeps, REPL_HOME, REPLIT_PID1_VERSION, AR, AS, DISPLAY, NIX_BINTOOLS_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu, npm_lifecycle_event, SHLVL, NIX_BUILD_TOP, NM, GIT_EDITOR, REPLIT_NIX_CHANNEL, NIX_CFLAGS_COMPILE, PGDATABASE, patches, REPLIT_USERID, PROMPT_DIRTRIM, LIBGL_DRIVERS_PATH, buildInputs, REPLIT_MODE, GOOGLE_MAPS_KEY, LOCALE_ARCHIVE, preferLocalBuild, npm_config_user_agent, npm_execpath, REPLIT_PID2, REPLIT_ENVIRONMENT, depsBuildTarget, OBJCOPY, PGHOST, out, npm_package_json, REPLIT_LD_LIBRARY_PATH, STRIP, XDG_DATA_DIRS, REPL_IDENTITY_KEY, OBJDUMP, npm_config_noproxy, PATH, propagatedBuildInputs, npm_config_node_gyp, DOCKER_CONFIG, CC, NIX_CC, __ETC_PROFILE_SOURCED, depsBuildTargetPropagated, depsBuildBuildPropagated, npm_config_global_prefix, NIX_CC_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu, REPL_PUBKEYS, CONFIG_SHELL, __structuredAttrs, npm_node_execpath, RANLIB, NIX_HARDENING_ENABLE, REPL_SLUG, NIX_LDFLAGS, nativeBuildInputs, depsHostHostPropagated] Environment variables available:
+2:31:31 PM [express] DATABASE_URL is available
+2:31:31 PM [express] SESSION_SECRET is available
+2:31:31 PM [express] Setting up CORS with credentials support for production environment
+Checking if admin user exists...
+Admin auth - Running in production mode: true, inReplit: true
+Customer auth - Running in production mode: true, inReplit: true
+2:31:31 PM [express] serving on port 5000
+Admin user already exists: 4
+Password format check: 917ee9d5db... (contains salt separator)
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Checking customer session: L4P26PCJwOqKD0XYRIRTjvLRS9lNGkKl
+Customer in session: no
+2:31:36 PM [express] GET /api/customer/me 401 in 2ms :: {"error":"Not authenticated"}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-ZL4O2VWE.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-26AQ2U4J.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-OLWLIEH3.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-SD42OOGP.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-WIIJQEXM.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-VRF373B3.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-ZL4O2VWE.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-26AQ2U4J.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-OLWLIEH3.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-SD42OOGP.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-VRF373B3.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-WIIJQEXM.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-I6MJRFJY.js?v=ce4e51b0" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+Checking customer session: 4HTYjSUxMxMzwh-Qjj0PteVxeTrKUZUQ
+Customer in session: no
+2:38:57 PM [express] GET /api/customer/me 401 in 52ms :: {"error":"Not authenticated"}
