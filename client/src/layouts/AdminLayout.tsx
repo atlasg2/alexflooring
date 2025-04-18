@@ -77,7 +77,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       active: location === "/admin" || location === "/admin/dashboard"
     },
     { 
-      title: "Contacts", 
+      title: "CRM Contacts", 
       icon: <Users className="h-5 w-5 mr-3" />, 
       href: "/admin/crm/contacts",
       active: location.includes("/admin/crm/contacts") || location.includes("/admin/crm/leads")
@@ -96,10 +96,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       active: location.includes("/admin/calendar")
     },
     { 
-      title: "Form Submissions", 
+      title: "Website Inquiries", 
       icon: <FileText className="h-5 w-5 mr-3" />, 
       href: "/admin/form-submissions",
-      active: location.includes("/admin/form-submissions")
+      active: location.includes("/admin/form-submissions") || location.includes("/admin/contacts")
     },
     {
       title: "Templates",

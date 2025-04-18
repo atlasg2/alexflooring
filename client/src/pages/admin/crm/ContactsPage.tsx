@@ -271,9 +271,9 @@ const ContactsPage = () => {
       <Card className="shadow-sm">
         <CardHeader className={`${isMobile ? 'flex-col space-y-4' : 'flex-row justify-between items-center'}`}>
           <div>
-            <CardTitle className="text-2xl">Contacts</CardTitle>
+            <CardTitle className="text-2xl">CRM Contacts</CardTitle>
             <CardDescription>
-              View and manage all your contacts in one place
+              Manage customer contacts for marketing, projects, and communications
             </CardDescription>
           </div>
           <div className={`flex ${isMobile ? 'flex-col space-y-2 w-full' : 'space-x-2'}`}>
