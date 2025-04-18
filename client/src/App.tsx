@@ -30,12 +30,19 @@ import SmsTemplatesPage from "@/pages/admin/SmsTemplatesPage";
 // Admin pages - Settings
 import AutomationPage from "@/pages/admin/AutomationPage";
 
+// Customer Portal
+import CustomerAuth from "@/pages/customer/CustomerAuth";
+import CustomerDashboard from "@/pages/customer/CustomerDashboard";
+import { CustomerAuthProvider } from "@/hooks/use-customer-auth";
+import { ProtectedCustomerRoute } from "@/components/customer/ProtectedCustomerRoute";
+
 // Chat widget
 import ChatWidget from "@/components/chat/ChatWidget";
 
 function Router() {
   const [location] = useLocation();
   const isAdminRoute = location.startsWith('/admin');
+  const isCustomerRoute = location.startsWith('/customer');
   
   return (
     <Switch>
@@ -48,6 +55,10 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPost} />
+      
+      {/* Customer Portal Routes */}
+      <Route path="/customer/auth" component={CustomerAuth} />
+      <ProtectedCustomerRoute path="/customer/dashboard" component={CustomerDashboard} />
       
       {/* Admin Routes - Core */}
       <Route path="/admin/login" component={AdminLoginPage} />
@@ -80,24 +91,30 @@ function Router() {
 function App() {
   const [location] = useLocation();
   const isAdminRoute = location.startsWith('/admin');
+  const isCustomerRoute = location.startsWith('/customer');
   
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {isAdminRoute ? (
-          // Admin routes don't use MainLayout
-          <Router />
-        ) : (
-          // Public routes use MainLayout
-          <MainLayout>
+        <CustomerAuthProvider>
+          {isAdminRoute ? (
+            // Admin routes don't use MainLayout
             <Router />
-          </MainLayout>
-        )}
-        
-        {/* Only show chat widget on public routes */}
-        {!isAdminRoute && <ChatWidget />}
-        
-        <Toaster />
+          ) : isCustomerRoute ? (
+            // Customer routes don't use MainLayout
+            <Router />
+          ) : (
+            // Public routes use MainLayout
+            <MainLayout>
+              <Router />
+            </MainLayout>
+          )}
+          
+          {/* Only show chat widget on public routes that are not customer routes */}
+          {!isAdminRoute && !isCustomerRoute && <ChatWidget />}
+          
+          <Toaster />
+        </CustomerAuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
