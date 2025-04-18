@@ -65,10 +65,14 @@ const ChatWidget = () => {
     setIsSending(true);
     
     try {
-      await apiRequest('POST', '/api/chat', {
+      // Create a chat message using the correct API endpoint
+      await apiRequest('POST', '/api/contact', {
         name,
         email,
-        message
+        message,
+        subject: 'Chat Message',
+        phone: '',
+        type: 'chat'
       });
       
       toast({

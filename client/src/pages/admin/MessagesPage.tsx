@@ -42,10 +42,22 @@ const MessagesPage = () => {
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/chat');
+      // Get all contact submissions and filter for those with type 'chat'
+      const response = await fetch('/api/admin/contacts');
       if (response.ok) {
         const data = await response.json();
-        setMessages(data);
+        // Convert contact submissions to chat message format
+        const chatMessages = data
+          .filter((submission: any) => submission.type === 'chat')
+          .map((submission: any) => ({
+            id: submission.id,
+            name: submission.name,
+            email: submission.email,
+            message: submission.message,
+            isRead: submission.status !== 'new',
+            createdAt: submission.createdAt
+          }));
+        setMessages(chatMessages);
       } else {
         toast({
           title: "Error fetching messages",
@@ -68,10 +80,11 @@ const MessagesPage = () => {
     fetchMessages();
   }, []);
   
-  // Mark a message as read
+  // Mark a message as read (update contact submission status)
   const markAsRead = async (id: number) => {
     try {
-      await apiRequest('PUT', `/api/admin/chat/${id}/read`, {});
+      // Update the contact submission status to 'read'
+      await apiRequest('PUT', `/api/admin/contacts/${id}/status`, { status: 'read' });
       
       // Update local state
       setMessages(messages.map(message => 
