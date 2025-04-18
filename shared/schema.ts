@@ -17,6 +17,26 @@ export const insertUserSchema = createInsertSchema(users).pick({
   role: true,
 });
 
+// Customer portal users
+export const customerUsers = pgTable("customer_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  contactId: integer("contact_id").references(() => contacts.id),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertCustomerUserSchema = createInsertSchema(customerUsers).pick({
+  email: true,
+  password: true,
+  name: true,
+  phone: true,
+  contactId: true,
+});
+
 // Contact management - expanded from just form submissions to handle manual entries
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
@@ -245,5 +265,52 @@ export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertSmsTemplate = z.infer<typeof insertSmsTemplateSchema>;
 export type SmsTemplate = typeof smsTemplates.$inferSelect;
 
+// Customer projects table
+export const customerProjects = pgTable("customer_projects", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customerUsers.id).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("pending").notNull(), // pending, in_progress, completed, on_hold, cancelled
+  startDate: date("start_date"),
+  completionDate: date("completion_date"),
+  estimatedCost: text("estimated_cost"),
+  actualCost: text("actual_cost"),
+  notes: text("notes"),
+  projectManager: text("project_manager"),
+  flooringType: text("flooring_type"), // hardwood, laminate, vinyl, tile, etc.
+  squareFootage: text("square_footage"),
+  location: text("location"),
+  beforeImages: text("before_images").array(),
+  afterImages: text("after_images").array(),
+  progressUpdates: json("progress_updates").$type<Array<{
+    date: string;
+    status: string;
+    note: string;
+    images?: string[];
+  }>>(),
+  documents: json("documents").$type<Array<{
+    name: string;
+    url: string;
+    type: string;
+    uploadDate: string;
+  }>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCustomerProjectSchema = createInsertSchema(customerProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 export type InsertAutomationWorkflow = z.infer<typeof insertAutomationWorkflowSchema>;
 export type AutomationWorkflow = typeof automationWorkflows.$inferSelect;
+
+export type InsertCustomerUser = z.infer<typeof insertCustomerUserSchema>;
+export type CustomerUser = typeof customerUsers.$inferSelect;
+
+export type InsertCustomerProject = z.infer<typeof insertCustomerProjectSchema>;
+export type CustomerProject = typeof customerProjects.$inferSelect;

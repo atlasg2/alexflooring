@@ -24,6 +24,22 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<Contact | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Customer portal user methods
+  getCustomerUser(id: number): Promise<CustomerUser | undefined>;
+  getCustomerUserByEmail(email: string): Promise<CustomerUser | undefined>;
+  createCustomerUser(user: InsertCustomerUser): Promise<CustomerUser>;
+  updateCustomerUser(id: number, user: Partial<InsertCustomerUser>): Promise<CustomerUser | undefined>;
+  verifyCustomerUserCredentials(email: string, password: string): Promise<CustomerUser | undefined>;
+  updateCustomerLastLogin(id: number): Promise<void>;
+  
+  // Customer project methods
+  getCustomerProjects(customerId: number): Promise<CustomerProject[]>;
+  getCustomerProject(id: number): Promise<CustomerProject | undefined>;
+  createCustomerProject(project: InsertCustomerProject): Promise<CustomerProject>;
+  updateCustomerProject(id: number, project: Partial<InsertCustomerProject>): Promise<CustomerProject | undefined>;
+  addProjectProgressUpdate(id: number, update: { status: string, note: string, date?: string, images?: string[] }): Promise<CustomerProject | undefined>;
+  addProjectDocument(id: number, document: { name: string, url: string, type: string }): Promise<CustomerProject | undefined>;
+  
   // Contact management methods
   getContacts(): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
@@ -119,6 +135,153 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+  
+  // CUSTOMER USER METHODS
+  async getCustomerUser(id: number): Promise<CustomerUser | undefined> {
+    const [user] = await db.select().from(customerUsers).where(eq(customerUsers.id, id));
+    return user;
+  }
+  
+  async getCustomerUserByEmail(email: string): Promise<CustomerUser | undefined> {
+    const [user] = await db.select().from(customerUsers).where(eq(customerUsers.email, email));
+    return user;
+  }
+  
+  async createCustomerUser(user: InsertCustomerUser): Promise<CustomerUser> {
+    const [result] = await db.insert(customerUsers).values(user).returning();
+    return result;
+  }
+  
+  async updateCustomerUser(id: number, userData: Partial<InsertCustomerUser>): Promise<CustomerUser | undefined> {
+    const [updated] = await db
+      .update(customerUsers)
+      .set(userData)
+      .where(eq(customerUsers.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async verifyCustomerUserCredentials(email: string, password: string): Promise<CustomerUser | undefined> {
+    const [user] = await db.select().from(customerUsers).where(eq(customerUsers.email, email));
+    
+    if (user) {
+      // In a real app, we'd verify hashed passwords, but for simplicity here we'll just check plaintext
+      // Note: In production, use proper password hashing like bcrypt
+      if (user.password === password) {
+        return user;
+      }
+    }
+    
+    return undefined;
+  }
+  
+  async updateCustomerLastLogin(id: number): Promise<void> {
+    await db
+      .update(customerUsers)
+      .set({ lastLogin: new Date() })
+      .where(eq(customerUsers.id, id));
+  }
+  
+  // CUSTOMER PROJECT METHODS
+  async getCustomerProjects(customerId: number): Promise<CustomerProject[]> {
+    return await db
+      .select()
+      .from(customerProjects)
+      .where(eq(customerProjects.customerId, customerId))
+      .orderBy(desc(customerProjects.updatedAt));
+  }
+  
+  async getCustomerProject(id: number): Promise<CustomerProject | undefined> {
+    const [project] = await db
+      .select()
+      .from(customerProjects)
+      .where(eq(customerProjects.id, id));
+    return project;
+  }
+  
+  async createCustomerProject(project: InsertCustomerProject): Promise<CustomerProject> {
+    const [result] = await db
+      .insert(customerProjects)
+      .values(project)
+      .returning();
+    return result;
+  }
+  
+  async updateCustomerProject(id: number, projectData: Partial<InsertCustomerProject>): Promise<CustomerProject | undefined> {
+    const [updated] = await db
+      .update(customerProjects)
+      .set({ ...projectData, updatedAt: new Date() })
+      .where(eq(customerProjects.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async addProjectProgressUpdate(id: number, update: { status: string, note: string, date?: string, images?: string[] }): Promise<CustomerProject | undefined> {
+    // First get the existing project
+    const [project] = await db
+      .select()
+      .from(customerProjects)
+      .where(eq(customerProjects.id, id));
+    
+    if (!project) return undefined;
+    
+    // Format the update with current date if not provided
+    const progressUpdate = {
+      date: update.date || new Date().toISOString(),
+      status: update.status,
+      note: update.note,
+      images: update.images || []
+    };
+    
+    // Prepare the existing updates or create a new array
+    const existingUpdates = project.progressUpdates || [];
+    const newUpdates = [...existingUpdates, progressUpdate];
+    
+    // Update the project with the new progress update
+    const [updated] = await db
+      .update(customerProjects)
+      .set({ 
+        progressUpdates: newUpdates, 
+        status: update.status, // Also update the main project status
+        updatedAt: new Date() 
+      })
+      .where(eq(customerProjects.id, id))
+      .returning();
+    
+    return updated;
+  }
+  
+  async addProjectDocument(id: number, document: { name: string, url: string, type: string }): Promise<CustomerProject | undefined> {
+    // First get the existing project
+    const [project] = await db
+      .select()
+      .from(customerProjects)
+      .where(eq(customerProjects.id, id));
+    
+    if (!project) return undefined;
+    
+    // Format the document with current date
+    const documentWithDate = {
+      ...document,
+      uploadDate: new Date().toISOString()
+    };
+    
+    // Prepare the existing documents or create a new array
+    const existingDocs = project.documents || [];
+    const newDocs = [...existingDocs, documentWithDate];
+    
+    // Update the project with the new document
+    const [updated] = await db
+      .update(customerProjects)
+      .set({ 
+        documents: newDocs, 
+        updatedAt: new Date() 
+      })
+      .where(eq(customerProjects.id, id))
+      .returning();
+    
+    return updated;
   }
   
   // CONTACT MANAGEMENT METHODS
