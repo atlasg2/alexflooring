@@ -62,6 +62,7 @@ const heroSlides: Slide[] = [
 const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const isMobile = window.innerWidth < 768;
 
   const goToSlide = useCallback((index: number) => {
     if (isTransitioning) return;
@@ -95,7 +96,7 @@ const HeroSlider = () => {
   }, [nextSlide]);
 
   return (
-    <section className="hero-slider h-[90vh] relative overflow-hidden">
+    <section className="hero-slider h-[90vh] relative overflow-hidden mt-16 md:mt-0">
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div 
@@ -109,15 +110,15 @@ const HeroSlider = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
           
           {/* Text container with animation */}
-          <div className={`absolute bottom-[15%] left-0 md:left-24 max-w-lg text-left z-20 px-8 md:px-0 transform transition-all duration-1000 ${
+          <div className={`absolute bottom-[15%] left-0 md:left-24 max-w-lg text-left z-20 px-6 md:px-0 transform transition-all duration-1000 ${
             index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
           }`}>
-            {/* Flooring type tag */}
-            <span className="inline-block bg-secondary/90 text-black px-4 py-1.5 rounded-full text-sm font-semibold mb-4 shadow-md">
+            {/* Flooring type tag - hidden on mobile */}
+            <span className="hidden md:inline-block bg-secondary/90 text-black px-4 py-1.5 rounded-full text-sm font-semibold mb-4 shadow-md">
               {slide.flooringType}
             </span>
             
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2 font-montserrat drop-shadow-md">
+            <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2 font-montserrat drop-shadow-md">
               {slide.title}
             </h1>
             
@@ -125,25 +126,26 @@ const HeroSlider = () => {
               {slide.subtitle}
             </p>
             
-            <p className="text-white/80 mb-8 max-w-md">
+            {/* Description - hidden on mobile */}
+            <p className="hidden md:block text-white/80 mb-8 max-w-md">
               {slide.description}
             </p>
             
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-8">
               {/* Free Estimate Button */}
-              <Link href={slide.ctaLink} className="inline-block">
+              <Link href={slide.ctaLink} className="inline-block w-full sm:w-auto">
                 <Button 
-                  className="bg-secondary text-black hover:bg-secondary/90 px-6 py-3 rounded-md flex items-center gap-2 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                  className="w-full sm:w-auto bg-secondary text-black hover:bg-secondary/90 px-5 py-2.5 md:px-6 md:py-3 rounded-md flex items-center justify-center gap-2 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
                 >
                   <Construction className="h-4 w-4" /> Free Estimate
                 </Button>
               </Link>
               
               {/* Learn More Button */}
-              <Link href={slide.learnMoreLink} className="inline-block">
+              <Link href={slide.learnMoreLink} className="inline-block w-full sm:w-auto">
                 <Button 
                   variant="outline"
-                  className="bg-black/40 text-white border-white/30 hover:bg-black/60 px-6 py-3 rounded-md flex items-center gap-2 text-base font-semibold backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                  className="w-full sm:w-auto bg-black/40 text-white border-white/30 hover:bg-black/60 px-5 py-2.5 md:px-6 md:py-3 rounded-md flex items-center justify-center gap-2 text-base font-semibold backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
                 >
                   <Info className="h-4 w-4" /> Learn More
                 </Button>
@@ -154,11 +156,11 @@ const HeroSlider = () => {
       ))}
 
       {/* Slide Navigation */}
-      <div className="absolute bottom-6 right-10 flex gap-3 z-20">
+      <div className="absolute bottom-4 right-4 md:bottom-6 md:right-10 flex gap-2 md:gap-3 z-20">
         {heroSlides.map((_, index) => (
           <button
             key={`nav-${index}`}
-            className={`w-10 h-1.5 rounded-sm transition-all ${
+            className={`w-8 md:w-10 h-1.5 rounded-sm transition-all ${
               index === currentSlide ? 'bg-secondary' : 'bg-white/30'
             }`}
             onClick={() => goToSlide(index)}
@@ -169,18 +171,18 @@ const HeroSlider = () => {
 
       {/* Arrow Controls */}
       <button 
-        className="absolute left-6 top-1/2 z-20 w-12 h-12 rounded-full bg-black/20 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/40 transition-all hover:scale-110"
+        className="absolute left-3 md:left-6 top-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/20 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/40 transition-all hover:scale-110"
         onClick={prevSlide}
         aria-label="Previous slide"
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
       </button>
       <button 
-        className="absolute right-6 top-1/2 z-20 w-12 h-12 rounded-full bg-black/20 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/40 transition-all hover:scale-110"
+        className="absolute right-3 md:right-6 top-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/20 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/40 transition-all hover:scale-110"
         onClick={nextSlide}
         aria-label="Next slide"
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
       </button>
     </section>
   );
