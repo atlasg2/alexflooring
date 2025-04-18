@@ -71,9 +71,11 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
     service: true,
     type: true,
     status: true,
+    contactId: true,
   })
   .partial({
     phone: true, // Make phone optional for chat messages
+    contactId: true, // Make contactId optional
   });
 
 // Communication logs - track all emails, calls, texts

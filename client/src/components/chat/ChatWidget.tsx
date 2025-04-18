@@ -10,11 +10,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from '@/hooks/use-toast';
-import { MessageSquare, ArrowRight, Send, X, Loader2 } from 'lucide-react';
+import { MessageSquare, ArrowRight, Send, X, Loader2, Home, Calculator, Calendar, HelpCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { cn } from '@/lib/utils';
 import apsLogo from "@/assets/aps_logo.png";
+
+// Quick response options
+const QUICK_RESPONSES = [
+  { icon: <Calculator className="h-4 w-4 mr-2" />, text: "I'd like a quote" },
+  { icon: <Calendar className="h-4 w-4 mr-2" />, text: "Schedule a consultation" },
+  { icon: <Home className="h-4 w-4 mr-2" />, text: "Question about services" },
+  { icon: <HelpCircle className="h-4 w-4 mr-2" />, text: "Other inquiry" }
+];
 
 const LOCALSTORAGE_KEY = 'aps_chat_user_info';
 
@@ -61,11 +68,7 @@ const ChatWidget = () => {
     e.preventDefault();
     
     if (!name || !email || !phone) {
-      toast({
-        title: "Please complete all fields",
-        description: "We need your name, email, and phone number to assist you better.",
-        variant: "destructive"
-      });
+      // No toast, just show validation messages
       return;
     }
     
@@ -82,6 +85,14 @@ const ChatWidget = () => {
     }, 100);
   };
   
+  // Insert a quick response into the message field
+  const insertQuickResponse = (responseText: string) => {
+    setMessage(responseText);
+    setTimeout(() => {
+      messageInputRef.current?.focus();
+    }, 100);
+  };
+  
   // Send a chat message to the backend
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +103,7 @@ const ChatWidget = () => {
     
     try {
       // Create a chat message using the correct API endpoint for contact submissions
-      // The 'type: chat' field is important for the backend to identify this as a chat message
+      // Also explicitly create a contact
       const response = await apiRequest('POST', '/api/contact', {
         name,
         email,
@@ -101,34 +112,26 @@ const ChatWidget = () => {
         subject: 'Chat Message',
         type: 'chat',
         service: 'Chat Widget',
-        status: 'new' // Explicitly set status to ensure it's captured as a new message
+        status: 'new', // Explicitly set status to ensure it's captured as a new message
+        createContact: true // Flag to explicitly create a contact
       });
       
       console.log('Chat message sent successfully:', response);
       
-      toast({
-        title: "Message sent!",
-        description: "We'll respond to your inquiry soon.",
-      });
-      
+      // No toast notification, just reset the widget
       setMessage('');
       
-      // Close the chat after a short delay
+      // Close the chat immediately
+      setIsOpen(false);
+      
+      // Reset to initial state after chat closes
       setTimeout(() => {
-        setIsOpen(false);
-        // Reset to initial state after chat closes
-        setTimeout(() => {
-          setIsInitial(true);
-        }, 500);
-      }, 2000);
+        setIsInitial(true);
+      }, 500);
       
     } catch (error) {
       console.error("Error sending chat message:", error);
-      toast({
-        title: "Error sending message",
-        description: "Please try again or contact us directly.",
-        variant: "destructive"
-      });
+      // No toast notification on error either
     } finally {
       setIsSending(false);
     }
@@ -152,11 +155,11 @@ const ChatWidget = () => {
       {/* Chat widget */}
       <div 
         className={cn(
-          "fixed bottom-24 right-6 w-[350px] z-50 transition-all duration-300 ease-in-out transform",
+          "fixed bottom-24 right-6 w-[350px] max-w-[90vw] z-50 transition-all duration-300 ease-in-out transform",
           isOpen ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0 pointer-events-none"
         )}
       >
-        <Card className="shadow-xl border-t-4 border-t-secondary">
+        <Card className="shadow-xl border-t-4 border-t-secondary overflow-hidden">
           <CardHeader className="bg-primary text-white rounded-t-lg pb-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -216,6 +219,25 @@ const ChatWidget = () => {
             ) : (
               // Message form after user information is collected
               <form onSubmit={sendMessage} className="space-y-4">
+                {/* Quick response options */}
+                <div className="space-y-2">
+                  <Label htmlFor="quickResponses">Common Inquiries</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {QUICK_RESPONSES.map((response, index) => (
+                      <Button 
+                        key={index}
+                        type="button"
+                        variant="outline"
+                        className="text-xs h-auto py-2 flex justify-start"
+                        onClick={() => insertQuickResponse(response.text)}
+                      >
+                        {response.icon}
+                        <span className="truncate">{response.text}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="message">Your Message</Label>
                   <Textarea

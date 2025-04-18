@@ -23,9 +23,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form submission endpoint
   app.post("/api/contact", async (req, res) => {
     try {
-      const validatedData = insertContactSubmissionSchema.parse(req.body);
+      console.log("Received contact submission:", req.body);
+      
+      // Explicitly handle createContact flag to prioritize contact creation from chat
+      const createContact = req.body.createContact === true;
+      
+      // Remove non-schema fields before validation
+      const { createContact: _, ...dataToValidate } = req.body;
+      
+      const validatedData = insertContactSubmissionSchema.parse(dataToValidate);
+      
+      // For chat messages, explicitly force contact creation if requested
+      if (validatedData.type === 'chat' && createContact) {
+        console.log("Creating contact from chat message is explicitly requested");
+        
+        // Create or find a contact
+        let contactId: number | null = null;
+        
+        try {
+          // First check if contact with this email already exists
+          if (validatedData.email) {
+            const existingContact = await storage.getUserByEmail(validatedData.email);
+            
+            if (existingContact) {
+              contactId = existingContact.id;
+              console.log("Found existing contact:", contactId);
+            } else {
+              // Create new contact directly 
+              const newContact = await storage.createContact({
+                name: validatedData.name || 'Unknown',
+                email: validatedData.email,
+                phone: validatedData.phone || null,
+                source: 'chat',
+                notes: `Initial contact via chat widget: ${validatedData.message}`,
+                leadStage: 'new'
+              });
+              
+              contactId = newContact.id;
+              console.log("Created new contact:", contactId);
+            }
+          }
+        } catch (contactError) {
+          console.error("Error handling contact creation:", contactError);
+          // Continue even if contact creation fails
+        }
+        
+        // If we have a contactId, include it in the submission
+        if (contactId) {
+          validatedData.contactId = contactId;
+        }
+      }
+      
       const submission = await storage.createContactSubmission(validatedData);
-      res.status(201).json({ message: "Contact form submitted successfully", id: submission.id });
+      res.status(201).json({ 
+        message: "Contact form submitted successfully", 
+        id: submission.id,
+        contactId: submission.contactId 
+      });
     } catch (error) {
       console.error("Contact form submission error:", error);
       res.status(400).json({ message: "Invalid form data" });
