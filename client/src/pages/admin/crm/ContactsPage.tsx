@@ -19,6 +19,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Dialog, 
   DialogContent, 
@@ -258,28 +259,32 @@ const ContactsPage = () => {
   );
   
   const totalPages = Math.ceil(contacts.length / pageSize);
+  const isMobile = useIsMobile();
   
   return (
     <AdminLayout title="Contact Management">
       <Card className="shadow-sm">
-        <CardHeader className="flex-row justify-between items-center">
+        <CardHeader className={`${isMobile ? 'flex-col space-y-4' : 'flex-row justify-between items-center'}`}>
           <div>
             <CardTitle className="text-2xl">Contacts</CardTitle>
             <CardDescription>
               View and manage all your contacts in one place
             </CardDescription>
           </div>
-          <div className="flex space-x-2">
-            <div className="relative">
+          <div className={`flex ${isMobile ? 'flex-col space-y-2 w-full' : 'space-x-2'}`}>
+            <div className={`relative ${isMobile ? 'w-full' : ''}`}>
               <Search className="absolute w-4 h-4 left-2.5 top-2.5 text-muted-foreground" />
               <Input
                 placeholder="Search contacts..."
-                className="pl-8 w-64"
+                className={`pl-8 ${isMobile ? 'w-full' : 'w-64'}`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button onClick={handleAddContact}>
+            <Button 
+              onClick={handleAddContact}
+              className={isMobile ? 'w-full' : ''}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Contact
             </Button>
@@ -304,43 +309,71 @@ const ContactsPage = () => {
               </Button>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Contact Info</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <div className="rounded-md border overflow-x-auto">
+              {isMobile ? (
+                // Mobile view - Card list instead of table
+                <div className="flex flex-col divide-y">
                   {paginatedContacts.map((contact) => (
-                    <TableRow key={contact.id}>
-                      <TableCell>
+                    <div key={contact.id} className="p-4">
+                      <div className="flex justify-between items-start mb-2">
                         <div className="font-medium">{contact.name}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1 text-sm">
-                          {contact.email && (
-                            <div className="flex items-center">
-                              <Mail className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
-                              <span>{contact.email}</span>
-                            </div>
-                          )}
-                          {contact.phone && (
-                            <div className="flex items-center">
-                              <Phone className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
-                              <span>{contact.phone}</span>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{contact.company || '-'}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem 
+                              onClick={() => handleEditContact(contact)}
+                              className="cursor-pointer"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteContact(contact.id)}
+                              className="cursor-pointer text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              <Mail className="h-4 w-4 mr-2" />
+                              Send Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Send SMS
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      <div className="flex flex-col gap-1 text-sm mb-2">
+                        {contact.email && (
+                          <div className="flex items-center">
+                            <Mail className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                            <span>{contact.email}</span>
+                          </div>
+                        )}
+                        {contact.phone && (
+                          <div className="flex items-center">
+                            <Phone className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                            <span>{contact.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {contact.company && (
+                          <div className="text-gray-500">
+                            Company: <span className="text-gray-700">{contact.company}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-2 mt-2">
                           <Badge 
                             variant={
                               contact.leadStage === 'qualified' 
@@ -359,69 +392,138 @@ const ContactsPage = () => {
                           >
                             {contact.leadStage}
                           </Badge>
+                          <span className="text-xs text-gray-500 capitalize">
+                            Source: {contact.source}
+                          </span>
                         </div>
-                      </TableCell>
-                      <TableCell className="capitalize">{contact.source}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleEditContact(contact)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteContact(contact.id)}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <Mail className="h-4 w-4 mr-2" />
-                              Send Email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              Send SMS
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              ) : (
+                // Desktop view - Table
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Contact Info</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Stage</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedContacts.map((contact) => (
+                      <TableRow key={contact.id}>
+                        <TableCell>
+                          <div className="font-medium">{contact.name}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1 text-sm">
+                            {contact.email && (
+                              <div className="flex items-center">
+                                <Mail className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                                <span>{contact.email}</span>
+                              </div>
+                            )}
+                            {contact.phone && (
+                              <div className="flex items-center">
+                                <Phone className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                                <span>{contact.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{contact.company || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Badge 
+                              variant={
+                                contact.leadStage === 'qualified' 
+                                  ? 'default'
+                                  : contact.leadStage === 'contacted' 
+                                  ? 'secondary'
+                                  : contact.leadStage === 'proposal' 
+                                  ? 'outline'
+                                  : contact.leadStage === 'won' 
+                                  ? 'success'
+                                  : contact.leadStage === 'lost' 
+                                  ? 'destructive'
+                                  : 'outline'
+                              }
+                              className="capitalize"
+                            >
+                              {contact.leadStage}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="capitalize">{contact.source}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEditContact(contact)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteContact(contact.id)}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Send SMS
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </div>
           )}
           
           {/* Pagination */}
           {!isLoading && contacts.length > pageSize && (
-            <div className="flex justify-center mt-4 space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="py-2 px-3 bg-secondary text-secondary-foreground rounded-md text-sm">
-                {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+            <div className={`flex justify-center mt-4 ${isMobile ? 'flex-col space-y-2 items-center' : 'space-x-2'}`}>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={isMobile ? 'flex-1' : ''}
+                >
+                  Previous
+                </Button>
+                <span className="py-2 px-3 bg-secondary text-secondary-foreground rounded-md text-sm flex items-center justify-center">
+                  {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={isMobile ? 'flex-1' : ''}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
@@ -429,7 +531,7 @@ const ContactsPage = () => {
       
       {/* Add/Edit Contact Dialog */}
       <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className={`${isMobile ? 'w-[95%] max-w-md' : 'max-w-2xl'}`}>
           <DialogHeader>
             <DialogTitle>{selectedContact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
             <DialogDescription>
@@ -440,7 +542,7 @@ const ContactsPage = () => {
           </DialogHeader>
           
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 py-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4 py-4`}>
               <div className="col-span-2">
                 <label htmlFor="name" className="block text-sm font-medium mb-1">
                   Name <span className="text-red-500">*</span>
