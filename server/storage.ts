@@ -298,11 +298,26 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate> {
+    // Make sure HTML content is copied to body field if not provided
+    if (!template.body && template.htmlContent) {
+      template.body = template.htmlContent;
+    }
+    
+    // Ensure isActive is set to true if not specified
+    if (template.isActive === undefined) {
+      template.isActive = true;
+    }
+    
     const [result] = await db.insert(emailTemplates).values(template).returning();
     return result;
   }
   
   async updateEmailTemplate(id: number, template: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
+    // If HTML content is updated but body isn't, update body too
+    if (template.htmlContent && !template.body) {
+      template.body = template.htmlContent;
+    }
+    
     const [updated] = await db
       .update(emailTemplates)
       .set({ ...template, updatedAt: new Date() })
@@ -326,6 +341,11 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createSmsTemplate(template: InsertSmsTemplate): Promise<SmsTemplate> {
+    // Ensure isActive is set to true if not specified
+    if (template.isActive === undefined) {
+      template.isActive = true;
+    }
+    
     const [result] = await db.insert(smsTemplates).values(template).returning();
     return result;
   }
@@ -354,11 +374,54 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createAutomationWorkflow(workflow: InsertAutomationWorkflow): Promise<AutomationWorkflow> {
+    // Set default values if not provided
+    if (workflow.triggerType === undefined) {
+      workflow.triggerType = 'manual';
+    }
+    
+    // For legacy compatibility if not provided
+    if (workflow.trigger === undefined) {
+      workflow.trigger = workflow.triggerType;
+    }
+    
+    // For legacy compatibility if not provided
+    if (workflow.actions === undefined) {
+      workflow.actions = {
+        emailTemplateId: workflow.emailTemplateId,
+        smsTemplateId: workflow.smsTemplateId,
+        delay: workflow.delay
+      };
+    }
+    
+    // Ensure isActive is set to true if not specified
+    if (workflow.isActive === undefined) {
+      workflow.isActive = true;
+    }
+    
     const [result] = await db.insert(automationWorkflows).values(workflow).returning();
     return result;
   }
   
   async updateAutomationWorkflow(id: number, workflow: Partial<InsertAutomationWorkflow>): Promise<AutomationWorkflow | undefined> {
+    // If trigger type changes, update legacy trigger field too
+    if (workflow.triggerType && !workflow.trigger) {
+      workflow.trigger = workflow.triggerType;
+    }
+    
+    // If any of the specific fields change, update the actions JSON too
+    if (workflow.emailTemplateId !== undefined || workflow.smsTemplateId !== undefined || workflow.delay !== undefined) {
+      const currentWorkflow = await this.getAutomationWorkflow(id);
+      if (currentWorkflow) {
+        const currentActions = currentWorkflow.actions || {};
+        workflow.actions = {
+          ...currentActions,
+          emailTemplateId: workflow.emailTemplateId !== undefined ? workflow.emailTemplateId : currentWorkflow.emailTemplateId,
+          smsTemplateId: workflow.smsTemplateId !== undefined ? workflow.smsTemplateId : currentWorkflow.smsTemplateId,
+          delay: workflow.delay !== undefined ? workflow.delay : currentWorkflow.delay
+        };
+      }
+    }
+    
     const [updated] = await db
       .update(automationWorkflows)
       .set({ ...workflow, updatedAt: new Date() })

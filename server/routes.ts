@@ -100,6 +100,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get unread messages count
+  app.get("/api/admin/chat/unread-count", isAdmin, async (req, res) => {
+    try {
+      const count = await storage.getUnreadMessageCount();
+      res.json({ count: count.toString() });
+    } catch (error) {
+      console.error("Error fetching unread message count:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
   app.get("/api/admin/chat/unread-count", isAdmin, async (req, res) => {
     try {
       const count = await storage.getUnreadMessageCount();
@@ -460,8 +471,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // AUTOMATION WORKFLOW ENDPOINTS
-  app.get("/api/admin/automation-workflows", isAdmin, async (req, res) => {
+  // AUTOMATION WORKFLOW ENDPOINTS - using "/api/admin/automation" path
+  app.get("/api/admin/automation", isAdmin, async (req, res) => {
     try {
       const workflows = await storage.getAutomationWorkflows();
       res.json(workflows);
@@ -471,7 +482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/admin/automation-workflows/:id", isAdmin, async (req, res) => {
+  app.get("/api/admin/automation/:id", isAdmin, async (req, res) => {
     try {
       const workflow = await storage.getAutomationWorkflow(parseInt(req.params.id));
       if (!workflow) {
@@ -484,18 +495,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/admin/automation-workflows", isAdmin, async (req, res) => {
+  app.post("/api/admin/automation", isAdmin, async (req, res) => {
     try {
       const validatedData = insertAutomationWorkflowSchema.parse(req.body);
       const workflow = await storage.createAutomationWorkflow(validatedData);
       res.status(201).json(workflow);
     } catch (error) {
       console.error("Automation workflow creation error:", error);
-      res.status(400).json({ message: "Invalid automation workflow data" });
+      res.status(400).json({ message: "Invalid workflow data" });
     }
   });
   
-  app.put("/api/admin/automation-workflows/:id", isAdmin, async (req, res) => {
+  app.put("/api/admin/automation/:id", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updated = await storage.updateAutomationWorkflow(id, req.body);
@@ -509,14 +520,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put("/api/admin/automation-workflows/:id/toggle", isAdmin, async (req, res) => {
+  app.patch("/api/admin/automation/:id/toggle", isAdmin, async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
       const { isActive } = req.body;
-      if (isActive === undefined) {
-        return res.status(400).json({ message: "isActive is required" });
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ message: "isActive must be a boolean value" });
       }
       
-      const updated = await storage.toggleAutomationWorkflow(parseInt(req.params.id), isActive);
+      const updated = await storage.toggleAutomationWorkflow(id, isActive);
       if (!updated) {
         return res.status(404).json({ message: "Automation workflow not found" });
       }
@@ -528,7 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.delete("/api/admin/automation-workflows/:id", isAdmin, async (req, res) => {
+  app.delete("/api/admin/automation/:id", isAdmin, async (req, res) => {
     try {
       await storage.deleteAutomationWorkflow(parseInt(req.params.id));
       res.status(204).end();
