@@ -314,44 +314,54 @@ const ContactsPage = () => {
                 // Mobile view - Card list instead of table
                 <div className="flex flex-col divide-y">
                   {paginatedContacts.map((contact) => (
-                    <div key={contact.id} className="p-4">
+                    <div key={contact.id} className="p-4 border-b">
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-medium">{contact.name}</div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem 
-                              onClick={() => handleEditContact(contact)}
-                              className="cursor-pointer"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteContact(contact.id)}
-                              className="cursor-pointer text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <Mail className="h-4 w-4 mr-2" />
-                              Send Email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              Send SMS
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditContact(contact)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <span className="sr-only">More options</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem 
+                                onClick={() => handleEditContact(contact)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteContact(contact.id)}
+                                className="cursor-pointer text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Send SMS
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-1 text-sm mb-2">
                         {contact.email && (
@@ -531,7 +541,7 @@ const ContactsPage = () => {
       
       {/* Add/Edit Contact Dialog */}
       <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
-        <DialogContent className={`${isMobile ? 'w-[95%] max-w-md' : 'max-w-2xl'}`}>
+        <DialogContent className={`${isMobile ? 'w-[95%] max-w-md p-4 sm:p-6' : 'max-w-2xl'}`}>
           <DialogHeader>
             <DialogTitle>{selectedContact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
             <DialogDescription>
@@ -741,30 +751,30 @@ const ContactsPage = () => {
               </div>
             </div>
             
-            <DialogFooter className="mt-6 flex justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => setIsContactDialogOpen(false)}
-                className="min-w-[120px]"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                disabled={createContactMutation.isPending || updateContactMutation.isPending}
-                size="lg"
-                className="min-w-[120px] font-bold"
-              >
-                {(createContactMutation.isPending || updateContactMutation.isPending) && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {selectedContact ? 'SAVE CONTACT' : 'CREATE CONTACT'}
-              </Button>
+            <DialogFooter className={`mt-6 ${isMobile ? 'flex-col space-y-3' : 'flex justify-between'}`}>
+              <div className={`${isMobile ? 'w-full flex space-x-2' : 'flex'}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsContactDialogOpen(false)}
+                  className={`${isMobile ? 'flex-1' : 'min-w-[120px]'}`}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={createContactMutation.isPending || updateContactMutation.isPending}
+                  className={`${isMobile ? 'flex-1' : 'min-w-[120px]'} font-semibold`}
+                >
+                  {(createContactMutation.isPending || updateContactMutation.isPending) && (
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {selectedContact ? 'Save Changes' : 'Create Contact'}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>

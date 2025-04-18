@@ -137,27 +137,42 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
           <div className="py-3 px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setMobileNavOpen(!mobileNavOpen)}
+                className="p-1"
+              >
+                {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+              <h1 className="text-lg font-semibold text-primary">{title}</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => window.location.href = '/'}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-xs"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 Website
               </Button>
-              <h1 className="text-lg font-semibold text-primary">APS Admin</h1>
+              {unreadCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleNavigation('/admin/messages')}
+                  className="flex items-center gap-1 text-xs relative"
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
+                    {unreadCount}
+                  </Badge>
+                </Button>
+              )}
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="p-1"
-            >
-              {mobileNavOpen ? <X /> : <Menu />}
-            </Button>
           </div>
         </header>
       )}
@@ -166,7 +181,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
       <aside 
         className={`${
           isMobile 
-            ? `fixed inset-0 z-20 transform ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out w-4/5 max-w-xs bg-white shadow-xl`
+            ? `fixed inset-y-0 left-0 z-20 transform ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out w-[85%] max-w-[300px] bg-white shadow-xl`
             : 'w-72 bg-white shadow-md'
         } p-4 flex flex-col overflow-y-auto`}
       >
@@ -382,7 +397,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         {!isMobile && (
           <header className="bg-white shadow-sm">
             <div className="py-4 px-6">
-              <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
+              <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
             </div>
           </header>
         )}
@@ -395,7 +410,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
           />
         )}
         
-        <div className="p-3 md:p-6">
+        <div className={`${isMobile ? 'p-2 pb-20' : 'p-6'}`}>
           {children}
         </div>
       </main>

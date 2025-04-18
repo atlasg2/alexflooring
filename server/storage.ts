@@ -186,6 +186,38 @@ export class DatabaseStorage implements IStorage {
       submission.status = 'new';
     }
     
+    // Create or find an existing contact if this is from the chat widget
+    let contactId: number | null = null;
+    
+    if (submission.type === 'chat' && submission.email) {
+      // Try to find an existing contact with this email
+      const [existingContact] = await db
+        .select()
+        .from(contacts)
+        .where(eq(contacts.email, submission.email));
+      
+      if (existingContact) {
+        contactId = existingContact.id;
+      } else {
+        // Create a new contact
+        try {
+          const [newContact] = await db.insert(contacts).values({
+            name: submission.name || 'Unknown',
+            email: submission.email,
+            phone: submission.phone || null,
+            source: 'chat',
+            notes: `Initial contact via chat widget: ${submission.message}`,
+            leadStage: 'new'
+          }).returning();
+          
+          contactId = newContact.id;
+        } catch (error) {
+          console.error('Error creating contact from chat:', error);
+        }
+      }
+    }
+    
+    // Create the contact submission with the contact ID if available
     const [result] = await db.insert(contactSubmissions).values({
       name: submission.name,
       email: submission.email,
@@ -193,7 +225,8 @@ export class DatabaseStorage implements IStorage {
       message: submission.message,
       service: submission.service || null,
       type: submission.type,
-      status: submission.status
+      status: submission.status,
+      contactId: contactId
     }).returning();
     
     return result;

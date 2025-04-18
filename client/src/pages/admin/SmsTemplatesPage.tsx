@@ -161,28 +161,85 @@ const SmsTemplatesPage = () => {
   
   // Predefined SMS templates for common scenarios
   const defaultTemplates = [
+    // Review Templates
     {
       name: 'Google Review Request',
-      content: `Thanks for choosing APS Flooring! We'd love your feedback. Please leave a review: {{review_link}} - Your opinion helps us improve!`,
+      content: `Thanks for choosing APS Flooring for your {{project_type}} project! We'd love your feedback. Please leave a review: {{review_link}}`,
       category: 'review',
       isActive: true
     },
+    
+    // Appointment Templates
     {
-      name: 'Appointment Reminder',
-      content: `Reminder: Your APS Flooring appointment is tomorrow at {{appointment_time}}. Call (555) 123-4567 if you need to reschedule.`,
+      name: 'Appointment Confirmation',
+      content: `Your APS Flooring appointment is confirmed for {{appointment_date}} at {{appointment_time}}. Call (504) 402-3895 with questions. We look forward to meeting you!`,
       category: 'appointment',
       isActive: true
     },
     {
+      name: 'Appointment Reminder',
+      content: `Reminder: Your APS Flooring appointment is tomorrow at {{appointment_time}}. Call (504) 402-3895 if you need to reschedule.`,
+      category: 'appointment',
+      isActive: true
+    },
+    {
+      name: 'Day-of Reminder',
+      content: `Your APS Flooring appointment is today at {{appointment_time}}. Our team is looking forward to meeting you and discussing your flooring needs.`,
+      category: 'appointment',
+      isActive: true
+    },
+    
+    // Customer Communication Templates
+    {
       name: 'New Lead Response',
-      content: `Thanks for your interest in APS Flooring! We've received your inquiry and will contact you shortly. Questions? Call (555) 123-4567.`,
+      content: `Thanks for your interest in APS Flooring! We've received your inquiry and will contact you shortly. Questions? Call (504) 402-3895.`,
       category: 'lead',
       isActive: true
     },
     {
+      name: 'Quote Follow-up',
+      content: `Your APS Flooring quote for {{project_description}} is ready! Total: {{quote_amount}}. Questions or ready to book? Call (504) 402-3895.`,
+      category: 'quote',
+      isActive: true
+    },
+    {
       name: 'Service Follow-up',
-      content: `How are you enjoying your new floors from APS Flooring? Let us know if you have any questions about maintenance or care!`,
+      content: `How are you enjoying your new {{flooring_type}} floors from APS Flooring? Let us know if you have any questions about maintenance or care!`,
       category: 'follow-up',
+      isActive: true
+    },
+    
+    // Project Management Templates
+    {
+      name: 'Project Start Notification',
+      content: `APS Flooring will begin your {{project_type}} project on {{project_start_date}} at {{project_start_time}}. Please ensure the area is accessible.`,
+      category: 'project',
+      isActive: true
+    },
+    {
+      name: 'Project Update',
+      content: `APS Flooring update: Your flooring project is {{completion_percentage}}% complete. We're on schedule to finish by {{completion_date}}.`,
+      category: 'project',
+      isActive: true
+    },
+    {
+      name: 'Project Completion',
+      content: `Great news! Your APS Flooring project is complete. We hope you love your new floors! Any questions, please call (504) 402-3895.`,
+      category: 'project',
+      isActive: true
+    },
+    
+    // Promotions and Seasonal Templates
+    {
+      name: 'Seasonal Promotion',
+      content: `APS Flooring SPRING SALE: 15% off hardwood & LVP until {{promotion_end_date}}. Use code SPRING2023. Call (504) 402-3895 to book your free estimate!`,
+      category: 'promotion',
+      isActive: true
+    },
+    {
+      name: 'Referral Thank You',
+      content: `Thank you for referring {{referred_customer}} to APS Flooring! Your $100 gift card will be sent once their project is complete. We appreciate your trust!`,
+      category: 'referral',
       isActive: true
     }
   ];
@@ -214,7 +271,7 @@ const SmsTemplatesPage = () => {
   
   // Handle creating default templates
   const handleCreateDefaultTemplates = () => {
-    if (window.confirm('This will create 4 predefined SMS templates. Continue?')) {
+    if (window.confirm(`This will create ${defaultTemplates.length} predefined SMS templates. Continue?`)) {
       createDefaultTemplatesMutation.mutate();
     }
   };

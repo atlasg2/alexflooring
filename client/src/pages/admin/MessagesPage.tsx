@@ -28,9 +28,11 @@ interface ChatMessage {
   id: number;
   name: string | null;
   email: string | null;
+  phone: string | null;
   message: string;
   isRead: boolean;
   createdAt: string;
+  contactId?: number | null;
 }
 
 const MessagesPage = () => {
@@ -43,20 +45,26 @@ const MessagesPage = () => {
     setLoading(true);
     try {
       // Get all contact submissions and filter for those with type 'chat'
-      const response = await fetch('/api/admin/contacts');
+      const response = await apiRequest('GET', '/api/admin/contacts');
       if (response.ok) {
         const data = await response.json();
-        // Convert contact submissions to chat message format
+        console.log("Received contact submissions:", data);
+        
+        // Filter and convert contact submissions to chat message format
         const chatMessages = data
           .filter((submission: any) => submission.type === 'chat')
           .map((submission: any) => ({
             id: submission.id,
             name: submission.name,
             email: submission.email,
+            phone: submission.phone,
             message: submission.message,
             isRead: submission.status !== 'new',
-            createdAt: submission.createdAt
+            createdAt: submission.createdAt,
+            contactId: submission.contactId
           }));
+        
+        console.log("Filtered chat messages:", chatMessages);
         setMessages(chatMessages);
       } else {
         toast({
@@ -66,6 +74,7 @@ const MessagesPage = () => {
         });
       }
     } catch (error) {
+      console.error("Error fetching messages:", error);
       toast({
         title: "Error fetching messages",
         description: "Please try again or check your connection",
@@ -181,6 +190,11 @@ const MessagesPage = () => {
                           New
                         </Badge>
                       )}
+                      {message.contactId && (
+                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100" variant="outline">
+                          CRM Contact
+                        </Badge>
+                      )}
                     </CardTitle>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -188,12 +202,20 @@ const MessagesPage = () => {
                     {formatDate(message.createdAt)}
                   </div>
                 </div>
-                {message.email && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4 mr-1" />
-                    {message.email}
-                  </div>
-                )}
+                <div className="flex flex-col space-y-1 mt-1">
+                  {message.email && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4 mr-1" />
+                      {message.email}
+                    </div>
+                  )}
+                  {message.phone && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                      {message.phone}
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <Separator />
               <CardContent className="pt-4">
@@ -224,12 +246,32 @@ const MessagesPage = () => {
                       Mark as Read
                     </Button>
                   )}
-                  {message.email && (
-                    <Button
+                  <div className="flex gap-2">
+                    {message.email && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.href = `mailto:${message.email}`}
+                      >
+                        <Mail className="h-4 w-4 mr-1" /> Email
+                      </Button>
+                    )}
+                    {message.phone && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.href = `tel:${message.phone}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Call
+                      </Button>
+                    )}
+                  </div>
+                  {message.contactId && (
+                    <Button 
                       size="sm"
-                      onClick={() => window.location.href = `mailto:${message.email}`}
+                      onClick={() => window.location.href = `/admin/crm/contacts/${message.contactId}`}
                     >
-                      Reply via Email
+                      View Contact
                     </Button>
                   )}
                 </div>

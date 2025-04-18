@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { MessageSquare, ArrowRight, Send, X, Loader2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { cn } from '@/lib/utils';
+import apsLogo from "@/assets/aps_logo.png";
 
 const ChatWidget = () => {
   // State for chat widget functionality
@@ -22,6 +23,7 @@ const ChatWidget = () => {
   const [isSending, setIsSending] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -41,10 +43,10 @@ const ChatWidget = () => {
   const submitInitialInfo = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email) {
+    if (!name || !email || !phone) {
       toast({
         title: "Please complete all fields",
-        description: "We need your name and email to assist you better.",
+        description: "We need your name, email, and phone number to assist you better.",
         variant: "destructive"
       });
       return;
@@ -65,14 +67,16 @@ const ChatWidget = () => {
     setIsSending(true);
     
     try {
-      // Create a chat message using the correct API endpoint
+      // Create a chat message using the correct API endpoint for contact submissions
+      // The 'type: chat' field is important for the backend to identify this as a chat message
       await apiRequest('POST', '/api/contact', {
         name,
         email,
+        phone,
         message,
         subject: 'Chat Message',
-        phone: '',
-        type: 'chat'
+        type: 'chat',
+        service: 'Chat Widget'
       });
       
       toast({
@@ -92,6 +96,7 @@ const ChatWidget = () => {
       }, 2000);
       
     } catch (error) {
+      console.error("Error sending chat message:", error);
       toast({
         title: "Error sending message",
         description: "Please try again or contact us directly.",
@@ -127,7 +132,14 @@ const ChatWidget = () => {
         <Card className="shadow-xl border-t-4 border-t-secondary">
           <CardHeader className="bg-primary text-white rounded-t-lg pb-4">
             <CardTitle className="flex items-center justify-between">
-              <span>Chat with APS Flooring</span>
+              <div className="flex items-center gap-2">
+                <img 
+                  src={apsLogo} 
+                  alt="APS Flooring Logo" 
+                  className="h-8 w-8 rounded-full" 
+                />
+                <span>Chat with Us</span>
+              </div>
             </CardTitle>
           </CardHeader>
           
@@ -154,6 +166,18 @@ const ChatWidget = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     required
                   />
                 </div>
