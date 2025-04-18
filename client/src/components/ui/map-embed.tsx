@@ -8,6 +8,9 @@ interface MapEmbedProps {
   height?: string;
 }
 
+// Get the Google Maps API key from the environment if available
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyD21wkThWPi7nAp8v1samUle57-Qyy2Gvk";
+
 const MapEmbed = ({
   address,
   city,
@@ -19,7 +22,8 @@ const MapEmbed = ({
     return encodeURIComponent(address);
   }, [address]);
 
-  const mapUrl = `https://maps.google.com/maps?q=${encodedAddress}&t=m&z=${zoom}&output=embed&iwloc=near`;
+  // Create the map URL with the API key
+  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodedAddress}&zoom=${zoom}`;
 
   return (
     <iframe

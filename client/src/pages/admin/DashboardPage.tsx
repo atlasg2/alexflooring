@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
+import ReviewsAnalyticsPanel from './ReviewsAnalyticsPanel';
 import { 
   Card, 
   CardContent, 
@@ -40,8 +41,11 @@ import {
   Tag,
   Code,
   FileText,
-  MessageSquareText
+  MessageSquareText,
+  Star
 } from 'lucide-react';
+import { allReviews } from '@/data/allReviews';
+import { getInitials } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
@@ -560,12 +564,16 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
+        {/* Customer Reviews Analytics Section */}
+        <ReviewsAnalyticsPanel />
+        
         {/* Activity Tabs */}
         <Tabs defaultValue="messages" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="messages">Recent Messages</TabsTrigger>
             <TabsTrigger value="projects">Current Projects</TabsTrigger>
             <TabsTrigger value="appointments">Upcoming Appointments</TabsTrigger>
+            <TabsTrigger value="reviews">Latest Reviews</TabsTrigger>
           </TabsList>
           
           {/* Messages Tab */}
@@ -673,6 +681,60 @@ const DashboardPage = () => {
               <CardFooter className="flex justify-end">
                 <Button variant="outline" size="sm" onClick={() => navigate('/admin/calendar')}>
                   View Calendar <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Google Reviews</CardTitle>
+                <CardDescription>
+                  Latest customer reviews from Google Maps
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Import reviews from the Testimonials component */}
+                  {allReviews && allReviews.slice(0, 5).map((review, index) => (
+                    <div key={index} className="border-b pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-gray-100 rounded-full h-10 w-10 flex items-center justify-center text-primary font-medium">
+                          {getInitials(review.name)}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{review.name}</h4>
+                            <div className="flex text-yellow-400">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="h-3 w-3 fill-current" />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">{review.date ? new Date(review.date).toLocaleDateString() : ""}</span>
+                          </div>
+                          <p className="text-sm line-clamp-2 mt-1">{review.quote}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.open('https://www.google.com/maps?cid=10869331333221622596', '_blank')}
+                >
+                  View on Google Maps <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/admin/reviews')}
+                >
+                  Analytics Dashboard <ExternalLink className="h-3 w-3 ml-1" />
                 </Button>
               </CardFooter>
             </Card>
