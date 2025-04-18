@@ -86,6 +86,14 @@ export default function CustomerProjectsPage() {
     location: "",
   });
   
+  // Additional state for customer portal account creation during project creation
+  const [createPortalAccount, setCreatePortalAccount] = useState(true);
+  const [portalCredentials, setPortalCredentials] = useState({
+    username: "",
+    password: "",
+    sendEmail: true
+  });
+  
   const [creatingCustomer, setCreatingCustomer] = useState(false);
   const [showCreateCustomerForm, setShowCreateCustomerForm] = useState(false);
   
@@ -140,8 +148,9 @@ export default function CustomerProjectsPage() {
     refetchOnWindowFocus: false,
   });
   
+  // Query CRM contacts instead of contact submissions
   const { data: contacts, isLoading: contactsLoading } = useQuery({
-    queryKey: ["/api/admin/contacts"],
+    queryKey: ["/api/admin/crm/contacts"],
     refetchOnWindowFocus: false,
   });
   
@@ -348,17 +357,42 @@ export default function CustomerProjectsPage() {
     return contact ? contact.name : "Unknown";
   };
   
-  // Helper to update location when contact changes
+  // Function to generate a random password
+  const generateRandomPassword = (length = 8) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+  
+  // Helper to update location when contact changes and generate portal credentials
   const updateLocationFromContact = (contactId) => {
     if (!contactId || !contacts) return;
     
     const contact = contacts.find(c => c.id === contactId);
-    if (contact && contact.address) {
+    if (contact) {
+      // Update location if available
+      const newLocation = contact.address || "";
+      
       setProjectFormData({
         ...projectFormData,
         contactId,
-        location: contact.address
+        location: newLocation
       });
+      
+      // Generate portal credentials based on contact info
+      if (contact.email) {
+        const emailPrefix = contact.email.split('@')[0];
+        const generatedPassword = generateRandomPassword();
+        
+        setPortalCredentials({
+          ...portalCredentials,
+          username: emailPrefix,
+          password: generatedPassword
+        });
+      }
     } else {
       setProjectFormData({
         ...projectFormData,
@@ -637,6 +671,94 @@ export default function CustomerProjectsPage() {
                   })}
                 />
               </div>
+            </div>
+            
+            {/* Customer Portal Account Section */}
+            <Separator className="my-4" />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Customer Portal Account</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Set up portal access for this customer
+                  </p>
+                </div>
+                <Switch
+                  checked={createPortalAccount}
+                  onCheckedChange={setCreatePortalAccount}
+                  id="create-portal-account"
+                />
+              </div>
+              
+              {createPortalAccount && projectFormData.contactId && (
+                <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="portal-username">Username</Label>
+                      <Input
+                        id="portal-username"
+                        value={portalCredentials.username}
+                        onChange={(e) => setPortalCredentials({
+                          ...portalCredentials,
+                          username: e.target.value
+                        })}
+                        placeholder="Customer username"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="portal-password">Password</Label>
+                      <div className="flex space-x-2">
+                        <Input
+                          id="portal-password"
+                          value={portalCredentials.password}
+                          onChange={(e) => setPortalCredentials({
+                            ...portalCredentials,
+                            password: e.target.value
+                          })}
+                          placeholder="Customer password"
+                          type="text"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => setPortalCredentials({
+                            ...portalCredentials,
+                            password: generateRandomPassword()
+                          })}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="send-credentials" 
+                      checked={portalCredentials.sendEmail}
+                      onCheckedChange={(checked) => setPortalCredentials({
+                        ...portalCredentials,
+                        sendEmail: checked === true
+                      })}
+                    />
+                    <label
+                      htmlFor="send-credentials"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Send login credentials via email
+                    </label>
+                  </div>
+                  
+                  <Alert>
+                    <InfoIcon className="h-4 w-4" />
+                    <AlertTitle>Account Creation</AlertTitle>
+                    <AlertDescription>
+                      The customer will receive access to view project status, documents, and updates.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
             </div>
           </div>
           
