@@ -1,12 +1,35 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { exec } from "child_process";
+import path from "path";
 
 // ========== TEST CHANGE FOR VISIBILITY ==========
 console.log("*******************************************");
 console.log("* SERVER STARTING - TEST VERSION 12345678 *");
 console.log("* TIMESTAMP: " + new Date().toISOString() + " *");
 console.log("*******************************************");
+
+// Run database setup script for production environments
+const isProduction = process.env.REPL_SLUG && process.env.REPL_OWNER;
+if (isProduction) {
+  log("Running in production environment - executing database setup script");
+  try {
+    exec('node scripts/ensure-db.js', (error, stdout, stderr) => {
+      if (error) {
+        log(`Database setup error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        log(`Database setup stderr: ${stderr}`);
+        return;
+      }
+      log(`Database setup output: ${stdout}`);
+    });
+  } catch (error) {
+    log(`Failed to run database setup script: ${error.message}`);
+  }
+}
 
 const app = express();
 app.use(express.json());
