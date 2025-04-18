@@ -48,356 +48,259 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MoreHorizontal, FileText, Image, UserPlus, PlusCircle, CalendarRange, Edit, Trash, ChevronDown } from "lucide-react";
+import { format } from "date-fns";
 import AdminLayout from "@/layouts/AdminLayout";
 
-// Types
-interface CustomerUser {
-  id: number;
-  email: string;
-  name: string;
-  phone?: string;
-}
+// Status badge mapping
+const getStatusBadge = (status) => {
+  const statusMap = {
+    "Estimate Requested": { variant: "outline", label: "Estimate Requested" },
+    "Estimate Provided": { variant: "secondary", label: "Estimate Provided" },
+    "Contract Signed": { variant: "default", label: "Contract Signed" },
+    "Scheduling": { variant: "default", label: "Scheduling" },
+    "In Progress": { variant: "warning", label: "In Progress" },
+    "Inspection": { variant: "warning", label: "Inspection" },
+    "Completed": { variant: "success", label: "Completed" },
+    "Follow-up": { variant: "secondary", label: "Follow-up" },
+  };
 
-interface Contact {
-  id: number;
-  name: string;
-  email: string;
-  phone?: string;
-}
-
-interface Project {
-  id: number;
-  customerId: number;
-  contactId?: number;
-  title: string;
-  description?: string;
-  status: string;
-  startDate?: string;
-  completionDate?: string;
-  flooringType?: string;
-  squareFootage?: string;
-  location?: string;
-  progressUpdates?: Array<{
-    date: string;
-    status: string;
-    note: string;
-    images?: string[];
-  }>;
-  documents?: Array<{
-    name: string;
-    url: string;
-    type: string;
-    uploadDate: string;
-  }>;
-}
-
-// Form types
-interface ProjectFormData {
-  title: string;
-  customerId?: number;
-  contactId?: number;
-  description?: string;
-  status: string;
-  startDate?: string;
-  completionDate?: string;
-  flooringType?: string;
-  squareFootage?: string;
-  location?: string;
-}
-
-interface ProgressUpdateFormData {
-  note: string;
-  status: string;
-  date: string;
-  images?: string[];
-}
-
-interface DocumentFormData {
-  name: string;
-  url: string;
-  type: string;
-  uploadDate?: string;
-}
+  return statusMap[status] || { variant: "outline", label: status || "Unknown" };
+};
 
 export default function CustomerProjectsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // State
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isAddingProgressUpdate, setIsAddingProgressUpdate] = useState(false);
-  const [isAddingDocument, setIsAddingDocument] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("all");
-  
-  // Initial form state
-  const initialProjectFormData: ProjectFormData = {
+  const [projectFormData, setProjectFormData] = useState({
     title: "",
-    status: "pending",
+    customerId: null,
+    contactId: null,
     description: "",
-    customerId: 1, // Default to first customer - since we don't require it anymore
-    contactId: undefined // Required field to be set when creating a project
-  };
+    status: "Estimate Requested",
+    startDate: "",
+    completionDate: "",
+    flooringType: "",
+    squareFootage: "",
+    location: "",
+  });
   
-  const initialProgressUpdateFormData: ProgressUpdateFormData = {
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const [showCreateCustomerForm, setShowCreateCustomerForm] = useState(false);
+  
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [activeTab, setActiveTab] = useState("details");
+  
+  const [isAddingProgressUpdate, setIsAddingProgressUpdate] = useState(false);
+  const [progressUpdateFormData, setProgressUpdateFormData] = useState({
+    status: "",
     note: "",
-    status: "in_progress",
-    date: new Date().toISOString().split('T')[0],
-    images: []
-  };
+    date: format(new Date(), "yyyy-MM-dd"),
+    images: [],
+  });
   
-  const initialDocumentFormData: DocumentFormData = {
+  const [isAddingDocument, setIsAddingDocument] = useState(false);
+  const [documentFormData, setDocumentFormData] = useState({
     name: "",
     url: "",
-    type: "contract"
+    type: "Contract",
+  });
+  
+  // Initial states
+  const initialProjectFormData = {
+    title: "",
+    customerId: null,
+    contactId: null,
+    description: "",
+    status: "Estimate Requested",
+    startDate: "",
+    completionDate: "",
+    flooringType: "",
+    squareFootage: "",
+    location: "",
   };
   
-  // Form state
-  const [projectFormData, setProjectFormData] = useState<ProjectFormData>(initialProjectFormData);
-  const [progressUpdateFormData, setProgressUpdateFormData] = useState<ProgressUpdateFormData>(initialProgressUpdateFormData);
-  const [documentFormData, setDocumentFormData] = useState<DocumentFormData>(initialDocumentFormData);
+  const initialProgressUpdateFormData = {
+    status: "",
+    note: "",
+    date: format(new Date(), "yyyy-MM-dd"),
+    images: [],
+  };
   
-  // Fetch projects
-  const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
+  const initialDocumentFormData = {
+    name: "",
+    url: "",
+    type: "Contract",
+  };
+  
+  // Queries
+  const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ["/api/admin/customer-projects"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/customer-projects");
-      if (!res.ok) throw new Error("Failed to fetch projects");
-      return res.json();
-    }
+    refetchOnWindowFocus: false,
   });
   
-  // Fetch customer users
-  const { data: customerUsers, isLoading: isLoadingCustomers } = useQuery<CustomerUser[]>({
+  const { data: contacts, isLoading: contactsLoading } = useQuery({
+    queryKey: ["/api/admin/contacts"],
+    refetchOnWindowFocus: false,
+  });
+  
+  const { data: customerUsers, isLoading: customerUsersLoading } = useQuery({
     queryKey: ["/api/admin/customer-users"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/customer-users");
-      if (!res.ok) throw new Error("Failed to fetch customers");
-      return res.json();
-    }
+    refetchOnWindowFocus: false,
   });
   
-  // Fetch contacts
-  const { data: contacts, isLoading: isLoadingContacts } = useQuery<Contact[]>({
-    queryKey: ["/api/admin/crm/contacts"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/crm/contacts");
-      if (!res.ok) throw new Error("Failed to fetch contacts");
-      return res.json();
-    }
-  });
-  
-  // Create project mutation
+  // Mutations
   const createProjectMutation = useMutation({
-    mutationFn: async (data: ProjectFormData) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/admin/customer-projects", data);
-      if (!res.ok) throw new Error("Failed to create project");
-      return res.json();
+      return await res.json();
     },
-    onSuccess: (response) => {
-      const accountCreation = response.accountCreation;
-      
-      // Show appropriate toast based on account creation status
-      if (accountCreation) {
-        if (accountCreation.status === 'created') {
-          toast({
-            title: "Project created with customer account",
-            description: (
-              <div className="space-y-2">
-                <p>Project successfully created.</p>
-                <p className="font-medium">✓ {accountCreation.message}</p>
-                {accountCreation.temporaryPassword && (
-                  <p className="bg-amber-50 p-2 rounded text-amber-800 border border-amber-200 mt-2">
-                    Temporary password: <span className="font-bold">{accountCreation.temporaryPassword}</span>
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-2">
-                  (Remember to save this password. In the future, this will be automatically emailed to the customer.)
-                </p>
-              </div>
-            ),
-            duration: 10000, // Show for 10 seconds to give admin time to save password
-          });
-        } else if (accountCreation.status === 'linked') {
-          toast({
-            title: "Project created",
-            description: (
-              <div>
-                <p>Project successfully created.</p>
-                <p className="font-medium">✓ {accountCreation.message}</p>
-              </div>
-            ),
-          });
-        } else {
-          // Error in account creation
-          toast({
-            title: "Project created",
-            description: (
-              <div>
-                <p>Project successfully created.</p>
-                <p className="text-amber-600">⚠️ {accountCreation.message}</p>
-              </div>
-            ),
-            variant: "default",
-          });
-        }
-      } else {
-        // No account creation attempted (no contact associated)
-        toast({
-          title: "Project created",
-          description: "The project has been created successfully.",
-        });
-      }
-      
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
       setIsCreatingProject(false);
       setProjectFormData(initialProjectFormData);
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
     },
     onError: (error) => {
+      console.error("Error creating project:", error);
       toast({
-        title: "Failed to create project",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "Error",
+        description: "Failed to create project",
         variant: "destructive",
       });
     },
   });
   
-  // Update project mutation
-  const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<ProjectFormData> }) => {
-      const res = await apiRequest("PUT", `/api/admin/customer-projects/${id}`, data);
-      if (!res.ok) throw new Error("Failed to update project");
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Project updated",
-        description: "The project has been updated successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
-      setSelectedProject(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to update project",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Add progress update mutation
   const addProgressUpdateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: ProgressUpdateFormData }) => {
-      const res = await apiRequest("POST", `/api/admin/customer-projects/${id}/progress`, data);
-      if (!res.ok) throw new Error("Failed to add progress update");
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Progress update added",
-        description: "The progress update has been added successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
-      setIsAddingProgressUpdate(false);
-      setProgressUpdateFormData(initialProgressUpdateFormData);
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to add progress update",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Add document mutation
-  const addDocumentMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: DocumentFormData }) => {
-      const res = await apiRequest("POST", `/api/admin/customer-projects/${id}/documents`, data);
-      if (!res.ok) throw new Error("Failed to add document");
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Document added",
-        description: "The document has been added successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
-      setIsAddingDocument(false);
-      setDocumentFormData(initialDocumentFormData);
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to add document",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Generate customer portal account mutation
-  const generateAccountMutation = useMutation({
-    mutationFn: async ({ contactId, project }: { contactId: number; project: Project }) => {
-      const res = await apiRequest("POST", "/api/admin/generate-customer-account", { 
-        contactId,
-        projectId: project.id
-      });
-      if (!res.ok) throw new Error("Failed to generate account");
-      return res.json();
+    mutationFn: async ({ id, data }) => {
+      const res = await apiRequest(
+        "POST", 
+        `/api/admin/customer-projects/${id}/progress`, 
+        data
+      );
+      return await res.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Customer account created",
-        description: `Account created with email: ${data.email}. Temporary password has been set.`,
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-users"] });
+      setSelectedProject(data);
+      setIsAddingProgressUpdate(false);
+      setProgressUpdateFormData(initialProgressUpdateFormData);
+      toast({
+        title: "Success",
+        description: "Progress update added successfully",
+      });
     },
     onError: (error) => {
+      console.error("Error adding progress update:", error);
       toast({
-        title: "Failed to create customer account",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "Error",
+        description: "Failed to add progress update",
         variant: "destructive",
       });
     },
   });
   
-  // Handle create project
-  const handleCreateProject = () => {
-    // Validate required fields
-    if (!projectFormData.title) {
+  const addDocumentMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await apiRequest(
+        "POST", 
+        `/api/admin/customer-projects/${id}/documents`, 
+        data
+      );
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
+      setSelectedProject(data);
+      setIsAddingDocument(false);
+      setDocumentFormData(initialDocumentFormData);
       toast({
-        title: "Validation error",
-        description: "Project title is required",
+        title: "Success",
+        description: "Document added successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error adding document:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add document",
         variant: "destructive",
       });
-      return;
-    }
-    
-    if (!projectFormData.contactId) {
+    },
+  });
+  
+  const createCustomerAccountMutation = useMutation({
+    mutationFn: async ({ contactId, project }) => {
+      const res = await apiRequest(
+        "POST", 
+        "/api/admin/customer-users/create-from-contact", 
+        { 
+          contactId,
+          projectId: project.id
+        }
+      );
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-users"] });
       toast({
-        title: "Validation error",
-        description: "You must select an associated contact",
+        title: "Success",
+        description: `Customer account created for ${data.name}`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating customer account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create customer account",
         variant: "destructive",
       });
-      return;
+    },
+  });
+  
+  // Handlers
+  const handleCreateProject = async () => {
+    try {
+      // Validate
+      if (!projectFormData.title) {
+        toast({
+          title: "Validation Error",
+          description: "Project title is required",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Submit
+      const data = { ...projectFormData };
+      
+      // Remove empty values
+      Object.keys(data).forEach(key => {
+        if (data[key] === "" || data[key] === null) {
+          delete data[key];
+        }
+      });
+      
+      createProjectMutation.mutate(data);
+    } catch (error) {
+      console.error("Error creating project:", error);
     }
-    
-    createProjectMutation.mutate(projectFormData);
   };
   
-  // Handle update project
-  const handleUpdateProject = () => {
-    if (!selectedProject) return;
-    
-    updateProjectMutation.mutate({
-      id: selectedProject.id,
-      data: projectFormData
-    });
-  };
-  
-  // Handle add progress update
   const handleAddProgressUpdate = () => {
-    if (!selectedProject) return;
+    if (!progressUpdateFormData.status || !progressUpdateFormData.note) {
+      toast({
+        title: "Validation Error",
+        description: "Status and note are required",
+        variant: "destructive",
+      });
+      return;
+    }
     
     addProgressUpdateMutation.mutate({
       id: selectedProject.id,
@@ -405,269 +308,180 @@ export default function CustomerProjectsPage() {
     });
   };
   
-  // Handle add document
   const handleAddDocument = () => {
-    if (!selectedProject) return;
-    
-    addDocumentMutation.mutate({
-      id: selectedProject.id,
-      data: {
-        ...documentFormData,
-        uploadDate: new Date().toISOString()
-      }
-    });
-  };
-  
-  // Handle generate customer account
-  const handleGenerateAccount = (project: Project) => {
-    if (!project.contactId) {
+    if (!documentFormData.name || !documentFormData.url || !documentFormData.type) {
       toast({
-        title: "Cannot create account",
-        description: "This project needs to be linked to a contact first.",
+        title: "Validation Error",
+        description: "Name, URL, and type are required",
         variant: "destructive",
       });
       return;
     }
     
-    generateAccountMutation.mutate({
+    addDocumentMutation.mutate({
+      id: selectedProject.id,
+      data: documentFormData
+    });
+  };
+  
+  // Helper to generate customer accounts
+  const handleGenerateAccount = (project) => {
+    if (!project.contactId) {
+      toast({
+        title: "Error",
+        description: "This project doesn't have a contact assigned",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createCustomerAccountMutation.mutate({
       contactId: project.contactId,
       project
     });
   };
   
-  // Filter projects based on selected tab
-  const filteredProjects = projects?.filter(project => {
-    if (selectedTab === "all") return true;
-    return project.status === selectedTab;
-  });
+  // Helper to find contact by ID
+  const getContactName = (contactId) => {
+    if (!contacts) return "Loading...";
+    const contact = contacts.find(c => c.id === contactId);
+    return contact ? contact.name : "Unknown";
+  };
   
-  const getStatusBadgeStyle = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-      case "in_progress":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-      case "completed":
-        return "bg-green-100 text-green-800 hover:bg-green-200";
-      case "on_hold":
-        return "bg-orange-100 text-orange-800 hover:bg-orange-200";
-      case "cancelled":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+  // Helper to update location when contact changes
+  const updateLocationFromContact = (contactId) => {
+    if (!contactId || !contacts) return;
+    
+    const contact = contacts.find(c => c.id === contactId);
+    if (contact && contact.address) {
+      setProjectFormData({
+        ...projectFormData,
+        contactId,
+        location: contact.address
+      });
+    } else {
+      setProjectFormData({
+        ...projectFormData,
+        contactId
+      });
     }
   };
-  
-  const formatStatus = (status: string): string => {
-    return status
-      .split("_")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-  
+
   return (
     <AdminLayout title="Customer Projects">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Customer Projects</h1>
-            <p className="text-gray-600 mt-1">
-              Manage projects for customer portal users
-            </p>
-          </div>
-          
+      {/* Project List */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Projects</h2>
           <Button onClick={() => setIsCreatingProject(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
+            <PlusCircle className="h-4 w-4 mr-2" />
             New Project
           </Button>
         </div>
         
-        <Tabs 
-          value={selectedTab} 
-          onValueChange={setSelectedTab}
-          className="mb-6"
-        >
-          <TabsList>
-            <TabsTrigger value="all">All Projects</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="on_hold">On Hold</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        {isLoadingProjects ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {projectsLoading ? (
+          <div className="flex justify-center my-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredProjects?.length === 0 ? (
-          <Card>
-            <CardContent className="py-10">
-              <div className="text-center">
-                <h3 className="text-lg font-medium">No projects found</h3>
-                <p className="text-gray-500 mt-1">
-                  Create a new project to get started
-                </p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => setIsCreatingProject(true)}
-                >
-                  Create Project
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project Name</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>Flooring Type</TableHead>
-                    <TableHead>Portal Access</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProjects?.map((project) => {
-                    const customer = customerUsers?.find(u => u.id === project.customerId);
-                    const contact = contacts?.find(c => c.id === project.contactId);
-                    const hasPortalAccess = !!customer;
-                    
-                    return (
-                      <TableRow key={project.id}>
-                        <TableCell className="font-medium">{project.title}</TableCell>
-                        <TableCell>
-                          {customer ? (
-                            <div className="flex flex-col">
-                              <span>{customer.name}</span>
-                              <span className="text-xs text-gray-500">{customer.email}</span>
-                            </div>
-                          ) : contact ? (
-                            <div className="flex flex-col">
-                              <span>{contact.name}</span>
-                              <span className="text-xs text-gray-500">{contact.email}</span>
-                              <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="p-0 h-auto justify-start text-xs mt-1"
+        ) : projects && projects.length > 0 ? (
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Flooring Type</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell className="font-medium">{project.title}</TableCell>
+                    <TableCell>
+                      {project.contactId ? getContactName(project.contactId) : "None"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadge(project.status).variant}>
+                        {getStatusBadge(project.status).label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{project.location || "Not specified"}</TableCell>
+                    <TableCell>{project.flooringType || "Not specified"}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedProject(project);
+                                setActiveTab("progress");
+                                setIsAddingProgressUpdate(true);
+                              }}
+                            >
+                              Add Progress Update
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedProject(project);
+                                setActiveTab("documents");
+                                setIsAddingDocument(true);
+                              }}
+                            >
+                              Add Document
+                            </DropdownMenuItem>
+                            {project.contactId && !project.customerId && (
+                              <DropdownMenuItem
                                 onClick={() => handleGenerateAccount(project)}
                               >
-                                <UserPlus className="h-3 w-3 mr-1" />
-                                Generate portal access
-                              </Button>
-                            </div>
-                          ) : (
-                            "Not assigned"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeStyle(project.status)}>
-                            {formatStatus(project.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
-                        </TableCell>
-                        <TableCell>{project.flooringType || "Not specified"}</TableCell>
-                        <TableCell>
-                          {hasPortalAccess ? (
-                            <Badge variant="outline" className="bg-green-100 text-green-800">
-                              Active
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                              Not Created
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedProject(project);
-                                  setProjectFormData({
-                                    title: project.title,
-                                    description: project.description || "",
-                                    status: project.status,
-                                    startDate: project.startDate,
-                                    completionDate: project.completionDate,
-                                    flooringType: project.flooringType,
-                                    squareFootage: project.squareFootage,
-                                    location: project.location,
-                                    contactId: project.contactId,
-                                    customerId: project.customerId,
-                                  });
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Project
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Create Customer Account
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedProject(project);
-                                  setIsAddingProgressUpdate(true);
-                                }}
-                              >
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Progress Update
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedProject(project);
-                                  setIsAddingDocument(true);
-                                }}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Add Document
-                              </DropdownMenuItem>
-                              {!hasPortalAccess && project.contactId && (
-                                <DropdownMenuItem onClick={() => handleGenerateAccount(project)}>
-                                  <UserPlus className="mr-2 h-4 w-4" />
-                                  Generate Portal Access
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              <p className="text-muted-foreground mb-4">No projects found</p>
+              <Button onClick={() => setIsCreatingProject(true)}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create First Project
+              </Button>
             </CardContent>
           </Card>
         )}
       </div>
       
-      {/* Create/Edit Project Dialog */}
-      <Dialog open={isCreatingProject || selectedProject !== null} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreatingProject(false);
-          setSelectedProject(null);
-          setProjectFormData(initialProjectFormData);
-        }
-      }}>
+      {/* Create Project Dialog */}
+      <Dialog open={isCreatingProject} onOpenChange={setIsCreatingProject}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {isCreatingProject ? "Create New Project" : "Edit Project"}
-            </DialogTitle>
+            <DialogTitle>Create New Project</DialogTitle>
             <DialogDescription>
-              {isCreatingProject 
-                ? "Create a new project for a customer" 
-                : "Update the project details"}
+              Add a new project with customer and project details.
             </DialogDescription>
           </DialogHeader>
           
@@ -678,8 +492,11 @@ export default function CustomerProjectsPage() {
                 <Input
                   id="title"
                   value={projectFormData.title}
-                  onChange={(e) => setProjectFormData({...projectFormData, title: e.target.value})}
-                  placeholder="Kitchen Floor Renovation"
+                  onChange={(e) => setProjectFormData({
+                    ...projectFormData,
+                    title: e.target.value
+                  })}
+                  placeholder="Kitchen Flooring Project"
                 />
               </div>
               
@@ -687,17 +504,23 @@ export default function CustomerProjectsPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={projectFormData.status}
-                  onValueChange={(value) => setProjectFormData({...projectFormData, status: value})}
+                  onValueChange={(value) => setProjectFormData({
+                    ...projectFormData,
+                    status: value
+                  })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="on_hold">On Hold</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="Estimate Requested">Estimate Requested</SelectItem>
+                    <SelectItem value="Estimate Provided">Estimate Provided</SelectItem>
+                    <SelectItem value="Contract Signed">Contract Signed</SelectItem>
+                    <SelectItem value="Scheduling">Scheduling</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Inspection">Inspection</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Follow-up">Follow-up</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -705,144 +528,70 @@ export default function CustomerProjectsPage() {
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="customer">Customer</Label>
-                <Button type="button" variant="link" className="text-xs h-5 p-0" onClick={() => {
-                  // Create a customer user from the selected contact
-                  if (projectFormData.contactId) {
-                    const selectedContact = contacts?.find(c => c.id === projectFormData.contactId);
-                    if (selectedContact && selectedContact.email) {
-                      // Create customer from contact
-                      const createCustomerFromContact = async () => {
-                        try {
-                          const res = await apiRequest("POST", "/api/admin/customer-users", {
-                            name: selectedContact.name,
-                            email: selectedContact.email,
-                            password: Math.random().toString(36).slice(-8), // Random password
-                            phone: selectedContact.phone || "",
-                          });
-                          if (!res.ok) throw new Error("Failed to create customer");
-                          const newCustomer = await res.json();
-                          // Refresh customer users list
-                          queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-users"] });
-                          // Set the created customer as selected
-                          setProjectFormData({...projectFormData, customerId: newCustomer.id});
-                          toast({
-                            title: "Customer account created",
-                            description: "A customer account was created from the selected contact."
-                          });
-                        } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to create customer account. Please try again.",
-                            variant: "destructive"
-                          });
-                        }
-                      };
-                      createCustomerFromContact();
-                    } else {
-                      toast({
-                        title: "Cannot create customer",
-                        description: "Selected contact must have an email address.",
-                        variant: "destructive"
-                      });
-                    }
-                  } else {
-                    toast({
-                      title: "Select a contact first",
-                      description: "Please select an associated contact first",
-                      variant: "destructive"
-                    });
-                  }
-                }}>
-                  Create from contact
-                </Button>
+                <Label htmlFor="contact">Contact</Label>
               </div>
               <Select
-                value={projectFormData.customerId?.toString() || ""}
-                onValueChange={(value) => setProjectFormData({...projectFormData, customerId: parseInt(value)})}
+                value={projectFormData.contactId?.toString() || ""}
+                onValueChange={(value) => updateLocationFromContact(parseInt(value))}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select customer" />
+                <SelectTrigger id="contact">
+                  <SelectValue placeholder="Select a contact" />
                 </SelectTrigger>
                 <SelectContent>
-                  {customerUsers?.map(user => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name} ({user.email})
+                  {contacts?.map((contact) => (
+                    <SelectItem
+                      key={contact.id}
+                      value={contact.id.toString()}
+                    >
+                      {contact.name} {contact.email ? `(${contact.email})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                The customer who will have access to this project
+                Select the contact associated with this project.
               </p>
             </div>
+            
+            {/* Customer section removed as requested */}
             
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={projectFormData.description || ""}
-                onChange={(e) => setProjectFormData({...projectFormData, description: e.target.value})}
-                placeholder="Describe the project scope and details"
-                rows={4}
+                value={projectFormData.description}
+                onChange={(e) => setProjectFormData({
+                  ...projectFormData,
+                  description: e.target.value
+                })}
+                placeholder="Project details and scope of work"
+                className="min-h-[100px]"
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={projectFormData.startDate || ""}
-                  onChange={(e) => setProjectFormData({...projectFormData, startDate: e.target.value})}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="completionDate">Estimated Completion</Label>
-                <Input
-                  id="completionDate"
-                  type="date"
-                  value={projectFormData.completionDate || ""}
-                  onChange={(e) => setProjectFormData({...projectFormData, completionDate: e.target.value})}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
                 <Label htmlFor="flooringType">Flooring Type</Label>
-                <Select
-                  value={projectFormData.flooringType || ""}
-                  onValueChange={(value) => setProjectFormData({...projectFormData, flooringType: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select flooring type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hardwood">Hardwood</SelectItem>
-                    <SelectItem value="laminate">Laminate</SelectItem>
-                    <SelectItem value="vinyl">Vinyl</SelectItem>
-                    <SelectItem value="tile">Tile</SelectItem>
-                    <SelectItem value="carpet">Carpet</SelectItem>
-                    <SelectItem value="stone">Stone</SelectItem>
-                    <SelectItem value="concrete">Concrete</SelectItem>
-                    <SelectItem value="engineered_wood">Engineered Wood</SelectItem>
-                    <SelectItem value="bamboo">Bamboo</SelectItem>
-                    <SelectItem value="cork">Cork</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="flooringType"
+                  value={projectFormData.flooringType}
+                  onChange={(e) => setProjectFormData({
+                    ...projectFormData,
+                    flooringType: e.target.value
+                  })}
+                  placeholder="e.g. Hardwood, Tile, Vinyl, etc."
+                />
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="squareFootage">Square Footage</Label>
                 <Input
                   id="squareFootage"
-                  value={projectFormData.squareFootage || ""}
-                  onChange={(e) => setProjectFormData({...projectFormData, squareFootage: e.target.value})}
-                  placeholder="500 sq ft"
+                  value={projectFormData.squareFootage}
+                  onChange={(e) => setProjectFormData({
+                    ...projectFormData,
+                    squareFootage: e.target.value
+                  })}
+                  placeholder="e.g. 500"
                 />
               </div>
             </div>
@@ -851,52 +600,44 @@ export default function CustomerProjectsPage() {
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={projectFormData.location || ""}
-                onChange={(e) => setProjectFormData({...projectFormData, location: e.target.value})}
-                placeholder="123 Main St, New Orleans, LA"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="contact">Associated Contact <span className="text-red-500">*</span></Label>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <ChevronDown className="h-3 w-3 mr-1" />
-                  Select first, then create customer
-                </div>
-              </div>
-              <Select
-                value={projectFormData.contactId?.toString() || ""}
-                onValueChange={(value) => setProjectFormData({
-                  ...projectFormData, 
-                  contactId: value === "none" ? undefined : parseInt(value)
+                value={projectFormData.location}
+                onChange={(e) => setProjectFormData({
+                  ...projectFormData,
+                  location: e.target.value
                 })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a contact" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {contacts?.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.id.toString()}>
-                      {contact.name} ({contact.email || "No email"})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {isCreatingProject && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                  <p className="text-xs text-blue-700 flex items-center">
-                    <svg className="h-3 w-3 mr-1 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    A customer portal account will be automatically created if the contact has an email address
-                  </p>
-                </div>
-              )}
+                placeholder="Project location or address"
+              />
+              <p className="text-xs text-muted-foreground">
+                This will be auto-filled when you select a contact with an address.
+              </p>
             </div>
             
-
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={projectFormData.startDate}
+                  onChange={(e) => setProjectFormData({
+                    ...projectFormData,
+                    startDate: e.target.value
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="completionDate">Expected Completion</Label>
+                <Input
+                  id="completionDate"
+                  type="date"
+                  value={projectFormData.completionDate}
+                  onChange={(e) => setProjectFormData({
+                    ...projectFormData,
+                    completionDate: e.target.value
+                  })}
+                />
+              </div>
+            </div>
           </div>
           
           <DialogFooter>
@@ -904,203 +645,399 @@ export default function CustomerProjectsPage() {
               variant="outline"
               onClick={() => {
                 setIsCreatingProject(false);
-                setSelectedProject(null);
                 setProjectFormData(initialProjectFormData);
               }}
             >
               Cancel
             </Button>
             <Button
-              onClick={isCreatingProject ? handleCreateProject : handleUpdateProject}
-              disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
+              onClick={handleCreateProject}
+              disabled={createProjectMutation.isPending}
             >
-              {(createProjectMutation.isPending || updateProjectMutation.isPending) && (
+              {createProjectMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {isCreatingProject ? "Create Project" : "Update Project"}
+              Create Project
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Add Progress Update Dialog */}
-      <Dialog open={isAddingProgressUpdate} onOpenChange={(open) => {
-        if (!open) {
-          setIsAddingProgressUpdate(false);
-          setProgressUpdateFormData(initialProgressUpdateFormData);
-        }
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Progress Update</DialogTitle>
-            <DialogDescription>
-              Add a new progress update for {selectedProject?.title}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="updateStatus">Status</Label>
-              <Select
-                value={progressUpdateFormData.status}
-                onValueChange={(value) => setProgressUpdateFormData({...progressUpdateFormData, status: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="on_hold">On Hold</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="updateDate">Date</Label>
-              <Input
-                id="updateDate"
-                type="date"
-                value={progressUpdateFormData.date}
-                onChange={(e) => setProgressUpdateFormData({...progressUpdateFormData, date: e.target.value})}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="updateNote">Update Notes</Label>
-              <Textarea
-                id="updateNote"
-                value={progressUpdateFormData.note}
-                onChange={(e) => setProgressUpdateFormData({...progressUpdateFormData, note: e.target.value})}
-                placeholder="Describe the progress made"
-                rows={4}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="updateImages">Image URLs (one per line)</Label>
-              <Textarea
-                id="updateImages"
-                value={progressUpdateFormData.images?.join('\n') || ""}
-                onChange={(e) => setProgressUpdateFormData({
-                  ...progressUpdateFormData, 
-                  images: e.target.value.split('\n').filter(url => url.trim() !== "")
-                })}
-                placeholder="https://example.com/image1.jpg"
-                rows={3}
-              />
-              <p className="text-xs text-gray-500">
-                Enter one image URL per line. These will be shown to the customer.
-              </p>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddingProgressUpdate(false);
-                setProgressUpdateFormData(initialProgressUpdateFormData);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddProgressUpdate}
-              disabled={addProgressUpdateMutation.isPending}
-            >
-              {addProgressUpdateMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Add Update
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Add Document Dialog */}
-      <Dialog open={isAddingDocument} onOpenChange={(open) => {
-        if (!open) {
-          setIsAddingDocument(false);
-          setDocumentFormData(initialDocumentFormData);
-        }
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Document</DialogTitle>
-            <DialogDescription>
-              Add a new document for {selectedProject?.title}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="documentName">Document Name</Label>
-              <Input
-                id="documentName"
-                value={documentFormData.name}
-                onChange={(e) => setDocumentFormData({...documentFormData, name: e.target.value})}
-                placeholder="Contract Agreement"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="documentType">Document Type</Label>
-              <Select
-                value={documentFormData.type}
-                onValueChange={(value) => setDocumentFormData({...documentFormData, type: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="invoice">Invoice</SelectItem>
-                  <SelectItem value="proposal">Proposal</SelectItem>
-                  <SelectItem value="estimate">Estimate</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
-                  <SelectItem value="photo">Photo</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="documentUrl">Document URL</Label>
-              <Input
-                id="documentUrl"
-                value={documentFormData.url}
-                onChange={(e) => setDocumentFormData({...documentFormData, url: e.target.value})}
-                placeholder="https://example.com/document.pdf"
-              />
-              <p className="text-xs text-gray-500">
-                Enter the URL where the document is hosted. This will be accessible to the customer.
-              </p>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddingDocument(false);
-                setDocumentFormData(initialDocumentFormData);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddDocument}
-              disabled={addDocumentMutation.isPending}
-            >
-              {addDocumentMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Add Document
-            </Button>
-          </DialogFooter>
+      {/* Project Detail Dialog */}
+      <Dialog
+        open={!!selectedProject}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProject(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          {selectedProject && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedProject.title}</DialogTitle>
+                <DialogDescription>
+                  {selectedProject.contactId ? (
+                    <span>Contact: {getContactName(selectedProject.contactId)}</span>
+                  ) : (
+                    "No contact assigned"
+                  )}
+                  <Badge variant={getStatusBadge(selectedProject.status).variant} className="ml-2">
+                    {getStatusBadge(selectedProject.status).label}
+                  </Badge>
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="progress">Progress Updates</TabsTrigger>
+                  <TabsTrigger value="documents">Documents</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="details" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Description</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedProject.description || "No description provided"}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">Location</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedProject.location || "No location specified"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Flooring Type</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedProject.flooringType || "Not specified"}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">Square Footage</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedProject.squareFootage || "Not specified"}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">Timeline</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedProject.startDate ? (
+                          <>
+                            Start: {format(new Date(selectedProject.startDate), "MMM d, yyyy")}
+                            {selectedProject.completionDate && (
+                              <>
+                                <br />
+                                Expected Completion: {format(new Date(selectedProject.completionDate), "MMM d, yyyy")}
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          "Timeline not set"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {selectedProject.contactId && !selectedProject.customerId && (
+                    <div className="mt-6 p-4 bg-muted rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Customer Portal Access</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            This project doesn't have a customer account yet.
+                            Create one to enable customer portal access.
+                          </p>
+                        </div>
+                        <Button onClick={() => handleGenerateAccount(selectedProject)}>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Create Customer Account
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="progress" className="space-y-4 mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium">Progress Updates</h3>
+                    <Button onClick={() => setIsAddingProgressUpdate(true)}>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Add Update
+                    </Button>
+                  </div>
+                  
+                  {selectedProject.progressUpdates?.length > 0 ? (
+                    <div className="space-y-4">
+                      {selectedProject.progressUpdates.map((update, index) => (
+                        <Card key={index}>
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <Badge variant={getStatusBadge(update.status).variant}>
+                                  {getStatusBadge(update.status).label}
+                                </Badge>
+                                <CardTitle className="text-sm mt-2">
+                                  {update.date ? (
+                                    format(new Date(update.date), "MMMM d, yyyy")
+                                  ) : (
+                                    "Date not specified"
+                                  )}
+                                </CardTitle>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm">{update.note}</p>
+                            
+                            {update.images && update.images.length > 0 && (
+                              <div className="grid grid-cols-3 gap-2 mt-4">
+                                {update.images.map((image, imgIndex) => (
+                                  <img
+                                    key={imgIndex}
+                                    src={image}
+                                    alt={`Progress update ${index + 1} image ${imgIndex + 1}`}
+                                    className="rounded-md object-cover w-full h-24"
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No progress updates yet</p>
+                    </div>
+                  )}
+                  
+                  {/* Add Progress Update Form */}
+                  {isAddingProgressUpdate && (
+                    <div className="mt-6 border rounded-md p-4">
+                      <h3 className="font-medium mb-4">Add Progress Update</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="update-status">Status</Label>
+                          <Select
+                            value={progressUpdateFormData.status}
+                            onValueChange={(value) => setProgressUpdateFormData({
+                              ...progressUpdateFormData,
+                              status: value
+                            })}
+                          >
+                            <SelectTrigger id="update-status">
+                              <SelectValue placeholder="Select new status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Estimate Requested">Estimate Requested</SelectItem>
+                              <SelectItem value="Estimate Provided">Estimate Provided</SelectItem>
+                              <SelectItem value="Contract Signed">Contract Signed</SelectItem>
+                              <SelectItem value="Scheduling">Scheduling</SelectItem>
+                              <SelectItem value="In Progress">In Progress</SelectItem>
+                              <SelectItem value="Inspection">Inspection</SelectItem>
+                              <SelectItem value="Completed">Completed</SelectItem>
+                              <SelectItem value="Follow-up">Follow-up</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="update-date">Date</Label>
+                          <Input
+                            id="update-date"
+                            type="date"
+                            value={progressUpdateFormData.date}
+                            onChange={(e) => setProgressUpdateFormData({
+                              ...progressUpdateFormData,
+                              date: e.target.value
+                            })}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="update-note">Note</Label>
+                          <Textarea
+                            id="update-note"
+                            value={progressUpdateFormData.note}
+                            onChange={(e) => setProgressUpdateFormData({
+                              ...progressUpdateFormData,
+                              note: e.target.value
+                            })}
+                            placeholder="Describe the progress or status update"
+                            className="min-h-[100px]"
+                          />
+                        </div>
+                        
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsAddingProgressUpdate(false);
+                              setProgressUpdateFormData(initialProgressUpdateFormData);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleAddProgressUpdate}
+                            disabled={addProgressUpdateMutation.isPending}
+                          >
+                            {addProgressUpdateMutation.isPending && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Add Update
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="documents" className="space-y-4 mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium">Project Documents</h3>
+                    <Button onClick={() => setIsAddingDocument(true)}>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Add Document
+                    </Button>
+                  </div>
+                  
+                  {selectedProject.documents?.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedProject.documents.map((doc, index) => (
+                        <Card key={index}>
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <Badge variant="outline">{doc.type}</Badge>
+                                <CardTitle className="text-sm mt-2">
+                                  {doc.name}
+                                </CardTitle>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                              >
+                                <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                  <FileText className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-xs text-muted-foreground">
+                              Uploaded on {doc.uploadDate ? (
+                                format(new Date(doc.uploadDate), "MMMM d, yyyy")
+                              ) : (
+                                "Unknown date"
+                              )}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No documents yet</p>
+                    </div>
+                  )}
+                  
+                  {/* Add Document Form */}
+                  {isAddingDocument && (
+                    <div className="mt-6 border rounded-md p-4">
+                      <h3 className="font-medium mb-4">Add Document</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="doc-name">Document Name</Label>
+                          <Input
+                            id="doc-name"
+                            value={documentFormData.name}
+                            onChange={(e) => setDocumentFormData({
+                              ...documentFormData,
+                              name: e.target.value
+                            })}
+                            placeholder="e.g. Contract Agreement"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="doc-type">Document Type</Label>
+                          <Select
+                            value={documentFormData.type}
+                            onValueChange={(value) => setDocumentFormData({
+                              ...documentFormData,
+                              type: value
+                            })}
+                          >
+                            <SelectTrigger id="doc-type">
+                              <SelectValue placeholder="Select document type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Contract">Contract</SelectItem>
+                              <SelectItem value="Estimate">Estimate</SelectItem>
+                              <SelectItem value="Invoice">Invoice</SelectItem>
+                              <SelectItem value="Photo">Photo</SelectItem>
+                              <SelectItem value="Receipt">Receipt</SelectItem>
+                              <SelectItem value="Warranty">Warranty</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="doc-url">Document URL</Label>
+                          <Input
+                            id="doc-url"
+                            value={documentFormData.url}
+                            onChange={(e) => setDocumentFormData({
+                              ...documentFormData,
+                              url: e.target.value
+                            })}
+                            placeholder="https://example.com/docs/contract.pdf"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Enter the URL where the document is hosted. This will be accessible to the customer.
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsAddingDocument(false);
+                              setDocumentFormData(initialDocumentFormData);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleAddDocument}
+                            disabled={addDocumentMutation.isPending}
+                          >
+                            {addDocumentMutation.isPending && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Add Document
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>

@@ -3,6 +3,7 @@ import { storage } from "./storage";
 import { isCustomer } from "./customer-auth";
 import { insertCustomerProjectSchema } from "@shared/schema";
 import { z } from "zod";
+import { emailService } from "./email-service";
 
 // Setup customer project routes
 export function setupCustomerProjectRoutes(app: Express) {
@@ -59,7 +60,70 @@ export function setupCustomerProjectRoutes(app: Express) {
       // Create the project
       const project = await storage.createCustomerProject(projectData);
       
+      // Check if there's a contact associated and send email notification
+      if (project.contactId) {
+        try {
+          const contact = await storage.getContact(project.contactId);
+          
+          // Safety check in case contact doesn't exist
+          if (!contact) {
+            console.log(`Contact with ID ${project.contactId} not found`);
+            res.status(201).json(project);
+            return;
+          }
+          
+          const customerUser = contact.email ? 
+            await storage.getCustomerUserByEmail(contact.email) : null;
+          
+          // Generate account response to include in return
+          let accountCreation = null;
+          
+          if (contact && contact.email) {
+            if (customerUser) {
+              // Customer user already exists, link to project
+              accountCreation = {
+                status: 'linked',
+                message: `Project linked to existing customer account for ${contact.email}`
+              };
+              
+              // Send project notification email
+              try {
+                await emailService.sendProjectUpdate({
+                  to: contact.email || '',
+                  name: contact.name,
+                  projectTitle: project.title,
+                  updateMessage: `A new project "${project.title}" has been created for you. You can view the details in your customer portal.`,
+                  loginUrl: `${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth`
+                });
+                console.log(`Project creation email sent to ${contact.email}`);
+              } catch (emailError) {
+                console.error("Error sending project creation email:", emailError);
+              }
+              
+            } else {
+              // No customer account yet, one will be created by admin-customer-portal.ts
+              // when accessing create-customer-account endpoint
+              accountCreation = {
+                status: 'pending',
+                message: 'Customer account needs to be created'
+              };
+            }
+          }
+          
+          res.status(201).json({
+            ...project,
+            accountCreation
+          });
+          return;
+        } catch (contactError) {
+          console.error("Error handling project contact notification:", contactError);
+          // Continue without failing the whole request
+        }
+      }
+      
+      // Default response if no contact processing happened
       res.status(201).json(project);
+      
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
@@ -99,6 +163,38 @@ export function setupCustomerProjectRoutes(app: Express) {
         return res.status(404).json({ error: "Project not found" });
       }
       
+      // If the project has a contact, send a notification email
+      if (project.contactId) {
+        try {
+          const contact = await storage.getContact(project.contactId);
+          
+          // Safety check in case contact doesn't exist
+          if (!contact) {
+            console.log(`Contact with ID ${project.contactId} not found for progress update`);
+            res.json(project);
+            return;
+          }
+          
+          if (contact && contact.email) {
+            try {
+              await emailService.sendProjectUpdate({
+                to: contact.email || '',
+                name: contact.name,
+                projectTitle: project.title,
+                updateMessage: `${status}: ${note}`,
+                loginUrl: `${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth`
+              });
+              console.log(`Progress update email sent to ${contact.email}`);
+            } catch (emailError) {
+              console.error("Error sending progress update email:", emailError);
+              // Don't fail the request if the email fails
+            }
+          }
+        } catch (contactError) {
+          console.error("Error getting contact for notification:", contactError);
+        }
+      }
+      
       res.json(project);
     } catch (error) {
       console.error("Error adding progress update:", error);
@@ -131,6 +227,39 @@ export function setupCustomerProjectRoutes(app: Express) {
       
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // If the project has a contact, send a document notification email
+      if (project.contactId) {
+        try {
+          const contact = await storage.getContact(project.contactId);
+          
+          // Safety check in case contact doesn't exist
+          if (!contact) {
+            console.log(`Contact with ID ${project.contactId} not found for document notification`);
+            res.json(project);
+            return;
+          }
+          
+          if (contact && contact.email) {
+            try {
+              await emailService.sendNewDocumentNotification({
+                to: contact.email || '',
+                name: contact.name,
+                projectTitle: project.title,
+                documentName: name,
+                documentType: type,
+                loginUrl: `${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth`
+              });
+              console.log(`Document notification email sent to ${contact.email}`);
+            } catch (emailError) {
+              console.error("Error sending document notification email:", emailError);
+              // Don't fail the request if the email fails
+            }
+          }
+        } catch (contactError) {
+          console.error("Error getting contact for document notification:", contactError);
+        }
       }
       
       res.json(project);
