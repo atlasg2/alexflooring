@@ -87,35 +87,31 @@ const ContactsPage = () => {
     zipCode: '',
   });
   
-  // Local state for contacts to allow for immediate UI updates
-  const [localContacts, setLocalContacts] = useState<Contact[]>([]);
-  
-  // Get contacts query
-  const { data: fetchedContacts = [], isLoading, refetch } = useQuery<Contact[]>({
+  // Get contacts directly from API - simplified approach
+  const { data, isLoading, refetch } = useQuery<Contact[]>({
     queryKey: ['/api/admin/crm/contacts', searchQuery],
-    queryFn: async () => {
-      const url = searchQuery
-        ? `/api/admin/crm/contacts/search?q=${encodeURIComponent(searchQuery)}`
+    queryFn: async ({ queryKey }) => {
+      // Check for search query in our query key
+      const searchTerm = queryKey[1] as string || '';
+      const url = searchTerm
+        ? `/api/admin/crm/contacts/search?q=${encodeURIComponent(searchTerm)}`
         : '/api/admin/crm/contacts';
-      const result = await getQueryFn({ on401: 'throw' })(url);
-      console.log("Fetched contacts:", result);
-      return result;
+        
+      try {
+        const result = await getQueryFn({ on401: 'throw' })({ queryKey });
+        console.log("Fetched contacts:", result);
+        return result as Contact[];
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+        return [] as Contact[];
+      }
     },
     refetchOnWindowFocus: true,
-    staleTime: 0,
-    refetchInterval: 3000, // Refetch every 3 seconds to ensure we get updated data
+    staleTime: 0, // Always refetch on component mount
   });
   
-  // Update local contacts whenever fetched contacts change
-  useEffect(() => {
-    if (fetchedContacts && Array.isArray(fetchedContacts)) {
-      // Add defensive check to make sure we have an array
-      setLocalContacts(fetchedContacts as Contact[]);
-    }
-  }, [fetchedContacts]);
-  
-  // Use localContacts for UI rendering
-  const contacts = localContacts;
+  // Ensure we always have an array of contacts even if the API returns null or undefined
+  const contacts: Contact[] = Array.isArray(data) ? data : [];
   
   // Create contact mutation
   const createContactMutation = useMutation({
@@ -128,21 +124,9 @@ const ContactsPage = () => {
     },
     onSuccess: async (newContact) => {
       try {
-        // Force clear the cache completely
-        await queryClient.resetQueries({ queryKey: ['/api/admin/crm/contacts'] });
-        
-        // Manual UI update to ensure the UI reflects the new contact immediately
-        setLocalContacts(prevContacts => {
-          // First check if contact already exists to avoid duplicates
-          const exists = prevContacts.some(c => c.id === newContact.id);
-          if (exists) {
-            return prevContacts;
-          }
-          return [...prevContacts, newContact];
-        });
-        
-        // Force a hard reload of the contacts data (happens async)
-        refetch().catch(err => console.log("Refetch error:", err));
+        // Force clear the cache completely and refetch
+        await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+        await refetch();
         
         toast({
           title: 'Contact created',
@@ -172,23 +156,15 @@ const ContactsPage = () => {
     },
     onSuccess: async (updatedContact) => {
       try {
-        // Force clear the cache 
+        // Force clear the cache and refetch
         await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
-        
-        // Update in our local state 
-        setLocalContacts(prevContacts => {
-          return prevContacts.map(contact => 
-            contact.id === updatedContact.id ? updatedContact : contact
-          );
-        });
-        
-        // Async refetch
-        refetch().catch(err => console.error("Refetch error:", err));
+        await refetch();
         
         toast({
           title: 'Contact updated',
           description: 'The contact was updated successfully',
         });
+        
         setIsContactDialogOpen(false);
         resetForm();
       } catch (error) {
@@ -211,16 +187,9 @@ const ContactsPage = () => {
     },
     onSuccess: async (_, deletedId) => {
       try {
-        // Force clear the cache
+        // Force clear the cache and refetch
         await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
-        
-        // Update in our local state - remove the deleted contact
-        setLocalContacts(prevContacts => 
-          prevContacts.filter(contact => contact.id !== deletedId)
-        );
-        
-        // Async refetch
-        refetch().catch(err => console.error("Refetch error:", err));
+        await refetch();
         
         toast({
           title: 'Contact deleted',
@@ -480,12 +449,12 @@ const ContactsPage = () => {
                                 : contact.leadStage === 'proposal' 
                                 ? 'outline'
                                 : contact.leadStage === 'won' 
-                                ? 'success'
+                                ? 'default'
                                 : contact.leadStage === 'lost' 
                                 ? 'destructive'
                                 : 'outline'
                             }
-                            className="capitalize"
+                            className={`capitalize ${contact.leadStage === 'won' ? 'bg-green-100 hover:bg-green-200 text-green-800 border-green-200' : ''}`}
                           >
                             {contact.leadStage}
                           </Badge>
@@ -544,12 +513,12 @@ const ContactsPage = () => {
                                   : contact.leadStage === 'proposal' 
                                   ? 'outline'
                                   : contact.leadStage === 'won' 
-                                  ? 'success'
+                                  ? 'default'
                                   : contact.leadStage === 'lost' 
                                   ? 'destructive'
                                   : 'outline'
                               }
-                              className="capitalize"
+                              className={`capitalize ${contact.leadStage === 'won' ? 'bg-green-100 hover:bg-green-200 text-green-800 border-green-200' : ''}`}
                             >
                               {contact.leadStage}
                             </Badge>
