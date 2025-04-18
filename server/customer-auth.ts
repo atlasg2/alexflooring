@@ -11,6 +11,7 @@ declare module "express-session" {
     customer?: {
       id: number;
       email: string;
+      username: string;
       name: string;
       isCustomer: boolean;
     };
@@ -23,6 +24,7 @@ declare global {
     interface User {
       id?: number;
       email?: string;
+      username?: string;
       role?: string;
       name?: string;
       isCustomer?: boolean;
