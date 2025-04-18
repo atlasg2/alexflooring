@@ -87,7 +87,7 @@ const ContactsPage = () => {
     zipCode: '',
   });
   
-  // Get contacts directly from API - simplified approach
+  // Get contacts directly from API - with proper caching to prevent excessive requests
   const { data, isLoading, refetch } = useQuery<Contact[]>({
     queryKey: ['/api/admin/crm/contacts', searchQuery],
     queryFn: async ({ queryKey }) => {
@@ -99,15 +99,18 @@ const ContactsPage = () => {
         
       try {
         const result = await getQueryFn({ on401: 'throw' })({ queryKey });
-        console.log("Fetched contacts:", result);
         return result as Contact[];
       } catch (error) {
         console.error("Error fetching contacts:", error);
         return [] as Contact[];
       }
     },
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always refetch on component mount
+    // Add proper caching to prevent excessive API calls
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    refetchOnMount: true,       // Only fetch once when component mounts
+    refetchInterval: false,      // Disable automatic polling
+    staleTime: 60000,           // Consider data fresh for 1 minute
+    gcTime: 300000              // Keep in cache for 5 minutes
   });
   
   // Ensure we always have an array of contacts even if the API returns null or undefined

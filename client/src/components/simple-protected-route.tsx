@@ -18,14 +18,19 @@ export default function SimpleProtectedRoute({
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      // Not logged in, redirect to login
-      navigate("/admin/login");
-    } else if (!isLoading && adminOnly && user?.role !== "admin") {
-      // Not an admin, redirect to home
-      navigate("/");
+    // Only check auth on admin routes to avoid unnecessary redirects
+    if (path.startsWith('/admin')) {
+      if (!isLoading && !user) {
+        // Not logged in, redirect to login
+        console.log("Not logged in, redirecting to login page");
+        navigate("/admin/login");
+      } else if (!isLoading && adminOnly && user?.role !== "admin") {
+        // Not an admin, redirect to home
+        console.log("Not admin, redirecting to home page");
+        navigate("/");
+      }
     }
-  }, [user, isLoading, navigate, adminOnly]);
+  }, [user, isLoading, navigate, adminOnly, path]);
 
   return (
     <Route path={path}>

@@ -44,10 +44,22 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
   const fetchUserData = async (authToken: string) => {
     try {
       setIsLoading(true);
+      
+      // Skip token validation on non-admin routes
+      const pathname = window.location.pathname;
+      if (!pathname.startsWith('/admin')) {
+        console.log("Skipping admin auth validation for non-admin route:", pathname);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Validating admin auth token");
       const response = await fetch("/api/user", {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
+        // Add cache control to prevent excessive requests
+        cache: 'no-cache',
       });
 
       if (response.ok) {
@@ -60,6 +72,8 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
+      // On error, keep the existing token but don't validate further
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }

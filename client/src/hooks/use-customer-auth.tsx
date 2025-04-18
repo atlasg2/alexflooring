@@ -83,9 +83,12 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     retry: false,
     // Disable the query by default, only enable for customer routes
     enabled: window.location.pathname.startsWith('/customer'),
-    // Reduce refetch frequency
-    refetchInterval: 60000, // 1 minute
-    refetchOnWindowFocus: false
+    // Completely disable automatic refetching
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    // Increase cache time to reduce re-fetching
+    staleTime: 300000, // 5 minutes
+    gcTime: 600000 // 10 minutes
   });
 
   const login = async (credentials: LoginCredentials): Promise<CustomerUser> => {

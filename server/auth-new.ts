@@ -29,11 +29,14 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // SIMPLE AUTH SETUP WITH HARDCODED SECRET
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    store: storage.sessionStore,
+    secret: "flooring-website-fixed-secret-key-123456789",
+    resave: true,
+    saveUninitialized: true,
+    cookie: { 
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days 
+    }
   };
 
   app.set("trust proxy", 1);
