@@ -314,8 +314,169 @@ export const insertCustomerProjectSchema = createInsertSchema(customerProjects).
 export type InsertAutomationWorkflow = z.infer<typeof insertAutomationWorkflowSchema>;
 export type AutomationWorkflow = typeof automationWorkflows.$inferSelect;
 
+// Estimates table
+export const estimates = pgTable("estimates", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  customerUserId: integer("customer_user_id").references(() => customerUsers.id),
+  estimateNumber: text("estimate_number").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("draft").notNull(), // draft, sent, viewed, approved, rejected, converted
+  subtotal: text("subtotal").notNull(), // Using text for money values to avoid floating point precision issues
+  tax: text("tax"),
+  discount: text("discount"),
+  total: text("total").notNull(),
+  validUntil: date("valid_until"),
+  notes: text("notes"),
+  termsAndConditions: text("terms_and_conditions"),
+  customerNotes: text("customer_notes"), // Notes from customer
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdBy: text("created_by"), // Username of admin who created the estimate
+  lineItems: json("line_items").$type<Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    unit: string;
+    unitPrice: string;
+    totalPrice: string;
+    category?: string; // materials, labor, etc.
+    notes?: string;
+  }>>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEstimateSchema = createInsertSchema(estimates).omit({
+  id: true, 
+  createdAt: true,
+  updatedAt: true
+});
+
+// Contracts table
+export const contracts = pgTable("contracts", {
+  id: serial("id").primaryKey(),
+  contractNumber: text("contract_number").notNull(),
+  estimateId: integer("estimate_id").references(() => estimates.id),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  customerUserId: integer("customer_user_id").references(() => customerUsers.id),
+  projectId: integer("project_id").references(() => customerProjects.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("draft").notNull(), // draft, sent, viewed, signed, cancelled
+  amount: text("amount").notNull(), // Total contract value
+  startDate: date("start_date"),
+  endDate: date("end_date"),
+  paymentTerms: text("payment_terms"),
+  paymentSchedule: json("payment_schedule").$type<Array<{
+    id: string;
+    description: string;
+    amount: string;
+    dueDate: string;
+    status: string; // scheduled, invoiced, paid
+  }>>(),
+  contractBody: text("contract_body").notNull(), // Full contract text
+  customerSignature: text("customer_signature"), // Path to signature or image data
+  customerSignedAt: timestamp("customer_signed_at"),
+  companySignature: text("company_signature"),
+  companySignedAt: timestamp("company_signed_at"),
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  createdBy: text("created_by"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertContractSchema = createInsertSchema(contracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Invoices table
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  invoiceNumber: text("invoice_number").notNull(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  customerUserId: integer("customer_user_id").references(() => customerUsers.id),
+  projectId: integer("project_id").references(() => customerProjects.id),
+  contractId: integer("contract_id").references(() => contracts.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("draft").notNull(), // draft, sent, viewed, partially_paid, paid, overdue, cancelled
+  subtotal: text("subtotal").notNull(),
+  tax: text("tax"),
+  discount: text("discount"),
+  total: text("total").notNull(),
+  amountPaid: text("amount_paid").default("0"),
+  amountDue: text("amount_due"),
+  dueDate: date("due_date"),
+  notes: text("notes"),
+  paymentTerms: text("payment_terms"),
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  paidAt: timestamp("paid_at"),
+  paymentMethod: text("payment_method"), // credit_card, check, cash, bank_transfer, etc.
+  paymentReference: text("payment_reference"), // Reference number for payment
+  createdBy: text("created_by"),
+  lineItems: json("line_items").$type<Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    unit: string;
+    unitPrice: string;
+    totalPrice: string;
+    category?: string;
+    notes?: string;
+  }>>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Payments table
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  amount: text("amount").notNull(),
+  paymentDate: timestamp("payment_date").defaultNow().notNull(),
+  paymentMethod: text("payment_method").notNull(), // credit_card, check, cash, bank_transfer, etc.
+  paymentReference: text("payment_reference"), // Reference number, check number, transaction ID
+  status: text("status").default("completed").notNull(), // pending, completed, failed, refunded
+  notes: text("notes"),
+  receiptSent: boolean("receipt_sent").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertCustomerUser = z.infer<typeof insertCustomerUserSchema>;
 export type CustomerUser = typeof customerUsers.$inferSelect;
 
 export type InsertCustomerProject = z.infer<typeof insertCustomerProjectSchema>;
 export type CustomerProject = typeof customerProjects.$inferSelect;
+
+export type InsertEstimate = z.infer<typeof insertEstimateSchema>;
+export type Estimate = typeof estimates.$inferSelect;
+
+export type InsertContract = z.infer<typeof insertContractSchema>;
+export type Contract = typeof contracts.$inferSelect;
+
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;

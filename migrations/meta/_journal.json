@@ -15,6 +15,13 @@
       "when": 1744977518488,
       "tag": "0001_skinny_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744986261418,
+      "tag": "0002_powerful_the_hand",
+      "breakpoints": true
     }
   ]
 }

@@ -16,6 +16,7 @@ import { setupAuth, isAdmin } from "./auth";
 import { setupCustomerAuth } from "./customer-auth";
 import { setupCustomerProjectRoutes } from "./customer-projects";
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
+import { setupSalesWorkflowRoutes } from "./sales-workflow";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication and admin protection
@@ -27,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up admin customer portal routes
   setupAdminCustomerPortalRoutes(app);
+  
+  // Set up sales workflow routes (estimates, contracts, invoices)
+  setupSalesWorkflowRoutes(app);
   
   // Public endpoints
   

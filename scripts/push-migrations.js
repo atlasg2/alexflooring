@@ -1,9 +1,6 @@
 // This script exports database schema to production
 import { exec } from 'child_process';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const drizzleConfig = require('../drizzle.config.js');
+// Don't need to import the config - drizzle-kit will read it directly
 
 const DATABASE_URL = process.env.DATABASE_URL;
 

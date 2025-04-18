@@ -10,7 +10,11 @@ import {
   smsTemplates, type SmsTemplate, type InsertSmsTemplate,
   automationWorkflows, type AutomationWorkflow, type InsertAutomationWorkflow,
   customerUsers, type CustomerUser, type InsertCustomerUser,
-  customerProjects, type CustomerProject, type InsertCustomerProject
+  customerProjects, type CustomerProject, type InsertCustomerProject,
+  estimates, type Estimate, type InsertEstimate,
+  contracts, type Contract, type InsertContract,
+  invoices, type Invoice, type InsertInvoice,
+  payments, type Payment, type InsertPayment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, like, sql, ilike } from "drizzle-orm";
@@ -105,6 +109,60 @@ export interface IStorage {
   updateAutomationWorkflow(id: number, workflow: Partial<InsertAutomationWorkflow>): Promise<AutomationWorkflow | undefined>;
   toggleAutomationWorkflow(id: number, isActive: boolean): Promise<AutomationWorkflow | undefined>;
   deleteAutomationWorkflow(id: number): Promise<void>;
+  
+  // Estimate methods
+  getEstimates(): Promise<Estimate[]>;
+  getEstimate(id: number): Promise<Estimate | undefined>;
+  getEstimatesByContact(contactId: number): Promise<Estimate[]>;
+  getEstimatesByCustomer(customerUserId: number): Promise<Estimate[]>;
+  createEstimate(estimate: InsertEstimate): Promise<Estimate>;
+  updateEstimate(id: number, estimate: Partial<InsertEstimate>): Promise<Estimate | undefined>;
+  deleteEstimate(id: number): Promise<void>;
+  sendEstimate(id: number): Promise<Estimate | undefined>;
+  markEstimateViewed(id: number): Promise<Estimate | undefined>;
+  approveEstimate(id: number, customerNotes?: string): Promise<Estimate | undefined>;
+  rejectEstimate(id: number, customerNotes?: string): Promise<Estimate | undefined>;
+  getNextEstimateNumber(): Promise<string>;
+  
+  // Contract methods
+  getContracts(): Promise<Contract[]>;
+  getContract(id: number): Promise<Contract | undefined>;
+  getContractsByContact(contactId: number): Promise<Contract[]>;
+  getContractsByCustomer(customerUserId: number): Promise<Contract[]>;
+  getContractsByProject(projectId: number): Promise<Contract[]>;
+  createContract(contract: InsertContract): Promise<Contract>;
+  createContractFromEstimate(estimateId: number): Promise<Contract | undefined>;
+  updateContract(id: number, contract: Partial<InsertContract>): Promise<Contract | undefined>;
+  deleteContract(id: number): Promise<void>;
+  sendContract(id: number): Promise<Contract | undefined>;
+  markContractViewed(id: number): Promise<Contract | undefined>;
+  signContract(id: number, signature: string): Promise<Contract | undefined>;
+  getNextContractNumber(): Promise<string>;
+  
+  // Invoice methods
+  getInvoices(): Promise<Invoice[]>;
+  getInvoice(id: number): Promise<Invoice | undefined>;
+  getInvoicesByContact(contactId: number): Promise<Invoice[]>;
+  getInvoicesByCustomer(customerUserId: number): Promise<Invoice[]>;
+  getInvoicesByProject(projectId: number): Promise<Invoice[]>;
+  getInvoicesByContract(contractId: number): Promise<Invoice[]>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  createInvoiceFromContract(contractId: number, paymentScheduleItemId: string): Promise<Invoice | undefined>;
+  updateInvoice(id: number, invoice: Partial<InsertInvoice>): Promise<Invoice | undefined>;
+  deleteInvoice(id: number): Promise<void>;
+  sendInvoice(id: number): Promise<Invoice | undefined>;
+  markInvoiceViewed(id: number): Promise<Invoice | undefined>;
+  recordPayment(id: number, payment: InsertPayment): Promise<Payment>;
+  getNextInvoiceNumber(): Promise<string>;
+  
+  // Payment methods
+  getPayments(): Promise<Payment[]>;
+  getPayment(id: number): Promise<Payment | undefined>;
+  getPaymentsByInvoice(invoiceId: number): Promise<Payment[]>;
+  getPaymentsByContact(contactId: number): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePaymentStatus(id: number, status: string): Promise<Payment | undefined>;
+  sendReceipt(id: number): Promise<Payment | undefined>;
   
   // Session store for authentication
   sessionStore: session.Store;
@@ -720,6 +778,615 @@ export class DatabaseStorage implements IStorage {
   
   async deleteAutomationWorkflow(id: number): Promise<void> {
     await db.delete(automationWorkflows).where(eq(automationWorkflows.id, id));
+  }
+  
+  // ESTIMATE METHODS
+  async getEstimates(): Promise<Estimate[]> {
+    return await db.select().from(estimates).orderBy(desc(estimates.createdAt));
+  }
+  
+  async getEstimate(id: number): Promise<Estimate | undefined> {
+    const [estimate] = await db.select().from(estimates).where(eq(estimates.id, id));
+    return estimate;
+  }
+  
+  async getEstimatesByContact(contactId: number): Promise<Estimate[]> {
+    return await db.select().from(estimates)
+      .where(eq(estimates.contactId, contactId))
+      .orderBy(desc(estimates.createdAt));
+  }
+  
+  async getEstimatesByCustomer(customerUserId: number): Promise<Estimate[]> {
+    return await db.select().from(estimates)
+      .where(eq(estimates.customerUserId, customerUserId))
+      .orderBy(desc(estimates.createdAt));
+  }
+  
+  async createEstimate(estimate: InsertEstimate): Promise<Estimate> {
+    // Generate estimate number if not provided
+    if (!estimate.estimateNumber) {
+      estimate.estimateNumber = await this.getNextEstimateNumber();
+    }
+    
+    const [result] = await db.insert(estimates).values(estimate).returning();
+    return result;
+  }
+  
+  async updateEstimate(id: number, estimateData: Partial<InsertEstimate>): Promise<Estimate | undefined> {
+    const [updated] = await db
+      .update(estimates)
+      .set({ ...estimateData, updatedAt: new Date() })
+      .where(eq(estimates.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteEstimate(id: number): Promise<void> {
+    await db.delete(estimates).where(eq(estimates.id, id));
+  }
+  
+  async sendEstimate(id: number): Promise<Estimate | undefined> {
+    const [updated] = await db
+      .update(estimates)
+      .set({ 
+        status: "sent", 
+        sentAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(estimates.id, id))
+      .returning();
+    
+    // TODO: Send email notification to customer
+    
+    return updated;
+  }
+  
+  async markEstimateViewed(id: number): Promise<Estimate | undefined> {
+    const [updated] = await db
+      .update(estimates)
+      .set({ 
+        status: "viewed", 
+        viewedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(estimates.id, id))
+      .returning();
+    
+    return updated;
+  }
+  
+  async approveEstimate(id: number, customerNotes?: string): Promise<Estimate | undefined> {
+    const [updated] = await db
+      .update(estimates)
+      .set({ 
+        status: "approved", 
+        approvedAt: new Date(),
+        customerNotes: customerNotes || null,
+        updatedAt: new Date() 
+      })
+      .where(eq(estimates.id, id))
+      .returning();
+    
+    // TODO: Send email notification to admin
+    
+    return updated;
+  }
+  
+  async rejectEstimate(id: number, customerNotes?: string): Promise<Estimate | undefined> {
+    const [updated] = await db
+      .update(estimates)
+      .set({ 
+        status: "rejected", 
+        rejectedAt: new Date(),
+        customerNotes: customerNotes || null,
+        updatedAt: new Date() 
+      })
+      .where(eq(estimates.id, id))
+      .returning();
+    
+    // TODO: Send email notification to admin
+    
+    return updated;
+  }
+  
+  async getNextEstimateNumber(): Promise<string> {
+    // First try to get the highest estimate number from the database
+    const [result] = await db
+      .select({ maxEstimateNumber: sql<string>`MAX(${estimates.estimateNumber})` })
+      .from(estimates);
+    
+    const currentYear = new Date().getFullYear();
+    let nextNumber = 1;
+    
+    if (result?.maxEstimateNumber) {
+      // Extract the number part if it follows our format (EST-YYYY-XXXX)
+      const match = result.maxEstimateNumber.match(/EST-\d{4}-(\d+)/);
+      if (match && match[1]) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+    
+    // Format: EST-YYYY-XXXX (e.g., EST-2025-0001)
+    return `EST-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
+  }
+  
+  // CONTRACT METHODS
+  async getContracts(): Promise<Contract[]> {
+    return await db.select().from(contracts).orderBy(desc(contracts.createdAt));
+  }
+  
+  async getContract(id: number): Promise<Contract | undefined> {
+    const [contract] = await db.select().from(contracts).where(eq(contracts.id, id));
+    return contract;
+  }
+  
+  async getContractsByContact(contactId: number): Promise<Contract[]> {
+    return await db.select().from(contracts)
+      .where(eq(contracts.contactId, contactId))
+      .orderBy(desc(contracts.createdAt));
+  }
+  
+  async getContractsByCustomer(customerUserId: number): Promise<Contract[]> {
+    return await db.select().from(contracts)
+      .where(eq(contracts.customerUserId, customerUserId))
+      .orderBy(desc(contracts.createdAt));
+  }
+  
+  async getContractsByProject(projectId: number): Promise<Contract[]> {
+    return await db.select().from(contracts)
+      .where(eq(contracts.projectId, projectId))
+      .orderBy(desc(contracts.createdAt));
+  }
+  
+  async createContract(contract: InsertContract): Promise<Contract> {
+    // Generate contract number if not provided
+    if (!contract.contractNumber) {
+      contract.contractNumber = await this.getNextContractNumber();
+    }
+    
+    const [result] = await db.insert(contracts).values(contract).returning();
+    return result;
+  }
+  
+  async createContractFromEstimate(estimateId: number): Promise<Contract | undefined> {
+    // First get the estimate
+    const estimate = await this.getEstimate(estimateId);
+    if (!estimate) return undefined;
+    
+    // Generate a new contract from the estimate data
+    const contractData: InsertContract = {
+      contractNumber: await this.getNextContractNumber(),
+      estimateId: estimate.id,
+      contactId: estimate.contactId,
+      customerUserId: estimate.customerUserId,
+      title: `Contract for ${estimate.title}`,
+      description: estimate.description,
+      status: "draft",
+      amount: estimate.total,
+      startDate: new Date(),
+      paymentTerms: "Net 30",
+      contractBody: `This contract is based on estimate ${estimate.estimateNumber}: ${estimate.title}\n\n${estimate.termsAndConditions || ''}`,
+      createdBy: estimate.createdBy,
+    };
+    
+    // Generate payment schedule based on the estimate amount
+    const totalAmount = parseFloat(estimate.total);
+    const depositAmount = (totalAmount * 0.25).toFixed(2); // 25% deposit
+    const finalAmount = (totalAmount * 0.75).toFixed(2); // 75% upon completion
+    
+    contractData.paymentSchedule = [
+      {
+        id: "deposit",
+        description: "Initial Deposit",
+        amount: depositAmount,
+        dueDate: new Date().toISOString(), // Due immediately
+        status: "scheduled"
+      },
+      {
+        id: "final",
+        description: "Final Payment",
+        amount: finalAmount,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Due in 30 days
+        status: "scheduled"
+      }
+    ];
+    
+    const contract = await this.createContract(contractData);
+    
+    // Update the estimate status to converted
+    await this.updateEstimate(estimateId, { status: "converted" });
+    
+    return contract;
+  }
+  
+  async updateContract(id: number, contractData: Partial<InsertContract>): Promise<Contract | undefined> {
+    const [updated] = await db
+      .update(contracts)
+      .set({ ...contractData, updatedAt: new Date() })
+      .where(eq(contracts.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteContract(id: number): Promise<void> {
+    await db.delete(contracts).where(eq(contracts.id, id));
+  }
+  
+  async sendContract(id: number): Promise<Contract | undefined> {
+    const [updated] = await db
+      .update(contracts)
+      .set({ 
+        status: "sent", 
+        sentAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(contracts.id, id))
+      .returning();
+    
+    // TODO: Send email notification to customer
+    
+    return updated;
+  }
+  
+  async markContractViewed(id: number): Promise<Contract | undefined> {
+    const [updated] = await db
+      .update(contracts)
+      .set({ 
+        status: "viewed", 
+        viewedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(contracts.id, id))
+      .returning();
+    
+    return updated;
+  }
+  
+  async signContract(id: number, signature: string): Promise<Contract | undefined> {
+    const [updated] = await db
+      .update(contracts)
+      .set({ 
+        status: "signed", 
+        customerSignature: signature,
+        customerSignedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(contracts.id, id))
+      .returning();
+    
+    // If contract was signed and has a project ID, update the project status
+    if (updated && updated.projectId) {
+      await this.updateCustomerProject(updated.projectId, { status: "in_progress" });
+    }
+    // If contract was signed but doesn't have a project, create one
+    else if (updated && updated.contactId && updated.customerUserId) {
+      // Create a new project from the contract
+      const projectData: InsertCustomerProject = {
+        customerId: updated.customerUserId,
+        contactId: updated.contactId,
+        title: `Project for ${updated.title}`,
+        description: updated.description,
+        status: "in_progress",
+        startDate: updated.startDate || new Date(),
+        estimatedCost: updated.amount,
+        notes: `Based on contract ${updated.contractNumber}`,
+      };
+      
+      const project = await this.createCustomerProject(projectData);
+      
+      // Update the contract with the new project ID
+      await this.updateContract(id, { projectId: project.id });
+    }
+    
+    // TODO: Send email notification to admin and create first invoice
+    
+    return updated;
+  }
+  
+  async getNextContractNumber(): Promise<string> {
+    // First try to get the highest contract number from the database
+    const [result] = await db
+      .select({ maxContractNumber: sql<string>`MAX(${contracts.contractNumber})` })
+      .from(contracts);
+    
+    const currentYear = new Date().getFullYear();
+    let nextNumber = 1;
+    
+    if (result?.maxContractNumber) {
+      // Extract the number part if it follows our format (CTR-YYYY-XXXX)
+      const match = result.maxContractNumber.match(/CTR-\d{4}-(\d+)/);
+      if (match && match[1]) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+    
+    // Format: CTR-YYYY-XXXX (e.g., CTR-2025-0001)
+    return `CTR-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
+  }
+  
+  // INVOICE METHODS
+  async getInvoices(): Promise<Invoice[]> {
+    return await db.select().from(invoices).orderBy(desc(invoices.createdAt));
+  }
+  
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, id));
+    return invoice;
+  }
+  
+  async getInvoicesByContact(contactId: number): Promise<Invoice[]> {
+    return await db.select().from(invoices)
+      .where(eq(invoices.contactId, contactId))
+      .orderBy(desc(invoices.createdAt));
+  }
+  
+  async getInvoicesByCustomer(customerUserId: number): Promise<Invoice[]> {
+    return await db.select().from(invoices)
+      .where(eq(invoices.customerUserId, customerUserId))
+      .orderBy(desc(invoices.createdAt));
+  }
+  
+  async getInvoicesByProject(projectId: number): Promise<Invoice[]> {
+    return await db.select().from(invoices)
+      .where(eq(invoices.projectId, projectId))
+      .orderBy(desc(invoices.createdAt));
+  }
+  
+  async getInvoicesByContract(contractId: number): Promise<Invoice[]> {
+    return await db.select().from(invoices)
+      .where(eq(invoices.contractId, contractId))
+      .orderBy(desc(invoices.createdAt));
+  }
+  
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    // Generate invoice number if not provided
+    if (!invoice.invoiceNumber) {
+      invoice.invoiceNumber = await this.getNextInvoiceNumber();
+    }
+    
+    // Set due date if not provided (default 30 days from now)
+    if (!invoice.dueDate) {
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      invoice.dueDate = dueDate;
+    }
+    
+    // Set amount due to equal total if not provided
+    if (!invoice.amountDue) {
+      invoice.amountDue = invoice.total;
+    }
+    
+    const [result] = await db.insert(invoices).values(invoice).returning();
+    return result;
+  }
+  
+  async createInvoiceFromContract(contractId: number, paymentScheduleItemId: string): Promise<Invoice | undefined> {
+    // First get the contract
+    const contract = await this.getContract(contractId);
+    if (!contract || !contract.paymentSchedule) return undefined;
+    
+    // Find the specific payment schedule item
+    const paymentItem = contract.paymentSchedule.find(item => item.id === paymentScheduleItemId);
+    if (!paymentItem) return undefined;
+    
+    // Generate a new invoice from the contract data and payment item
+    const invoiceData: InsertInvoice = {
+      invoiceNumber: await this.getNextInvoiceNumber(),
+      contactId: contract.contactId,
+      customerUserId: contract.customerUserId,
+      projectId: contract.projectId,
+      contractId: contract.id,
+      title: `Invoice for ${paymentItem.description}`,
+      description: `Payment for "${contract.title}" - ${paymentItem.description}`,
+      status: "draft",
+      subtotal: paymentItem.amount,
+      total: paymentItem.amount,
+      amountDue: paymentItem.amount,
+      dueDate: new Date(paymentItem.dueDate),
+      paymentTerms: contract.paymentTerms || "Net 30",
+      createdBy: contract.createdBy,
+      lineItems: [
+        {
+          id: "1",
+          description: paymentItem.description,
+          quantity: 1,
+          unit: "each",
+          unitPrice: paymentItem.amount,
+          totalPrice: paymentItem.amount
+        }
+      ]
+    };
+    
+    const invoice = await this.createInvoice(invoiceData);
+    
+    // Update the payment schedule item status to invoiced
+    const updatedSchedule = [...contract.paymentSchedule];
+    const itemIndex = updatedSchedule.findIndex(item => item.id === paymentScheduleItemId);
+    if (itemIndex >= 0) {
+      updatedSchedule[itemIndex] = {
+        ...updatedSchedule[itemIndex],
+        status: "invoiced"
+      };
+      
+      await this.updateContract(contractId, { paymentSchedule: updatedSchedule });
+    }
+    
+    return invoice;
+  }
+  
+  async updateInvoice(id: number, invoiceData: Partial<InsertInvoice>): Promise<Invoice | undefined> {
+    const [updated] = await db
+      .update(invoices)
+      .set({ ...invoiceData, updatedAt: new Date() })
+      .where(eq(invoices.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteInvoice(id: number): Promise<void> {
+    await db.delete(invoices).where(eq(invoices.id, id));
+  }
+  
+  async sendInvoice(id: number): Promise<Invoice | undefined> {
+    const [updated] = await db
+      .update(invoices)
+      .set({ 
+        status: "sent", 
+        sentAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(invoices.id, id))
+      .returning();
+    
+    // TODO: Send email notification to customer
+    
+    return updated;
+  }
+  
+  async markInvoiceViewed(id: number): Promise<Invoice | undefined> {
+    const [updated] = await db
+      .update(invoices)
+      .set({ 
+        status: "viewed", 
+        viewedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(invoices.id, id))
+      .returning();
+    
+    return updated;
+  }
+  
+  async recordPayment(invoiceId: number, payment: InsertPayment): Promise<Payment> {
+    // Get the current invoice
+    const invoice = await this.getInvoice(invoiceId);
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+    
+    // Add the payment
+    const [newPayment] = await db.insert(payments).values({
+      ...payment,
+      invoiceId
+    }).returning();
+    
+    // Update the invoice with payment info
+    const amountPaid = (parseFloat(invoice.amountPaid || "0") + parseFloat(payment.amount)).toString();
+    const amountDue = (parseFloat(invoice.total) - parseFloat(amountPaid)).toString();
+    
+    // Determine new status
+    let status = invoice.status;
+    if (parseFloat(amountDue) <= 0) {
+      status = "paid";
+    } else if (parseFloat(amountPaid) > 0) {
+      status = "partially_paid";
+    }
+    
+    // Update the invoice
+    await this.updateInvoice(invoiceId, {
+      amountPaid,
+      amountDue,
+      status,
+      paidAt: parseFloat(amountDue) <= 0 ? new Date() : undefined,
+      paymentMethod: payment.paymentMethod,
+      paymentReference: payment.paymentReference
+    });
+    
+    // If this is related to a contract, update the payment schedule
+    if (invoice.contractId) {
+      const contract = await this.getContract(invoice.contractId);
+      if (contract && contract.paymentSchedule) {
+        // Find the matching payment item (by matching amount)
+        const updatedSchedule = [...contract.paymentSchedule];
+        const paymentItemIndex = updatedSchedule.findIndex(item => 
+          parseFloat(item.amount) === parseFloat(invoice.total)
+        );
+        
+        if (paymentItemIndex >= 0) {
+          updatedSchedule[paymentItemIndex] = {
+            ...updatedSchedule[paymentItemIndex],
+            status: parseFloat(amountDue) <= 0 ? "paid" : "invoiced"
+          };
+          
+          await this.updateContract(invoice.contractId, { paymentSchedule: updatedSchedule });
+        }
+      }
+    }
+    
+    return newPayment;
+  }
+  
+  async getNextInvoiceNumber(): Promise<string> {
+    // First try to get the highest invoice number from the database
+    const [result] = await db
+      .select({ maxInvoiceNumber: sql<string>`MAX(${invoices.invoiceNumber})` })
+      .from(invoices);
+    
+    const currentYear = new Date().getFullYear();
+    let nextNumber = 1;
+    
+    if (result?.maxInvoiceNumber) {
+      // Extract the number part if it follows our format (INV-YYYY-XXXX)
+      const match = result.maxInvoiceNumber.match(/INV-\d{4}-(\d+)/);
+      if (match && match[1]) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+    
+    // Format: INV-YYYY-XXXX (e.g., INV-2025-0001)
+    return `INV-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
+  }
+  
+  // PAYMENT METHODS
+  async getPayments(): Promise<Payment[]> {
+    return await db.select().from(payments).orderBy(desc(payments.paymentDate));
+  }
+  
+  async getPayment(id: number): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.id, id));
+    return payment;
+  }
+  
+  async getPaymentsByInvoice(invoiceId: number): Promise<Payment[]> {
+    return await db.select().from(payments)
+      .where(eq(payments.invoiceId, invoiceId))
+      .orderBy(desc(payments.paymentDate));
+  }
+  
+  async getPaymentsByContact(contactId: number): Promise<Payment[]> {
+    return await db.select().from(payments)
+      .where(eq(payments.contactId, contactId))
+      .orderBy(desc(payments.paymentDate));
+  }
+  
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const [result] = await db.insert(payments).values(payment).returning();
+    
+    // Also update the corresponding invoice
+    await this.recordPayment(payment.invoiceId, payment);
+    
+    return result;
+  }
+  
+  async updatePaymentStatus(id: number, status: string): Promise<Payment | undefined> {
+    const [updated] = await db
+      .update(payments)
+      .set({ status })
+      .where(eq(payments.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async sendReceipt(id: number): Promise<Payment | undefined> {
+    const [updated] = await db
+      .update(payments)
+      .set({ receiptSent: true })
+      .where(eq(payments.id, id))
+      .returning();
+    
+    // TODO: Send receipt email
+    
+    return updated;
   }
 }
 
