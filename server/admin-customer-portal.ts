@@ -239,7 +239,29 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
                 temporaryPassword: password
               };
               
-              // TODO: Send welcome email with login credentials
+              // Email template for future integration
+              const emailSubject = `Your APS Flooring Customer Portal Account`;
+              const emailContent = `
+                <h2>Welcome to APS Flooring Customer Portal</h2>
+                <p>Hello ${contact.name},</p>
+                <p>Your project with APS Flooring has been created, and you now have access to our customer portal where you can track your project's progress.</p>
+                <p><strong>Login Details:</strong></p>
+                <ul>
+                  <li>Email: ${contact.email}</li>
+                  <li>Temporary Password: ${password}</li>
+                </ul>
+                <p>Please login at <a href="${process.env.BASE_URL || 'https://apsflooring.com'}/customer/auth">Customer Portal</a> to view your project details.</p>
+                <p>If you have any questions, feel free to contact us.</p>
+                <p>Thank you for choosing APS Flooring!</p>
+              `;
+              
+              // TODO: When email service is integrated:
+              // await sendEmail({
+              //   to: contact.email,
+              //   from: 'projects@apsflooring.com',
+              //   subject: emailSubject,
+              //   html: emailContent
+              // });
             }
           }
         } catch (accountError) {
