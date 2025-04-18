@@ -653,7 +653,59 @@ export default function CustomerProjectsPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="customer">Customer <span className="text-red-500">*</span></Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="customer">Customer <span className="text-red-500">*</span></Label>
+                <Button type="button" variant="link" className="text-xs h-5 p-0" onClick={() => {
+                  // Create a customer user from the selected contact
+                  if (projectFormData.contactId) {
+                    const selectedContact = contacts?.find(c => c.id === projectFormData.contactId);
+                    if (selectedContact && selectedContact.email) {
+                      // Create customer from contact
+                      const createCustomerFromContact = async () => {
+                        try {
+                          const res = await apiRequest("POST", "/api/admin/customer-users", {
+                            name: selectedContact.name,
+                            email: selectedContact.email,
+                            password: Math.random().toString(36).slice(-8), // Random password
+                            phone: selectedContact.phone || "",
+                          });
+                          if (!res.ok) throw new Error("Failed to create customer");
+                          const newCustomer = await res.json();
+                          // Refresh customer users list
+                          queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-users"] });
+                          // Set the created customer as selected
+                          setProjectFormData({...projectFormData, customerId: newCustomer.id});
+                          toast({
+                            title: "Customer account created",
+                            description: "A customer account was created from the selected contact."
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to create customer account. Please try again.",
+                            variant: "destructive"
+                          });
+                        }
+                      };
+                      createCustomerFromContact();
+                    } else {
+                      toast({
+                        title: "Cannot create customer",
+                        description: "Selected contact must have an email address.",
+                        variant: "destructive"
+                      });
+                    }
+                  } else {
+                    toast({
+                      title: "Select a contact first",
+                      description: "Please select an associated contact first",
+                      variant: "destructive"
+                    });
+                  }
+                }}>
+                  Create from contact
+                </Button>
+              </div>
               <Select
                 value={projectFormData.customerId?.toString() || ""}
                 onValueChange={(value) => setProjectFormData({...projectFormData, customerId: parseInt(value)})}
@@ -755,7 +807,13 @@ export default function CustomerProjectsPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="contact">Associated Contact</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="contact">Associated Contact</Label>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <ArrowDown className="h-3 w-3 mr-1" />
+                  Select first, then create customer
+                </div>
+              </div>
               <Select
                 value={projectFormData.contactId?.toString() || ""}
                 onValueChange={(value) => setProjectFormData({
@@ -770,13 +828,13 @@ export default function CustomerProjectsPage() {
                   <SelectItem value="none">None</SelectItem>
                   {contacts?.map((contact) => (
                     <SelectItem key={contact.id} value={contact.id.toString()}>
-                      {contact.name} ({contact.email})
+                      {contact.name} ({contact.email || "No email"})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
-                Link to an existing contact to later generate portal access
+              <p className="text-xs text-muted-foreground">
+                Select a contact from your CRM, then click "Create from contact" above
               </p>
             </div>
             

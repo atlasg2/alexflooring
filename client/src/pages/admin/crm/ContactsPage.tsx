@@ -98,6 +98,7 @@ const ContactsPage = () => {
     },
     refetchOnWindowFocus: true,
     staleTime: 0,
+    refetchInterval: 3000, // Refetch every 3 seconds to ensure we get updated data
   });
   
   // Create contact mutation
