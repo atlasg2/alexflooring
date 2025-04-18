@@ -1,7 +1,8 @@
+import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { projects } from "@/data/projects";
-import { MapPin, Home, Store, ArrowRight } from "lucide-react";
+import { MapPin, Home, Store, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Filter projects by category
 const residentialProjects = projects.filter(project => project.category === 'residential');
@@ -113,80 +114,181 @@ const BeforeAfterProject = ({ project }: { project: typeof projects[0] }) => (
   </div>
 );
 
+// Main component starts here
+
 const FeaturedProjects = () => {
+  // State for residential projects slider
+  const [activeIndex, setActiveIndex] = useState(0);
+  const totalResidentialProjects = residentialProjects.length;
+  
+  // Refs for horizontal scrolling containers
+  const residentialScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll the residential projects container
+  const scrollResidential = (direction: 'left' | 'right') => {
+    if (!residentialScrollRef.current) return;
+    
+    const container = residentialScrollRef.current;
+    const scrollAmount = container.clientWidth; // Scroll by full container width
+    
+    if (direction === 'left') {
+      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      setActiveIndex(prev => Math.max(0, prev - 1));
+    } else {
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setActiveIndex(prev => Math.min(totalResidentialProjects - 1, prev + 1));
+    }
+  };
+  
   return (
-    <section id="projects" className="py-24 bg-gradient-to-b from-gray-50 to-white">
+    <section id="projects" className="py-24 bg-black text-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary relative inline-block">
-            Our Projects
-            <span className="absolute -bottom-3 left-1/2 w-24 h-1 bg-secondary transform -translate-x-1/2"></span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
+              Our Recent Projects
+            </span>
           </h2>
-          <p className="mt-8 text-lg text-gray-600 max-w-2xl mx-auto">
-            See the transformation in our recent flooring installations.
+          <div className="h-1 w-24 bg-secondary mx-auto mt-4 mb-6"></div>
+          <p className="mt-6 text-lg text-white/80 max-w-2xl mx-auto">
+            See the transformation in our flooring installations throughout Louisiana
           </p>
         </div>
         
         {/* Residential Projects Section */}
-        <div className="mb-24">
-          <div className="flex items-center mb-8 gap-4">
-            <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-              <Home className="h-10 w-10 text-secondary" />
+        <div className="mb-24 relative">
+          {/* Background design elements */}
+          <div className="absolute top-20 -right-10 w-64 h-64 border-2 border-secondary/10 rounded-full opacity-10"></div>
+          <div className="absolute -bottom-20 -left-10 w-48 h-48 border-2 border-secondary/20 rounded-full opacity-10"></div>
+          
+          {/* Section header with navigation controls */}
+          <div className="flex justify-between items-center mb-10">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-full bg-secondary/20 flex items-center justify-center shadow-lg border border-secondary/30">
+                <Home className="h-8 w-8 text-secondary" />
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-1">Residential Projects</h2>
+                <div className="h-1 w-20 bg-secondary"></div>
+              </div>
             </div>
-            <h2 className="text-3xl font-bold text-primary relative">
-              Residential Projects
-              <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-            </h2>
+            
+            {/* Slider controls */}
+            <div className="flex gap-3">
+              <button 
+                onClick={() => scrollResidential('left')}
+                disabled={activeIndex === 0}
+                className={`p-3 rounded-full ${activeIndex === 0 ? 'bg-gray-800 text-gray-600' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Previous slides"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => scrollResidential('right')}
+                disabled={activeIndex === totalResidentialProjects - 1}
+                className={`p-3 rounded-full ${activeIndex === totalResidentialProjects - 1 ? 'bg-gray-800 text-gray-600' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Next slides"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
           
-          <p className="text-gray-600 max-w-3xl mb-10">
-            Premium flooring solutions for homes, from hardwood installations to bathroom remodels and floor refinishing.
+          <p className="text-white/70 max-w-3xl mb-8 text-lg">
+            Premium flooring solutions for homes across Louisiana, from hardwood installations to bathroom remodels and historic floor refinishing.
           </p>
           
-          {/* Residential Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {residentialProjects.slice(0, 3).map(project => (
-              <ResidentialProjectCard key={project.id} project={project} />
-            ))}
+          {/* Residential Projects Horizontal Slider */}
+          <div 
+            className="relative mb-10 overflow-hidden"
+          >
+            <div 
+              ref={residentialScrollRef}
+              className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar"
+            >
+              {residentialProjects.map((project, index) => (
+                <div 
+                  key={project.id} 
+                  className="flex-none w-full md:w-[400px] lg:w-[450px] xl:w-[500px] snap-center"
+                  style={{scrollSnapAlign: 'start'}}
+                >
+                  <ResidentialProjectCard project={project} />
+                </div>
+              ))}
+            </div>
+            
+            {/* Pagination dots */}
+            <div className="flex justify-center gap-2 mt-6">
+              {residentialProjects.map((_, index) => (
+                <button
+                  key={`dot-${index}`}
+                  className={`w-8 h-1.5 rounded-sm transition-all ${
+                    index === activeIndex ? 'bg-secondary' : 'bg-white/20'
+                  }`}
+                  onClick={() => {
+                    if (residentialScrollRef.current) {
+                      const container = residentialScrollRef.current;
+                      const cardWidth = container.clientWidth;
+                      container.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
+                      setActiveIndex(index);
+                    }
+                  }}
+                  aria-label={`Go to project ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
           
-          <div className="mt-10 flex justify-center">
+          <div className="mt-6 flex justify-center">
             <Link
               href="/projects?category=residential"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
+              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
             >
               View All Residential Projects
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
         
         {/* Commercial Projects Section */}
-        <div className="pt-10 mt-10 border-t border-gray-200">
-          <div className="flex items-center mb-8 gap-4">
-            <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-              <Store className="h-10 w-10 text-secondary" />
+        <div className="pt-20 mt-16 relative border-t border-white/10">
+          <div className="absolute top-10 left-0 w-40 h-40 border-2 border-secondary/20 rounded-full opacity-10"></div>
+          
+          <div className="flex items-center mb-10 gap-4">
+            <div className="p-4 rounded-full bg-secondary/20 flex items-center justify-center shadow-lg border border-secondary/30">
+              <Store className="h-8 w-8 text-secondary" />
             </div>
-            <h2 className="text-3xl font-bold text-primary relative">
-              Commercial Projects
-              <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-            </h2>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-1">Commercial Projects</h2>
+              <div className="h-1 w-20 bg-secondary"></div>
+            </div>
           </div>
           
-          <p className="text-gray-600 max-w-3xl mb-10">
-            Long-lasting, high-performance flooring for offices, restaurants, retail spaces, and other commercial environments.
+          <p className="text-white/70 max-w-3xl mb-10 text-lg">
+            Long-lasting, high-performance flooring for offices, restaurants, retail spaces, and other commercial environments throughout Louisiana.
           </p>
           
-          {/* Commercial Project with Before/After */}
-          <BeforeAfterProject project={commercialProjects[0]} />
+          {/* Commercial Projects with Before/After Comparison */}
+          <div className="flex overflow-x-auto gap-6 pb-10 snap-x hide-scrollbar">
+            {commercialProjects.map((project, index) => (
+              <div 
+                key={project.id} 
+                className="flex-none w-full snap-center"
+              >
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-1 shadow-2xl overflow-hidden border border-white/10">
+                  <BeforeAfterProject project={project} />
+                </div>
+              </div>
+            ))}
+          </div>
           
           <div className="mt-10 flex justify-center">
             <Link
               href="/projects?category=commercial"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
+              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
             >
               View All Commercial Projects
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>

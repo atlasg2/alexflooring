@@ -27,8 +27,8 @@ export const projects: Project[] = [
   {
     id: "2",
     title: "Kitchen Renovation",
-    description: "Upgraded to waterproof luxury vinyl plank in this Birmingham family kitchen.",
-    location: "Birmingham, AL",
+    description: "Upgraded to waterproof luxury vinyl plank in this Metairie family kitchen.",
+    location: "Metairie, LA",
     type: "Luxury Vinyl",
     beforeImage: "https://images.unsplash.com/photo-1517176821879-0f1478c0d082?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
@@ -51,8 +51,8 @@ export const projects: Project[] = [
   {
     id: "4",
     title: "Office Flooring Solution",
-    description: "Commercial-grade luxury vinyl tile for this professional office space.",
-    location: "Birmingham, AL",
+    description: "Commercial-grade luxury vinyl tile for this professional office space in New Orleans.",
+    location: "New Orleans, LA",
     type: "Commercial",
     beforeImage: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1497215842964-222b430dc094?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
@@ -75,8 +75,8 @@ export const projects: Project[] = [
   {
     id: "6",
     title: "Restaurant Floor Installation",
-    description: "Durable commercial tile for this busy local restaurant.",
-    location: "Hoover, AL",
+    description: "Durable commercial tile for this busy local restaurant in the French Quarter.",
+    location: "New Orleans, LA",
     type: "Commercial",
     beforeImage: "https://images.unsplash.com/photo-1512817307808-b1684be9e197?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     afterImage: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
