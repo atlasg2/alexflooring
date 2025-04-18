@@ -13,6 +13,7 @@ import {
   insertAutomationWorkflowSchema
 } from "@shared/schema";
 import { setupAuth, isAdmin } from "./auth";
+import { setupAuth as setupNewAuth } from "./auth-new";
 import { setupCustomerAuth } from "./customer-auth";
 import { setupCustomerProjectRoutes } from "./customer-projects";
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
@@ -21,6 +22,9 @@ import { setupSalesWorkflowRoutes } from "./sales-workflow";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication and admin protection
   setupAuth(app);
+  
+  // Set up our new authentication system
+  setupNewAuth(app);
   
   // Set up customer portal authentication and routes
   setupCustomerAuth(app);

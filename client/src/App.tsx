@@ -128,25 +128,27 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CustomerAuthProvider>
-          {isAdminRoute ? (
-            // Admin routes don't use MainLayout
-            <Router />
-          ) : isCustomerRoute ? (
-            // Customer routes don't use MainLayout
-            <Router />
-          ) : (
-            // Public routes use MainLayout
-            <MainLayout>
+        <AuthProvider>
+          <CustomerAuthProvider>
+            {isAdminRoute ? (
+              // Admin routes don't use MainLayout
               <Router />
-            </MainLayout>
-          )}
-          
-          {/* Only show chat widget on public routes that are not customer routes */}
-          {!isAdminRoute && !isCustomerRoute && <ChatWidget />}
-          
-          <Toaster />
-        </CustomerAuthProvider>
+            ) : isCustomerRoute ? (
+              // Customer routes don't use MainLayout
+              <Router />
+            ) : (
+              // Public routes use MainLayout
+              <MainLayout>
+                <Router />
+              </MainLayout>
+            )}
+            
+            {/* Only show chat widget on public routes that are not customer routes */}
+            {!isAdminRoute && !isCustomerRoute && <ChatWidget />}
+            
+            <Toaster />
+          </CustomerAuthProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
