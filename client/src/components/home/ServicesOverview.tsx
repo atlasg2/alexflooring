@@ -176,19 +176,44 @@ const ServicesOverview = () => {
   const commercialService = commercialServices[0];
 
   return (
-    <section id="services" className="py-24 bg-black text-white">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
-              Expert Flooring Services
-            </span>
-          </h2>
-          <div className="h-1 w-24 bg-secondary mx-auto mt-4 mb-6"></div>
-          <p className="mt-6 text-lg text-white/80 max-w-2xl mx-auto">
-            Premium flooring solutions for residential and commercial spaces throughout Louisiana
-          </p>
+    <section id="services" className="relative py-24 bg-black text-white overflow-hidden">
+      {/* Background visual elements */}
+      <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
+        <div className="absolute -top-32 left-0 w-full h-64 bg-gradient-to-b from-secondary/10 to-transparent opacity-40"></div>
+        <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-secondary/5 blur-3xl"></div>
+        <div className="absolute top-20 left-20 w-40 h-40 rounded-full bg-secondary/10 blur-2xl"></div>
+      </div>
+      
+      {/* Featured image for visual interest */}
+      <div className="relative container mx-auto px-4 md:px-6 lg:px-8 mb-16">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="w-full md:w-7/12 mb-10 md:mb-0 text-center md:text-left">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block mb-4">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
+                Expert Flooring Services
+              </span>
+            </h2>
+            <div className="h-1 w-24 bg-secondary mt-4 mb-6 mx-auto md:mx-0"></div>
+            <p className="text-lg text-white/80 max-w-xl mx-auto md:mx-0">
+              Premium flooring solutions for residential and commercial spaces throughout Louisiana
+            </p>
+          </div>
+          
+          <div className="w-full md:w-5/12 relative">
+            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-white/10">
+              <img 
+                src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                alt="Premium Flooring Installation" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/10">
+                <p className="text-white font-medium text-sm">Professional Installation</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
         
         {/* 3x3 Services Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
