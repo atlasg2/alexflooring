@@ -42,19 +42,50 @@ export function setupSalesWorkflowRoutes(app: Express) {
       
       // Add more detailed error logging for debugging
       try {
+        // Check if an estimateNumber field is present - if not, add it
+        if (!req.body.estimateNumber) {
+          req.body.estimateNumber = await storage.getNextEstimateNumber();
+          console.log("Added estimate number:", req.body.estimateNumber);
+        }
+        
+        // If status isn't provided, set it to 'draft'
+        if (!req.body.status) {
+          req.body.status = 'draft';
+          console.log("Set default status to 'draft'");
+        }
+        
+        console.log("Validating data with schema...");
         const validatedData = insertEstimateSchema.parse(req.body);
+        console.log("Data validated successfully!");
+        
         const estimate = await storage.createEstimate(validatedData);
         console.log("Successfully created estimate:", estimate.id);
         res.status(201).json(estimate);
       } catch (validationError: any) {
-        console.error("Validation error details:", validationError.errors || validationError);
+        console.error("Validation error details:", 
+          validationError.errors ? JSON.stringify(validationError.errors, null, 2) : validationError);
+        
+        // Log the expected vs actual shape
+        console.error("Schema expects:", Object.keys(insertEstimateSchema.shape || {}).join(", "));
+        console.error("Received:", Object.keys(req.body).join(", "));
+        
         throw validationError;
       }
     } catch (error: any) {
       console.error("Error creating estimate:", error);
+      
+      // More detailed error response for debugging
+      const errorDetails = error.errors ? error.errors.map((err: any) => ({
+        path: err.path?.join('.'),
+        message: err.message,
+        expected: err.expected,
+        received: err.received
+      })) : undefined;
+      
       res.status(400).json({ 
         error: "Invalid estimate data", 
-        details: error.message || "Unknown error" 
+        message: error.message || "Unknown error",
+        details: errorDetails || error.toString()
       });
     }
   });

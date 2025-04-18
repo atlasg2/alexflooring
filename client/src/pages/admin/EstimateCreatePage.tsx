@@ -207,20 +207,30 @@ export default function EstimateCreatePage() {
   // Mutation to create estimate
   const createMutation = useMutation({
     mutationFn: async (data: EstimateFormValues) => {
-      console.log('Sending to server:', JSON.stringify(data, null, 2));
+      console.log('Submitting estimate data:', data);
+      
+      // Add any missing required fields
+      const enhancedData = {
+        ...data,
+        // Add estimateNumber field if needed - will be generated on server if not present
+        // Add default status
+        status: 'draft'
+      };
+      
+      console.log('Sending to server:', JSON.stringify(enhancedData, null, 2));
       
       const response = await fetch('/api/admin/estimates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(enhancedData),
       });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Server error response:', errorData);
-        throw new Error(errorData.error || 'Failed to create estimate');
+        throw new Error(errorData.message || errorData.error || 'Failed to create estimate');
       }
       
       return response.json();
