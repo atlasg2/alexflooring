@@ -116,6 +116,7 @@ interface DocumentFormData {
   name: string;
   url: string;
   type: string;
+  uploadDate?: string;
 }
 
 export default function CustomerProjectsPage() {
@@ -394,7 +395,7 @@ export default function CustomerProjectsPage() {
   };
   
   return (
-    <AdminLayout>
+    <AdminLayout title="Customer Projects">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>

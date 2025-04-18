@@ -30,6 +30,10 @@ import SmsTemplatesPage from "@/pages/admin/SmsTemplatesPage";
 // Admin pages - Settings
 import AutomationPage from "@/pages/admin/AutomationPage";
 
+// Admin pages - Customer Portal
+import CustomerProjectsPage from "@/pages/admin/customer-portal/ProjectsPage";
+import CustomerUsersPage from "@/pages/admin/customer-portal/UsersPage";
+
 // Customer Portal
 import CustomerAuth from "@/pages/customer/CustomerAuth";
 import CustomerDashboard from "@/pages/customer/CustomerDashboard";
@@ -81,6 +85,10 @@ function Router() {
       {/* Admin Routes - Settings */}
       <Route path="/admin/automation" component={AutomationPage} />
       <Route path="/admin/account" component={ContactsPage} />
+      
+      {/* Admin Routes - Customer Portal */}
+      <Route path="/admin/customer-portal/projects" component={CustomerProjectsPage} />
+      <Route path="/admin/customer-portal/users" component={CustomerUsersPage} />
       
       {/* 404 Route */}
       <Route component={NotFound} />
