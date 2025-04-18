@@ -106,6 +106,7 @@ export interface IStorage {
   // Automation Workflow methods
   getAutomationWorkflows(): Promise<AutomationWorkflow[]>;
   getAutomationWorkflow(id: number): Promise<AutomationWorkflow | undefined>;
+  getWorkflowsByTrigger(triggerType: string, condition?: string): Promise<AutomationWorkflow[]>;
   createAutomationWorkflow(workflow: InsertAutomationWorkflow): Promise<AutomationWorkflow>;
   updateAutomationWorkflow(id: number, workflow: Partial<InsertAutomationWorkflow>): Promise<AutomationWorkflow | undefined>;
   toggleAutomationWorkflow(id: number, isActive: boolean): Promise<AutomationWorkflow | undefined>;
@@ -216,6 +217,17 @@ export class DatabaseStorage implements IStorage {
   async getCustomerUserByUsername(username: string): Promise<CustomerUser | undefined> {
     const [user] = await db.select().from(customerUsers).where(eq(customerUsers.username, username));
     return user;
+  }
+  
+  // Get a customer user by contact ID
+  async getCustomerUserByContactId(contactId: number): Promise<CustomerUser | undefined> {
+    try {
+      const [user] = await db.select().from(customerUsers).where(eq(customerUsers.contactId, contactId));
+      return user;
+    } catch (error) {
+      console.error("Error getting customer by contact ID:", error);
+      return undefined;
+    }
   }
   
   async getCustomerUsers(): Promise<CustomerUser[]> {
@@ -717,6 +729,29 @@ export class DatabaseStorage implements IStorage {
   async getAutomationWorkflow(id: number): Promise<AutomationWorkflow | undefined> {
     const [workflow] = await db.select().from(automationWorkflows).where(eq(automationWorkflows.id, id));
     return workflow;
+  }
+  
+  // Get workflows by trigger type and condition
+  async getWorkflowsByTrigger(triggerType: string, condition?: string): Promise<AutomationWorkflow[]> {
+    try {
+      if (condition) {
+        return await db.select().from(automationWorkflows)
+          .where(and(
+            eq(automationWorkflows.triggerType, triggerType),
+            eq(automationWorkflows.triggerCondition, condition),
+            eq(automationWorkflows.isActive, true)
+          ));
+      } else {
+        return await db.select().from(automationWorkflows)
+          .where(and(
+            eq(automationWorkflows.triggerType, triggerType),
+            eq(automationWorkflows.isActive, true)
+          ));
+      }
+    } catch (error) {
+      console.error("Database error:", error);
+      return [];
+    }
   }
   
   async createAutomationWorkflow(workflow: InsertAutomationWorkflow): Promise<AutomationWorkflow> {

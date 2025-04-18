@@ -35,6 +35,17 @@ declare global {
 const scryptAsync = promisify(scrypt);
 
 // Password hashing functions
+// Generate a random password
+export function generatePassword(length = 10): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+  let result = '';
+  const randomBytesArray = randomBytes(length);
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(randomBytesArray[i] % chars.length);
+  }
+  return result;
+}
+
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;

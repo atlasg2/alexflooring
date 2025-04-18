@@ -32,6 +32,7 @@ import CalendarPage from "@/pages/admin/CalendarPage";
 
 // Admin pages - Sales Workflow
 import EstimatesPage from "@/pages/admin/EstimatesPage";
+import EstimateCreatePage from "@/pages/admin/EstimateCreatePage";
 import ContractsPage from "@/pages/admin/ContractsPage";
 import InvoicesPage from "@/pages/admin/InvoicesPage";
 
@@ -105,6 +106,7 @@ function Router() {
       
       {/* Simple Admin Routes - Sales Workflow */}
       <SimpleProtectedRoute path="/admin/estimates" component={EstimatesPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/estimates/create" component={EstimateCreatePage} adminOnly={true} />
       <SimpleProtectedRoute path="/admin/contracts" component={ContractsPage} adminOnly={true} />
       <SimpleProtectedRoute path="/admin/invoices" component={InvoicesPage} adminOnly={true} />
       
