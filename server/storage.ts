@@ -8,7 +8,9 @@ import {
   reviews, type Review, type InsertReview,
   emailTemplates, type EmailTemplate, type InsertEmailTemplate,
   smsTemplates, type SmsTemplate, type InsertSmsTemplate,
-  automationWorkflows, type AutomationWorkflow, type InsertAutomationWorkflow
+  automationWorkflows, type AutomationWorkflow, type InsertAutomationWorkflow,
+  customerUsers, type CustomerUser, type InsertCustomerUser,
+  customerProjects, type CustomerProject, type InsertCustomerProject
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, like, sql, ilike } from "drizzle-orm";
