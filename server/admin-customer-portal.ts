@@ -5,6 +5,7 @@ import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import { z } from "zod";
 import { insertCustomerProjectSchema, insertCustomerUserSchema } from "@shared/schema";
+import { emailService } from "./email-service";
 
 const scryptAsync = promisify(scrypt);
 
