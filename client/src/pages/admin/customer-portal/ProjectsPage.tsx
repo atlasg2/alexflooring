@@ -47,7 +47,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MoreHorizontal, FileText, Image, UserPlus, PlusCircle, CalendarRange, Edit, Trash, ChevronDown } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, MoreHorizontal, FileText, Image, UserPlus, PlusCircle, CalendarRange, Edit, Trash, ChevronDown, RefreshCw, Info as InfoIcon } from "lucide-react";
 import { format } from "date-fns";
 import AdminLayout from "@/layouts/AdminLayout";
 
@@ -294,6 +298,28 @@ export default function CustomerProjectsPage() {
           delete data[key];
         }
       });
+      
+      // Add portal account credentials if creating an account
+      if (createPortalAccount && projectFormData.contactId) {
+        // Find the contact to get their email
+        const contact = contacts?.find(c => c.id === projectFormData.contactId);
+        
+        if (contact && contact.email) {
+          // Add portal creation data to the project request
+          data.createPortalAccount = true;
+          data.portalCredentials = {
+            username: portalCredentials.username,
+            password: portalCredentials.password,
+            sendEmail: portalCredentials.sendEmail
+          };
+        } else {
+          toast({
+            title: "Warning",
+            description: "Contact has no email address. Portal account cannot be created.",
+            variant: "warning"
+          });
+        }
+      }
       
       createProjectMutation.mutate(data);
     } catch (error) {

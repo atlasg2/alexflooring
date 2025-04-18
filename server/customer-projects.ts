@@ -54,8 +54,11 @@ export function setupCustomerProjectRoutes(app: Express) {
   // Create a new project (admin-only for now)
   app.post("/api/admin/customer-projects", async (req, res) => {
     try {
+      // Extract portal account data before validation
+      const { createPortalAccount, portalCredentials, ...projectRequestData } = req.body;
+      
       // Validate the request body
-      const projectData = insertCustomerProjectSchema.parse(req.body);
+      const projectData = insertCustomerProjectSchema.parse(projectRequestData);
       
       // Create the project
       const project = await storage.createCustomerProject(projectData);
@@ -72,19 +75,87 @@ export function setupCustomerProjectRoutes(app: Express) {
             return;
           }
           
-          const customerUser = contact.email ? 
-            await storage.getCustomerUserByEmail(contact.email) : null;
-          
           // Generate account response to include in return
           let accountCreation = null;
           
+          // If the contact has an email, check for customer account
           if (contact && contact.email) {
-            if (customerUser) {
+            // First check if a customer user already exists
+            let customerUser = contact.email ? 
+              await storage.getCustomerUserByEmail(contact.email) : null;
+            
+            // If we're explicitly creating a portal account and have credentials
+            if (createPortalAccount && portalCredentials && !customerUser) {
+              try {
+                console.log("Creating customer portal account during project creation");
+                // Create a new customer user with the provided credentials
+                customerUser = await storage.createCustomerUser({
+                  email: contact.email,
+                  name: contact.name,
+                  phone: contact.phone || "",
+                  password: portalCredentials.password,
+                  username: portalCredentials.username,
+                });
+                
+                accountCreation = {
+                  status: 'created',
+                  message: `New customer account created for ${contact.email}`
+                };
+                
+                // Update the project with the customer ID
+                await storage.updateCustomerProject(project.id, {
+                  customerId: customerUser.id
+                });
+                
+                // Send account credentials email if requested
+                if (portalCredentials.sendEmail) {
+                  try {
+                    await emailService.sendCustomerPortalCredentials({
+                      to: contact.email,
+                      name: contact.name,
+                      username: portalCredentials.username,
+                      password: portalCredentials.password,
+                      loginUrl: `${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth`
+                    });
+                    console.log(`Portal credentials email sent to ${contact.email}`);
+                  } catch (emailError) {
+                    console.error("Error sending portal credentials email:", emailError);
+                  }
+                }
+                
+                // Also send project notification
+                try {
+                  await emailService.sendProjectUpdate({
+                    to: contact.email || '',
+                    name: contact.name,
+                    projectTitle: project.title,
+                    updateMessage: `A new project "${project.title}" has been created for you. You can view the details in your customer portal.`,
+                    loginUrl: `${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth`
+                  });
+                  console.log(`Project creation email sent to ${contact.email}`);
+                } catch (emailError) {
+                  console.error("Error sending project creation email:", emailError);
+                }
+              } catch (accountError) {
+                console.error("Error creating customer account:", accountError);
+                accountCreation = {
+                  status: 'error',
+                  message: 'Failed to create customer account'
+                };
+              }
+            } else if (customerUser) {
               // Customer user already exists, link to project
               accountCreation = {
                 status: 'linked',
                 message: `Project linked to existing customer account for ${contact.email}`
               };
+              
+              // Update the project with the customer ID if not already set
+              if (!project.customerId) {
+                await storage.updateCustomerProject(project.id, {
+                  customerId: customerUser.id
+                });
+              }
               
               // Send project notification email
               try {
@@ -99,10 +170,8 @@ export function setupCustomerProjectRoutes(app: Express) {
               } catch (emailError) {
                 console.error("Error sending project creation email:", emailError);
               }
-              
-            } else {
-              // No customer account yet, one will be created by admin-customer-portal.ts
-              // when accessing create-customer-account endpoint
+            } else if (!createPortalAccount) {
+              // No customer account yet and not explicitly creating one
               accountCreation = {
                 status: 'pending',
                 message: 'Customer account needs to be created'
@@ -110,8 +179,11 @@ export function setupCustomerProjectRoutes(app: Express) {
             }
           }
           
+          // Refetch the project with updated customerId if needed
+          const updatedProject = await storage.getCustomerProject(project.id) || project;
+          
           res.status(201).json({
-            ...project,
+            ...updatedProject,
             accountCreation
           });
           return;
