@@ -34,34 +34,42 @@ const Testimonials = () => {
         
         <div className="testimonial-carousel relative max-w-4xl mx-auto">
           {/* Testimonial Slides */}
-          {testimonials.map((testimonial, index) => (
-            <div 
-              key={testimonial.id} 
-              className={`testimonial-slide ${index === currentTestimonial ? 'block' : 'hidden'}`}
-            >
-              <div className="bg-gray-50 rounded-xl p-8 md:p-10 shadow-lg border border-gray-100">
-                <div className="flex items-center mb-6">
-                  <div className="text-secondary flex">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-current" />
-                    ))}
+          <div className="relative h-[400px] overflow-hidden">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={testimonial.id} 
+                className={`testimonial-slide absolute inset-0 transition-all duration-700 transform ${
+                  index === currentTestimonial 
+                    ? 'opacity-100 translate-x-0' 
+                    : index < currentTestimonial 
+                      ? 'opacity-0 -translate-x-full' 
+                      : 'opacity-0 translate-x-full'
+                }`}
+              >
+                <div className="bg-white rounded-2xl p-8 md:p-10 shadow-xl border border-gray-100 h-full flex flex-col">
+                  <div className="flex items-center mb-6">
+                    <div className="text-secondary flex gap-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-6 w-6 fill-current" />
+                      ))}
+                    </div>
+                    <div className="ml-auto text-sm font-semibold px-4 py-1.5 rounded-full bg-gray-100 shadow-sm">via {testimonial.source}</div>
                   </div>
-                  <div className="ml-auto text-sm font-medium px-3 py-1 rounded-full bg-gray-200">via {testimonial.source}</div>
-                </div>
-                <blockquote className="text-lg text-gray-700 italic mb-6 leading-relaxed">"{testimonial.quote}"</blockquote>
-                <div className="flex items-center">
-                  <Avatar className="h-14 w-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-secondary">
-                    <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                    <AvatarFallback className="bg-primary text-white">{getInitials(testimonial.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="ml-4">
-                    <p className="font-bold text-primary">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.location}</p>
+                  <blockquote className="text-xl text-gray-700 italic mb-8 leading-relaxed flex-grow">"<span className="text-primary font-medium">{testimonial.quote}</span>"</blockquote>
+                  <div className="flex items-center mt-auto pt-6 border-t border-gray-100">
+                    <Avatar className="h-16 w-16 rounded-full overflow-hidden flex-shrink-0 border-3 border-secondary shadow-md">
+                      <AvatarImage src={testimonial.image} alt={testimonial.name} />
+                      <AvatarFallback className="bg-primary text-white text-lg font-bold">{getInitials(testimonial.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="ml-4">
+                      <p className="font-bold text-primary text-lg">{testimonial.name}</p>
+                      <p className="text-sm text-gray-500 flex items-center"><MapPin className="h-3.5 w-3.5 text-secondary mr-1" /> {testimonial.location}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
           
           {/* Carousel Navigation */}
           <div className="flex justify-center mt-10 gap-3">

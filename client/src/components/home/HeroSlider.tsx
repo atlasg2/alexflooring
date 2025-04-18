@@ -69,32 +69,34 @@ const HeroSlider = () => {
   }, [nextSlide]);
 
   return (
-    <section className="hero-slider h-[85vh] relative">
+    <section className="hero-slider h-[90vh] relative overflow-hidden">
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div 
           key={slide.id}
-          className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${
-            index === currentSlide ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'
+          className={`absolute inset-0 bg-cover bg-center transition-all duration-1500 ${
+            index === currentSlide ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-110'
           }`}
           style={{ backgroundImage: `url(${slide.image})` }}
           aria-hidden={index !== currentSlide}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
           
-          {/* Minimal text positioned at bottom left */}
-          <div className="absolute bottom-[15%] left-10 md:left-24 max-w-md text-left z-20">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2 font-montserrat">
+          {/* Text container with animation */}
+          <div className={`absolute bottom-[15%] left-0 md:left-24 max-w-md text-left z-20 px-8 md:px-0 transform transition-all duration-1000 ${
+            index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
+          }`}>
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 font-montserrat drop-shadow-md">
               {slide.title}
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-6">
+            <p className="text-lg md:text-xl text-white/90 mb-8 drop-shadow-md max-w-md">
               {slide.subtitle}
             </p>
             <Link href="/contact" className="inline-block">
               <Button 
-                className="bg-secondary text-black hover:bg-secondary/90 px-6 py-3 rounded flex items-center gap-2 text-base font-medium"
+                className="bg-secondary text-black hover:bg-secondary/90 px-8 py-4 rounded-md flex items-center gap-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
               >
-                Free Estimate <ArrowRight className="h-4 w-4" />
+                Free Estimate <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           </div>

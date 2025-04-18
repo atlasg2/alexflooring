@@ -7,41 +7,41 @@ import { MapPin, Home, Store, ArrowRight } from "lucide-react";
 const residentialProjects = projects.filter(project => project.category === 'residential');
 const commercialProjects = projects.filter(project => project.category === 'commercial');
 
-// Simple project card for residential
+// Enhanced project card for residential
 const ResidentialProjectCard = ({ project }: { project: typeof projects[0] }) => (
-  <div className="relative group overflow-hidden rounded-lg h-[400px]">
+  <div className="relative group overflow-hidden rounded-xl h-[450px] shadow-lg hover:shadow-xl transition-all duration-500">
     {/* Project image with zoom effect on hover */}
     <div 
-      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter brightness-95 group-hover:brightness-105"
       style={{ backgroundImage: `url(${project.afterImage})` }}
     />
     
     {/* Gradient overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80" />
     
-    {/* Content at bottom */}
-    <div className="absolute inset-x-0 bottom-0 p-6 transform transition-transform duration-300 group-hover:translate-y-0">
-      <div className="flex gap-2 items-center mb-2">
-        <div className="bg-secondary/80 text-black px-3 py-1 rounded-full text-xs font-medium">
+    {/* Content at bottom with slide-up effect */}
+    <div className="absolute inset-x-0 bottom-0 p-8 transform transition-all duration-500 ease-in-out translate-y-2 group-hover:translate-y-0">
+      <div className="flex flex-wrap gap-3 items-center mb-3">
+        <div className="bg-secondary text-black px-4 py-1.5 rounded-full text-xs font-semibold shadow-md">
           {project.type}
         </div>
-        <div className="flex items-center text-white/80 text-xs">
-          <MapPin className="h-3 w-3 mr-1 text-secondary" /> 
+        <div className="flex items-center text-white/90 text-xs backdrop-blur-sm bg-black/20 px-3 py-1.5 rounded-full">
+          <MapPin className="h-3 w-3 mr-1.5 text-secondary" /> 
           {project.location}
         </div>
       </div>
       
-      <h3 className="text-xl font-bold text-white mb-3">{project.title}</h3>
+      <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-md">{project.title}</h3>
       
-      <p className="text-white/80 text-sm mb-4 line-clamp-2">
+      <p className="text-white/90 text-sm mb-5 line-clamp-2 leading-relaxed max-w-md">
         {project.description}
       </p>
       
       <Link
         href={`/projects/${project.id}`}
-        className="inline-flex items-center text-secondary bg-black/30 backdrop-blur-sm py-2 px-4 rounded font-medium text-sm hover:bg-black/50 transition-all duration-300"
+        className="inline-flex items-center text-white bg-secondary/90 backdrop-blur-sm py-2.5 px-5 rounded-lg font-semibold text-sm hover:bg-secondary transition-all duration-300 shadow-md hover:shadow-lg transform group-hover:translate-y-0 hover:-translate-y-1"
       >
-        View Project <ArrowRight className="ml-1 h-4 w-4" />
+        View Project <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
       </Link>
     </div>
   </div>

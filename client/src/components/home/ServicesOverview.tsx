@@ -19,34 +19,34 @@ const iconComponents: Record<string, React.ReactNode> = {
 const residentialServices = services.filter(service => service.category === 'residential');
 const commercialServices = services.filter(service => service.category === 'commercial');
 
-// A simpler service card with large image focus
+// Enhanced service card with large image focus and better hover effects
 const ServiceItem = ({ service }: { service: typeof services[0] }) => (
-  <div className="group relative h-96 overflow-hidden rounded-lg">
+  <div className="group relative h-[400px] overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-500">
     {/* Background Image */}
     <div
-      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-out group-hover:scale-110 filter brightness-90 group-hover:brightness-100"
       style={{ backgroundImage: `url(${service.image})` }}
     />
     
     {/* Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-70 group-hover:opacity-80 transition-opacity duration-500" />
     
-    {/* Icon */}
-    <div className="absolute top-5 right-5 p-3 rounded-full bg-white/10 backdrop-blur-md">
+    {/* Animated Icon */}
+    <div className="absolute top-6 right-6 p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 transform transition-all duration-500 group-hover:scale-110 shadow-lg">
       {iconComponents[service.icon]}
     </div>
     
-    {/* Content */}
-    <div className="absolute inset-x-0 bottom-0 p-6">
-      <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-      <p className="text-white/80 text-sm line-clamp-2 mb-4">
+    {/* Content with slide-up animation */}
+    <div className="absolute inset-x-0 bottom-0 p-8 transform transition-all duration-500 ease-in-out group-hover:translate-y-[-8px]">
+      <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-md">{service.title}</h3>
+      <p className="text-white/90 text-base line-clamp-2 mb-5 max-w-md leading-relaxed">
         {service.shortDescription}
       </p>
       <Link
         href={`/services/${service.slug}`}
-        className="inline-flex items-center bg-secondary text-black py-2 px-4 rounded text-sm font-medium transition-all duration-300 hover:bg-secondary/90"
+        className="inline-flex items-center bg-secondary text-black py-2.5 px-5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-secondary transform hover:-translate-y-1 shadow-md hover:shadow-lg"
       >
-        Learn More <ArrowRight className="ml-1 h-4 w-4" />
+        Learn More <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
       </Link>
     </div>
   </div>
