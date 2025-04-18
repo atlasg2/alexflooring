@@ -111,16 +111,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/admin/chat/unread-count", isAdmin, async (req, res) => {
-    try {
-      const count = await storage.getUnreadMessageCount();
-      res.json({ count });
-    } catch (error) {
-      console.error("Error fetching unread count:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-  
   app.put("/api/admin/chat/:id/read", isAdmin, async (req, res) => {
     try {
       await storage.markChatMessageAsRead(parseInt(req.params.id));
