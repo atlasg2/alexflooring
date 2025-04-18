@@ -13,10 +13,16 @@ import {
   insertAutomationWorkflowSchema
 } from "@shared/schema";
 import { setupAuth, isAdmin } from "./auth";
+import { setupCustomerAuth } from "./customer-auth";
+import { setupCustomerProjectRoutes } from "./customer-projects";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication and admin protection
   setupAuth(app);
+  
+  // Set up customer portal authentication and routes
+  setupCustomerAuth(app);
+  setupCustomerProjectRoutes(app);
   
   // Public endpoints
   

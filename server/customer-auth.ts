@@ -3,6 +3,19 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { CustomerUser, InsertCustomerUser } from "@shared/schema";
+import session from "express-session";
+
+// Extend SessionData to include customer property
+declare module "express-session" {
+  interface SessionData {
+    customer?: {
+      id: number;
+      email: string;
+      name: string;
+      isCustomer: boolean;
+    };
+  }
+}
 
 // Declare customer user for Express session
 declare global {
