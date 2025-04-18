@@ -187,6 +187,7 @@ export default function EstimateCreatePage() {
       subtotal: '0.00',
       total: '0.00',
     },
+    mode: 'onChange', // Validate on change for better user experience
   });
   
   // Get form values for calculations
@@ -420,7 +421,7 @@ export default function EstimateCreatePage() {
                           <FormLabel>Customer</FormLabel>
                           <Select
                             onValueChange={(value) => field.onChange(parseInt(value))}
-                            defaultValue={field.value?.toString()}
+                            value={field.value ? field.value.toString() : undefined}
                           >
                             <FormControl>
                               <SelectTrigger>

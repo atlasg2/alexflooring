@@ -856,6 +856,33 @@ export class DatabaseStorage implements IStorage {
         console.log("Using estimate number:", estimate.estimateNumber);
       }
       
+      // Set default status if not provided
+      if (!estimate.status) {
+        estimate.status = 'draft';
+        console.log("Setting default status to 'draft'");
+      }
+      
+      // Lookup customer user ID from contact ID if not provided
+      if (estimate.contactId && !estimate.customerUserId) {
+        try {
+          const contact = await db.select().from(contacts)
+            .where(eq(contacts.id, estimate.contactId)).limit(1);
+          
+          if (contact.length > 0 && contact[0].isCustomer) {
+            // Find customer user associated with this contact
+            const customerUser = await db.select().from(customerUsers)
+              .where(eq(customerUsers.contactId, estimate.contactId)).limit(1);
+            
+            if (customerUser.length > 0) {
+              estimate.customerUserId = customerUser[0].id;
+              console.log(`Found customer user ID ${estimate.customerUserId} for contact ${estimate.contactId}`);
+            }
+          }
+        } catch (err) {
+          console.error("Error looking up customer user ID:", err);
+        }
+      }
+      
       // Make sure lineItems is properly formatted as JSON
       if (estimate.lineItems && typeof estimate.lineItems === 'string') {
         try {
@@ -870,6 +897,12 @@ export class DatabaseStorage implements IStorage {
         console.warn("lineItems is not an array, setting to empty array");
         estimate.lineItems = [];
       }
+      
+      // Log the data we're about to insert
+      console.log("Final estimate data to insert:", {
+        ...estimate, 
+        lineItems: Array.isArray(estimate.lineItems) ? `Array of ${estimate.lineItems.length} items` : estimate.lineItems
+      });
       
       const [result] = await db.insert(estimates).values(estimate).returning();
       console.log("Estimate created successfully with ID:", result.id);
