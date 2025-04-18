@@ -46,6 +46,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Mock data for dashboard stats and charts
 const mockRecentContacts = [
@@ -221,12 +222,21 @@ const StatCard = ({ title, value, description, icon, color }: StatCardProps) => 
 
 const DashboardPage = () => {
   const [, navigate] = useLocation();
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState({
     unreadMessages: 2,
     newContacts: 5,
     upcomingAppointments: 3,
     pendingRequests: 7
   });
+  
+  // Redirect to a more mobile-friendly page if on mobile
+  useEffect(() => {
+    if (isMobile) {
+      // Redirect to the messages page which is more useful on mobile
+      navigate('/admin/messages');
+    }
+  }, [isMobile, navigate]);
   
   // In a real app, fetch these from the API
   useEffect(() => {
