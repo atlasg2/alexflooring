@@ -13,10 +13,15 @@ import Contact from "@/pages/Contact";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 
-// Auth pages
-import AuthPage from "@/pages/auth-page";
-import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
+// Simple Auth - Our new system
+import SimpleAuthPage from "@/pages/simple-auth-page";
+import { SimpleAuthProvider } from "@/hooks/use-simple-auth";
+import SimpleProtectedRoute from "@/components/simple-protected-route";
+
+// Don't import these components anymore as we're using SimpleAuth instead
+// import AuthPage from "@/pages/auth-page";
+// import { AuthProvider } from "@/hooks/use-auth";
+// import { ProtectedRoute } from "@/lib/protected-route";
 
 // Admin pages - Core
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
@@ -73,46 +78,46 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPost} />
       
-      {/* Auth Routes */}
-      <Route path="/auth" component={AuthPage} />
+      {/* Simple Auth Routes */}
+      <Route path="/admin/login" component={SimpleAuthPage} />
+      <SimpleProtectedRoute path="/admin" component={DashboardPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/dashboard" component={DashboardPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/contacts" component={ContactsPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/messages" component={MessagesPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/calendar" component={CalendarPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/calendar/new" component={CalendarPage} adminOnly={true} />
       
-      {/* Customer Portal Routes */}
+      {/* Simple Admin Routes - CRM */}
+      <SimpleProtectedRoute path="/admin/crm/contacts" component={CRMContactsPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/crm/leads" component={CRMContactsPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/form-submissions" component={ContactsPage} adminOnly={true} />
+      
+      {/* Simple Admin Routes - Communications */}
+      <SimpleProtectedRoute path="/admin/email-templates" component={EmailTemplatesPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/sms-templates" component={SmsTemplatesPage} adminOnly={true} />
+      
+      {/* Simple Admin Routes - Settings */}
+      <SimpleProtectedRoute path="/admin/automation" component={AutomationPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/account" component={ContactsPage} adminOnly={true} />
+      
+      {/* Simple Admin Routes - Sales Workflow */}
+      <SimpleProtectedRoute path="/admin/estimates" component={EstimatesPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/contracts" component={ContractsPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/invoices" component={InvoicesPage} adminOnly={true} />
+      
+      {/* Simple Admin Routes - Customer Portal */}
+      <SimpleProtectedRoute path="/admin/customer-portal/projects" component={CustomerProjectsPage} adminOnly={true} />
+      <SimpleProtectedRoute path="/admin/customer-portal/users" component={CustomerUsersPage} adminOnly={true} />
+      
+      {/* Customer Portal Routes - Keep existing for now */}
       <Route path="/customer/auth" component={CustomerAuth} />
       <ProtectedCustomerRoute path="/customer/dashboard" component={CustomerDashboard} />
       <ProtectedCustomerRoute path="/customer/estimates" component={CustomerEstimates} />
       <ProtectedCustomerRoute path="/customer/contracts" component={CustomerContracts} />
       <ProtectedCustomerRoute path="/customer/invoices" component={CustomerInvoices} />
       
-      {/* Admin Routes - Core */}
-      <Route path="/admin/login" component={AdminLoginPage} />
-      <ProtectedRoute path="/admin" component={DashboardPage} /> {/* Default route for /admin redirects to dashboard */}
-      <ProtectedRoute path="/admin/dashboard" component={DashboardPage} />
-      <ProtectedRoute path="/admin/contacts" component={ContactsPage} />
-      <ProtectedRoute path="/admin/messages" component={MessagesPage} />
-      <ProtectedRoute path="/admin/calendar" component={CalendarPage} />
-      <ProtectedRoute path="/admin/calendar/new" component={CalendarPage} />
-      
-      {/* Admin Routes - CRM */}
-      <ProtectedRoute path="/admin/crm/contacts" component={CRMContactsPage} />
-      <ProtectedRoute path="/admin/crm/leads" component={CRMContactsPage} />
-      <ProtectedRoute path="/admin/form-submissions" component={ContactsPage} />
-      
-      {/* Admin Routes - Communications */}
-      <ProtectedRoute path="/admin/email-templates" component={EmailTemplatesPage} />
-      <ProtectedRoute path="/admin/sms-templates" component={SmsTemplatesPage} />
-      
-      {/* Admin Routes - Settings */}
-      <ProtectedRoute path="/admin/automation" component={AutomationPage} />
-      <ProtectedRoute path="/admin/account" component={ContactsPage} />
-      
-      {/* Admin Routes - Sales Workflow */}
-      <ProtectedRoute path="/admin/estimates" component={EstimatesPage} />
-      <ProtectedRoute path="/admin/contracts" component={ContractsPage} />
-      <ProtectedRoute path="/admin/invoices" component={InvoicesPage} />
-      
-      {/* Admin Routes - Customer Portal */}
-      <ProtectedRoute path="/admin/customer-portal/projects" component={CustomerProjectsPage} />
-      <ProtectedRoute path="/admin/customer-portal/users" component={CustomerUsersPage} />
+      {/* Legacy Auth - Use SimpleAuthPage for now */}
+      <Route path="/auth" component={SimpleAuthPage} />
       
       {/* 404 Route */}
       <Route component={NotFound} />
@@ -128,7 +133,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
+        <SimpleAuthProvider>
           <CustomerAuthProvider>
             {isAdminRoute ? (
               // Admin routes don't use MainLayout
@@ -148,7 +153,7 @@ function App() {
             
             <Toaster />
           </CustomerAuthProvider>
-        </AuthProvider>
+        </SimpleAuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

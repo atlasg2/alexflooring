@@ -14,6 +14,7 @@ import {
 } from "@shared/schema";
 import { setupAuth, isAdmin } from "./auth";
 import { setupAuth as setupNewAuth } from "./auth-new";
+import { setupSimpleAuth, isAdminSimple } from "./simple-auth";
 import { setupCustomerAuth } from "./customer-auth";
 import { setupCustomerProjectRoutes } from "./customer-projects";
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
@@ -23,8 +24,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication and admin protection
   setupAuth(app);
   
-  // Set up our new authentication system
+  // Set up our new authentication systems
   setupNewAuth(app);
+  setupSimpleAuth(app); // Simple JWT-based auth
   
   // Set up customer portal authentication and routes
   setupCustomerAuth(app);
