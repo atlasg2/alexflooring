@@ -348,7 +348,7 @@ export default function ProjectsPage() {
   // Find customer name by ID
   const getCustomerName = (customerId: number) => {
     const customer = customers.find((c: CustomerUser) => c.id === customerId);
-    return customer ? `${customer.firstName} ${customer.lastName}` : "Unknown";
+    return customer ? customer.name : "Unknown";
   };
 
   // Get status badge color
@@ -633,14 +633,14 @@ export default function ProjectsPage() {
             />
 
             <Select
-              value={statusFilter || ""}
-              onValueChange={(value) => setStatusFilter(value === "" ? null : value)}
+              value={statusFilter || "all-statuses"}
+              onValueChange={(value) => setStatusFilter(value === "all-statuses" ? null : value)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all-statuses">All Statuses</SelectItem>
                 {statuses.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -774,8 +774,8 @@ export default function ProjectsPage() {
                   <FormItem>
                     <FormLabel>Customer</FormLabel>
                     <Select
-                      value={field.value?.toString() || ""}
-                      onValueChange={(value) => field.onChange(Number(value))}
+                      value={field.value?.toString() || "select-customer"}
+                      onValueChange={(value) => field.onChange(value === "select-customer" ? undefined : Number(value))}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -783,6 +783,7 @@ export default function ProjectsPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="select-customer">Select a customer</SelectItem>
                         {customersLoading ? (
                           <SelectItem value="loading" disabled>
                             Loading customers...
