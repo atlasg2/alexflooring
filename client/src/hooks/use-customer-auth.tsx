@@ -1,12 +1,13 @@
-import { createContext, ReactNode, useContext, useState } from "react";
-import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
-import { useToast } from "./use-toast";
+import { createContext, ReactNode, useContext } from "react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
-// Query client to be used for cache invalidation
-const queryClient = new QueryClient();
-
-// Define the types for our auth context
+// Types
 type CustomerUser = {
   id: number;
   email: string;
@@ -37,39 +38,34 @@ type CustomerAuthContextType = {
   logout: () => Promise<void>;
 };
 
-// Create a context for authentication
+// Context
 const CustomerAuthContext = createContext<CustomerAuthContextType | null>(null);
 
+// Provider
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [user, setUser] = useState<CustomerUser | null>(null);
-  
-  // Fetch current user data
+  const queryClient = useQueryClient();
+
   const {
-    isLoading,
+    data: user,
     error,
-  } = useQuery({
+    isLoading,
+  } = useQuery<CustomerUser | null, Error>({
     queryKey: ["/api/customer/me"],
     queryFn: async () => {
       try {
         const res = await apiRequest("GET", "/api/customer/me");
-        if (!res.ok) {
-          if (res.status === 401) {
-            return null; // Not authenticated is not an error
-          }
-          throw new Error("Failed to fetch customer data");
+        if (res.ok) {
+          return res.json();
         }
-        const data = await res.json();
-        setUser(data);
-        return data;
+        return null;
       } catch (error) {
         console.error("Error fetching customer:", error);
         return null;
       }
     },
   });
-  
-  // Login function
+
   const login = async (credentials: LoginCredentials): Promise<CustomerUser> => {
     try {
       const res = await apiRequest("POST", "/api/customer/login", credentials);
@@ -79,13 +75,10 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       }
       
       const userData = await res.json();
-      setUser(userData);
-      
-      // Invalidate user data query to refresh
-      queryClient.invalidateQueries({ queryKey: ["/api/customer/me"] });
+      queryClient.setQueryData(["/api/customer/me"], userData);
       
       toast({
-        title: "Login successful",
+        title: "Logged in successfully",
         description: `Welcome back, ${userData.name}!`,
       });
       
@@ -93,14 +86,13 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error instanceof Error ? error.message : "Incorrect email or password",
         variant: "destructive",
       });
       throw error;
     }
   };
-  
-  // Register function
+
   const register = async (data: RegisterData): Promise<CustomerUser> => {
     try {
       const res = await apiRequest("POST", "/api/customer/register", data);
@@ -110,39 +102,34 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       }
       
       const userData = await res.json();
-      setUser(userData);
-      
-      // Invalidate user data query to refresh
-      queryClient.invalidateQueries({ queryKey: ["/api/customer/me"] });
+      queryClient.setQueryData(["/api/customer/me"], userData);
       
       toast({
         title: "Registration successful",
-        description: `Welcome, ${userData.name}!`,
+        description: "Your account has been created successfully.",
       });
       
       return userData;
     } catch (error) {
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error instanceof Error ? error.message : "An error occurred during registration",
         variant: "destructive",
       });
       throw error;
     }
   };
-  
-  // Logout function
+
   const logout = async (): Promise<void> => {
     try {
       const res = await apiRequest("POST", "/api/customer/logout");
       if (!res.ok) {
-        throw new Error("Logout failed");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Logout failed");
       }
       
-      setUser(null);
-      
-      // Invalidate user data query to refresh
-      queryClient.invalidateQueries({ queryKey: ["/api/customer/me"] });
+      queryClient.setQueryData(["/api/customer/me"], null);
+      queryClient.invalidateQueries({ queryKey: ["/api/customer"] });
       
       toast({
         title: "Logged out",
@@ -151,19 +138,19 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       toast({
         title: "Logout failed",
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error instanceof Error ? error.message : "An error occurred during logout",
         variant: "destructive",
       });
       throw error;
     }
   };
-  
+
   return (
     <CustomerAuthContext.Provider
       value={{
-        user,
+        user: user || null,
         isLoading,
-        error: error as Error,
+        error: error || null,
         login,
         register,
         logout,
@@ -174,6 +161,7 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook
 export function useCustomerAuth() {
   const context = useContext(CustomerAuthContext);
   if (!context) {

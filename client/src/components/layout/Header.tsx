@@ -77,17 +77,30 @@ const Header = () => {
               ))}
             </nav>
             
-            {/* Admin Login Button */}
-            <Link href="/admin/login">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center gap-1 border-primary/20 text-primary hover:text-secondary hover:border-secondary/30"
-              >
-                <UserCircle className="h-4 w-4" />
-                <span>Login</span>
-              </Button>
-            </Link>
+            {/* Login Buttons */}
+            <div className="flex space-x-2">
+              <Link href="/customer/auth">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  className="flex items-center gap-1 bg-secondary hover:bg-secondary/90 text-white"
+                >
+                  <UserCircle className="h-4 w-4" />
+                  <span>Customer Portal</span>
+                </Button>
+              </Link>
+              
+              <Link href="/admin/login">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-1 border-primary/20 text-primary hover:text-secondary hover:border-secondary/30"
+                >
+                  <UserCircle className="h-4 w-4" />
+                  <span>Admin</span>
+                </Button>
+              </Link>
+            </div>
           </div>
           
           {/* Mobile Menu Button */}
@@ -126,6 +139,16 @@ const Header = () => {
               <Phone className="h-4 w-4 mr-2" />
               <span className="font-medium">Call Us: (504) 402-3895</span>
             </a>
+            
+            {/* Customer Portal link in mobile menu */}
+            <Link 
+              href="/customer/auth"
+              className="flex items-center text-secondary hover:text-secondary/80 transition-colors duration-300 border-l-2 border-secondary pl-3 py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <UserCircle className="h-4 w-4 mr-2" />
+              <span className="font-medium">Customer Portal</span>
+            </Link>
             
             {/* Admin Login in mobile menu */}
             <Link 
