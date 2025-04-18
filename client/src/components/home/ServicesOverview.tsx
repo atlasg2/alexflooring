@@ -1,3 +1,4 @@
+
 import { Link } from "wouter";
 import { services } from "@/data/services";
 import { 
@@ -52,67 +53,15 @@ const ServiceItem = ({ service }: { service: typeof services[0] }) => (
   </div>
 );
 
-// Featured service with details (used for commercial)
-const FeaturedService = ({ service }: { service: typeof services[0] }) => (
-  <div className="relative overflow-hidden rounded-lg bg-black">
-    <div className="grid grid-cols-1 md:grid-cols-3">
-      {/* Large Image - Takes 2/3 of the width on desktop */}
-      <div className="relative col-span-2 h-96 md:h-[500px]">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${service.image})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/30" />
-      </div>
-      
-      {/* Content - Takes 1/3 of the width on desktop */}
-      <div className="p-8 md:p-10 flex flex-col justify-center bg-black text-white">
-        <div className="mb-6 inline-flex items-center">
-          <div className="p-3 rounded-full bg-secondary/20 mr-4">
-            {iconComponents[service.icon]}
-          </div>
-          <h3 className="text-2xl font-bold">{service.title}</h3>
-        </div>
-        
-        <p className="text-white/80 mb-8">
-          {service.shortDescription}
-        </p>
-        
-        <div className="space-y-4 mb-8">
-          <div className="flex items-start gap-3">
-            <Check className="h-5 w-5 text-secondary mt-0.5" />
-            <span>Minimal business disruption with flexible scheduling</span>
-          </div>
-          <div className="flex items-start gap-3">
-            <Check className="h-5 w-5 text-secondary mt-0.5" />
-            <span>ADA compliance and safety considerations</span>
-          </div>
-          <div className="flex items-start gap-3">
-            <Check className="h-5 w-5 text-secondary mt-0.5" />
-            <span>Professional installation for maximum durability</span>
-          </div>
-        </div>
-        
-        <Link 
-          href={`/services/${service.slug}`}
-          className="inline-flex items-center bg-secondary text-black py-3 px-6 rounded text-sm font-medium transition-all duration-300 hover:bg-secondary/90"
-        >
-          Learn More <ArrowRight className="ml-1 h-4 w-4" />
-        </Link>
-      </div>
-    </div>
-  </div>
-);
-
 const ServicesOverview = () => {
-  // Array of all services for the 3x3 grid
+  // Array of all services for the grid with fixed images
   const allServices = [
     {
       id: "s1",
       title: "Hardwood Installation",
       description: "Premium solid hardwood floors with expert installation",
       icon: <Layers className="h-10 w-10 text-secondary" />,
-      image: "https://images.unsplash.com/photo-1584285405450-dff1bffc5eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      image: "https://images.unsplash.com/photo-1562663474-6cbb3eaa4d14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
       id: "s2",
@@ -133,7 +82,7 @@ const ServicesOverview = () => {
       title: "Floor Refinishing",
       description: "Restore the beauty of your worn hardwood floors",
       icon: <Brush className="h-10 w-10 text-secondary" />,
-      image: "https://images.unsplash.com/photo-1581782250144-25fdb783c355?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      image: "https://images.unsplash.com/photo-1594940856573-b461c07f95f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
       id: "s5",
@@ -168,7 +117,7 @@ const ServicesOverview = () => {
       title: "Laminate Installation",
       description: "Affordable, versatile laminate flooring options",
       icon: <Layers className="h-10 w-10 text-secondary" />,
-      image: "https://images.unsplash.com/photo-1594940856573-b461c07f95f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      image: "https://images.unsplash.com/photo-1584969902783-b8432d0e4117?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     }
   ];
 
@@ -176,127 +125,172 @@ const ServicesOverview = () => {
   const commercialService = commercialServices[0];
 
   return (
-    <section id="services" className="relative py-24 bg-black text-white overflow-hidden">
-      {/* Background visual elements */}
-      <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
-        <div className="absolute -top-32 left-0 w-full h-64 bg-gradient-to-b from-secondary/10 to-transparent opacity-40"></div>
-        <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-secondary/5 blur-3xl"></div>
-        <div className="absolute top-20 left-20 w-40 h-40 rounded-full bg-secondary/10 blur-2xl"></div>
-      </div>
-      
-      {/* Featured image for visual interest */}
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 mb-16">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="w-full md:w-7/12 mb-10 md:mb-0 text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block mb-4">
+    <section id="services" className="relative">
+      {/* Hero intro section with background image */}
+      <div className="relative h-[500px] bg-black">
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-60"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1577401239170-897942555fb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90" />
+        
+        <div className="relative h-full flex items-center justify-center">
+          <div className="text-center max-w-4xl mx-auto px-4">
+            <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
                 Expert Flooring Services
               </span>
             </h2>
-            <div className="h-1 w-24 bg-secondary mt-4 mb-6 mx-auto md:mx-0"></div>
-            <p className="text-lg text-white/80 max-w-xl mx-auto md:mx-0">
+            <div className="h-1 w-32 bg-secondary mx-auto mb-8"></div>
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4">
               Premium flooring solutions for residential and commercial spaces throughout Louisiana
             </p>
           </div>
-          
-          <div className="w-full md:w-5/12 relative">
-            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-white/10">
-              <img 
-                src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                alt="Premium Flooring Installation" 
-                className="w-full h-64 object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
-              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/10">
-                <p className="text-white font-medium text-sm">Professional Installation</p>
+        </div>
+      </div>
+      
+      {/* Services Grid Layout */}
+      <div className="bg-black py-24">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {allServices.map((service, index) => (
+              <div 
+                key={service.id} 
+                className="group relative overflow-hidden rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:-translate-y-2"
+                data-aos="fade-up"
+                data-aos-delay={100 + (index * 50)}
+                data-aos-duration="800"
+              >
+                {/* Background Image with Overlay */}
+                <div className="relative h-[300px] overflow-hidden">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${service.image})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80" />
+                </div>
+                
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col justify-end p-6">
+                  <div className="mb-4 p-3 bg-black/40 backdrop-blur-sm rounded-full w-fit">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
+                  <p className="text-white/80 text-sm mb-4">{service.description}</p>
+                  <Link
+                    href={`/services/${service.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="inline-flex items-center text-secondary hover:text-white text-sm font-medium transition-colors duration-300"
+                  >
+                    Learn More <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+          
+          <div className="flex justify-center mb-20">
+            <Link 
+              href="/services"
+              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+            >
+              View All Services
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
           </div>
         </div>
       </div>
-        
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        {/* 3x3 Services Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {allServices.map((service, index) => (
-            <div 
-              key={service.id} 
-              className="group relative overflow-hidden rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:-translate-y-2"
-              data-aos="fade-up"
-              data-aos-delay={100 + (index * 50)}
-              data-aos-duration="800"
-            >
-              {/* Background Image with Overlay */}
-              <div className="relative h-[300px] overflow-hidden">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${service.image})` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80" />
+      
+      {/* Completely redesigned commercial section */}
+      <div className="bg-gradient-to-b from-black to-gray-900 py-24">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side: Content */}
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-4 bg-secondary/20 rounded-full">
+                  <Building className="h-8 w-8 text-secondary" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white">Commercial Flooring Solutions</h2>
               </div>
               
-              {/* Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-6">
-                <div className="mb-4 p-3 bg-black/40 backdrop-blur-sm rounded-full w-fit">
-                  {service.icon}
+              <div className="h-1 w-24 bg-secondary mb-8"></div>
+              
+              <p className="text-white/80 text-lg mb-8 leading-relaxed">
+                We provide high-performance flooring designed specifically for commercial environments. 
+                Our solutions combine durability with aesthetics to create spaces that impress clients 
+                while withstanding heavy foot traffic and daily wear.
+              </p>
+              
+              <div className="space-y-4 mb-10">
+                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
+                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-white">Minimal Business Disruption</h4>
+                    <p className="text-white/70 text-sm">Flexible scheduling and efficient installation to keep your business running</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-                <p className="text-white/80 text-sm mb-4">{service.description}</p>
-                <Link
-                  href={`/services/${service.title.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="inline-flex items-center text-secondary hover:text-white text-sm font-medium transition-colors duration-300"
-                >
-                  Learn More <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                
+                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
+                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-white">ADA Compliance</h4>
+                    <p className="text-white/70 text-sm">Solutions that meet accessibility requirements and safety standards</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
+                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-white">Professional Installation</h4>
+                    <p className="text-white/70 text-sm">Expert installation teams with specific commercial flooring experience</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Link 
+                href="/services/commercial"
+                className="inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+              >
+                Explore Commercial Services
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+            
+            {/* Right side: Images */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="rounded-xl overflow-hidden shadow-lg h-64">
+                  <img 
+                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Office Flooring" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-lg h-36">
+                  <img 
+                    src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Retail Flooring" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4 pt-6">
+                <div className="rounded-xl overflow-hidden shadow-lg h-36">
+                  <img 
+                    src="https://images.unsplash.com/photo-1600607687644-c7171b46426d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Healthcare Flooring" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-lg h-64">
+                  <img 
+                    src="https://images.unsplash.com/photo-1577401939270-df12522775ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Restaurant Flooring" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-        
-        <div className="flex justify-center mb-20">
-          <Link 
-            href="/services"
-            className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
-          >
-            View All Services
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
-        </div>
-        
-        {/* Commercial section with dark contrast */}
-        <div className="pt-20 mt-20 relative border-t border-white/10">
-          {/* Background design elements */}
-          <div className="absolute top-0 right-0 w-48 h-48 border-2 border-secondary/20 rounded-full opacity-10"></div>
-          <div className="absolute bottom-20 -left-20 w-72 h-72 border-2 border-secondary/10 rounded-full opacity-5"></div>
-          
-          {/* Section header */}
-          <div className="relative z-10 flex items-center mb-10 gap-4">
-            <div className="p-4 rounded-full bg-secondary/20 flex items-center justify-center shadow-lg border border-secondary/30">
-              <Store className="h-8 w-8 text-secondary" />
-            </div>
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-1">Commercial Flooring</h2>
-              <div className="h-1 w-20 bg-secondary"></div>
-            </div>
-          </div>
-          
-          <p className="text-white/70 max-w-3xl mb-12 text-lg">
-            Durable, high-performance flooring solutions for commercial spaces. We understand the unique needs of businesses and provide flooring that withstands high traffic while maintaining its appearance.
-          </p>
-          
-          {/* Featured commercial service with enhanced visual appeal */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-1 shadow-2xl overflow-hidden border border-white/10">
-            <FeaturedService service={commercialService} />
-          </div>
-          
-          <div className="mt-12 flex justify-center">
-            <Link 
-              href="/services?category=commercial"
-              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
-            >
-              View Commercial Services
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
           </div>
         </div>
       </div>
