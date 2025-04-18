@@ -106,8 +106,9 @@ const ContactsPage = () => {
       const response = await apiRequest('POST', '/api/admin/crm/contacts', data);
       return await response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+      await refetch(); // Force immediate refetch
       toast({
         title: 'Contact created',
         description: 'The contact was created successfully',
@@ -130,8 +131,9 @@ const ContactsPage = () => {
       const response = await apiRequest('PUT', `/api/admin/crm/contacts/${id}`, data);
       return await response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+      await refetch(); // Force immediate refetch
       toast({
         title: 'Contact updated',
         description: 'The contact was updated successfully',
@@ -153,8 +155,9 @@ const ContactsPage = () => {
     mutationFn: async (id: number) => {
       await apiRequest('DELETE', `/api/admin/crm/contacts/${id}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+      await refetch(); // Force immediate refetch
       toast({
         title: 'Contact deleted',
         description: 'The contact was deleted successfully',

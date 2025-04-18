@@ -306,8 +306,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/admin/crm/contacts", isAdmin, async (req, res) => {
     try {
+      console.log("Creating contact from admin panel:", JSON.stringify(req.body, null, 2));
       const validatedData = insertContactSchema.parse(req.body);
       const contact = await storage.createContact(validatedData);
+      console.log("Successfully created contact:", JSON.stringify(contact, null, 2));
       res.status(201).json(contact);
     } catch (error) {
       console.error("Contact creation error:", error);
