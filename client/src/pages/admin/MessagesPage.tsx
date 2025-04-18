@@ -44,11 +44,52 @@ const MessagesPage = () => {
   const fetchMessages = async () => {
     setLoading(true);
     try {
+      // First check if we're logged in
+      try {
+        const authResponse = await fetch('/api/user');
+        if (!authResponse.ok) {
+          console.error("Auth check failed, status:", authResponse.status);
+          const authText = await authResponse.text();
+          console.error("Auth check response:", authText);
+          
+          toast({
+            title: "Authentication error",
+            description: "You may need to log in again",
+            variant: "destructive"
+          });
+          
+          // Redirect to login page after a short delay
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 2000);
+          return;
+        }
+      } catch (authError) {
+        console.error("Auth check error:", authError);
+      }
+    
       // Get all contact submissions and filter for those with type 'chat'
-      const response = await apiRequest('GET', '/api/admin/contacts');
+      console.log("Fetching contact submissions...");
+      const response = await fetch('/api/admin/contacts', {
+        credentials: 'include' // Ensure cookies are sent
+      });
+      
+      console.log("Response status:", response.status);
+      
       if (response.ok) {
         const data = await response.json();
         console.log("Received contact submissions:", data);
+        
+        if (!Array.isArray(data)) {
+          console.error("Expected array but received:", typeof data);
+          toast({
+            title: "Data format error",
+            description: "Received unexpected data format from server",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
         
         // Filter and convert contact submissions to chat message format
         const chatMessages = data
@@ -67,9 +108,12 @@ const MessagesPage = () => {
         console.log("Filtered chat messages:", chatMessages);
         setMessages(chatMessages);
       } else {
+        const errorText = await response.text();
+        console.error(`Error response (${response.status}):`, errorText);
+        
         toast({
-          title: "Error fetching messages",
-          description: "Please try again or check your connection",
+          title: `Error fetching messages (${response.status})`,
+          description: errorText || "Please try again or check your connection",
           variant: "destructive"
         });
       }
@@ -77,7 +121,7 @@ const MessagesPage = () => {
       console.error("Error fetching messages:", error);
       toast({
         title: "Error fetching messages",
-        description: "Please try again or check your connection",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive"
       });
     } finally {

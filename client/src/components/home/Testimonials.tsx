@@ -1,19 +1,49 @@
 
 import { useState } from "react";
-import { testimonials } from "@/data/testimonials";
-import { ChevronLeft, ChevronRight, Star, MapPin, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+
+// Only keeping Google reviews
+const googleReviews = [
+  {
+    id: "1",
+    name: "Jennifer R.",
+    location: "New Orleans, LA",
+    quote: "APS Flooring completely transformed our home with beautiful hardwood floors. The team was professional, on time, and left our space cleaner than when they started. Highly recommend!",
+    rating: 5,
+    image: "https://randomuser.me/api/portraits/women/54.jpg",
+    source: "Google"
+  },
+  {
+    id: "2",
+    name: "Michael T.",
+    location: "Birmingham, AL",
+    quote: "We had LVP installed throughout our first floor. The crew was incredible - fast, clean, and the floors look amazing. Alex was very knowledgeable and helped us pick the perfect style.",
+    rating: 5,
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    source: "Google"
+  },
+  {
+    id: "4",
+    name: "David W.",
+    location: "Hoover, AL",
+    quote: "Professional, punctual, and perfect work. My new bathroom shower tile is exactly what I wanted. They were clean, respectful of my home, and completed the job on schedule.",
+    rating: 5,
+    image: "https://randomuser.me/api/portraits/men/82.jpg",
+    source: "Google"
+  }
+];
 
 const Testimonials = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   const nextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    setCurrentTestimonial((prev) => (prev + 1) % googleReviews.length);
   };
 
   const prevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setCurrentTestimonial((prev) => (prev - 1 + googleReviews.length) % googleReviews.length);
   };
 
   const goToTestimonial = (index: number) => {
@@ -21,186 +51,125 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="text-center mb-16" data-aos="fade-up">
-          <div className="inline-flex items-center justify-center mb-4">
-            <div className="w-12 h-1 bg-secondary rounded-full mr-4"></div>
-            <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-primary">
-              What Our Clients Say
-            </h2>
-            <div className="w-12 h-1 bg-secondary rounded-full ml-4"></div>
-          </div>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Read what our satisfied customers throughout Louisiana have to say about their experience with APS Flooring
-          </p>
+    <section className="py-20 bg-cover bg-center bg-fixed relative" 
+      style={{ backgroundImage: "url(https://images.unsplash.com/photo-1610218588183-6a09a1e0f4f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80)" }}>
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/70"></div>
+      
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold font-montserrat text-white mb-4">
+            What Our Clients Say
+          </h2>
+          <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
         </div>
         
-        {/* Desktop view: Three testimonials at once with scale effect */}
-        <div className="hidden lg:block relative h-[400px] overflow-visible mb-12">
-          <div className="absolute inset-x-0 flex justify-center items-center">
-            {testimonials.map((testimonial, index) => {
-              // Calculate position relative to current testimonial
-              const position = (index - currentTestimonial + testimonials.length) % testimonials.length;
-              
-              // Calculate z-index, scale, and opacity based on position
-              let zIndex = 10;
-              let scale = 1;
-              let opacity = 1;
-              let translateX = '0%';
-              
-              if (position === 0) {
-                // Current testimonial (center)
-                zIndex = 30;
-              } else if (position === 1 || position === testimonials.length - 1) {
-                // Adjacent testimonials (left and right)
-                zIndex = 20;
-                scale = 0.85;
-                opacity = 0.7;
-                translateX = position === 1 ? '90%' : '-90%';
-              } else {
-                // Hidden testimonials
-                zIndex = 10;
-                scale = 0.7;
-                opacity = 0;
-                translateX = position < testimonials.length / 2 ? '180%' : '-180%';
-              }
-              
-              return (
-                <div 
-                  key={testimonial.id}
-                  className="absolute w-full max-w-xl p-1 transition-all duration-500 ease-in-out"
-                  style={{ 
-                    zIndex, 
-                    transform: `translateX(${translateX}) scale(${scale})`,
-                    opacity
-                  }}
-                >
-                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 h-full flex flex-col relative">
-                    {/* Quotation mark */}
-                    <div className="absolute -top-4 -left-4 p-3 rounded-full bg-secondary/10 text-secondary">
-                      <Quote className="h-6 w-6" />
-                    </div>
-                    
-                    <div className="flex items-center mb-6">
-                      <div className="text-secondary flex gap-1">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-current" />
-                        ))}
-                      </div>
-                      <div className="ml-auto text-sm font-semibold px-3 py-1 rounded-full bg-gray-100">
-                        {testimonial.source}
-                      </div>
-                    </div>
-                    
-                    <blockquote className="text-lg text-gray-700 italic mb-8 flex-grow">
-                      "{testimonial.quote}"
-                    </blockquote>
-                    
-                    <div className="flex items-center pt-4 border-t border-gray-100">
-                      <Avatar className="h-14 w-14 rounded-full border-2 border-secondary shadow-md">
-                        <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                        <AvatarFallback className="bg-primary text-white">
-                          {getInitials(testimonial.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="ml-4">
-                        <p className="font-bold text-primary">{testimonial.name}</p>
-                        <p className="text-sm text-gray-500 flex items-center">
-                          <MapPin className="h-3 w-3 text-secondary mr-1" />
-                          {testimonial.location}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+        {/* Desktop view - All three reviews at once */}
+        <div className="hidden lg:grid grid-cols-3 gap-6 mb-12">
+          {googleReviews.map((review) => (
+            <div key={review.id} className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl transition-transform hover:scale-105">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-secondary flex">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-        
-        {/* Mobile view: Single testimonial with slide transition */}
-        <div className="lg:hidden relative overflow-hidden">
-          <div className="relative h-[420px] overflow-hidden mb-10">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={testimonial.id} 
-                className={`absolute inset-0 transition-all duration-700 transform ${
-                  index === currentTestimonial 
-                    ? 'opacity-100 translate-x-0' 
-                    : index < currentTestimonial 
-                      ? 'opacity-0 -translate-x-full' 
-                      : 'opacity-0 translate-x-full'
-                }`}
-              >
-                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-gray-100 h-full flex flex-col">
-                  <div className="flex items-center mb-4">
-                    <div className="text-secondary flex gap-1">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-current" />
-                      ))}
-                    </div>
-                    <div className="ml-auto text-sm font-semibold px-3 py-1 rounded-full bg-gray-100">
-                      {testimonial.source}
-                    </div>
-                  </div>
-                  
-                  <blockquote className="text-lg text-gray-700 italic mb-6 flex-grow">
-                    "{testimonial.quote}"
-                  </blockquote>
-                  
-                  <div className="flex items-center pt-4 border-t border-gray-100">
-                    <Avatar className="h-14 w-14 rounded-full border-2 border-secondary shadow-md">
-                      <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                      <AvatarFallback className="bg-primary text-white">
-                        {getInitials(testimonial.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="ml-4">
-                      <p className="font-bold text-primary">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500 flex items-center">
-                        <MapPin className="h-3 w-3 text-secondary mr-1" />
-                        {testimonial.location}
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center">
+                  <Quote className="h-5 w-5 text-secondary mr-1" />
+                  <span className="text-sm font-medium text-gray-600">Google Review</span>
                 </div>
               </div>
-            ))}
-          </div>
+              
+              <blockquote className="text-gray-700 mb-5 min-h-[150px]">
+                "{review.quote}"
+              </blockquote>
+              
+              <div className="flex items-center border-t border-gray-200 pt-4">
+                <Avatar className="h-12 w-12 rounded-full border-2 border-secondary shadow-sm">
+                  <AvatarImage src={review.image} alt={review.name} />
+                  <AvatarFallback className="bg-primary text-white">
+                    {getInitials(review.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ml-3">
+                  <p className="font-semibold text-primary">{review.name}</p>
+                  <p className="text-sm text-gray-500">{review.location}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         
-        {/* Carousel Controls */}
-        <div className="flex justify-center items-center gap-6">
-          <button 
-            className="p-3 rounded-full bg-white shadow-lg flex items-center justify-center text-primary hover:text-secondary transition-all duration-300 hover:scale-110 border border-gray-100"
-            onClick={prevTestimonial}
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          
-          {/* Pagination dots */}
-          <div className="flex gap-2">
-            {testimonials.map((_, index) => (
+        {/* Mobile view - Slideshow */}
+        <div className="lg:hidden">
+          <div className="relative overflow-hidden mx-auto max-w-md">
+            <div className="relative bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-secondary flex">
+                  {[...Array(googleReviews[currentTestimonial].rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <div className="flex items-center">
+                  <Quote className="h-5 w-5 text-secondary mr-1" />
+                  <span className="text-sm font-medium text-gray-600">Google Review</span>
+                </div>
+              </div>
+              
+              <blockquote className="text-gray-700 mb-5 min-h-[120px]">
+                "{googleReviews[currentTestimonial].quote}"
+              </blockquote>
+              
+              <div className="flex items-center border-t border-gray-200 pt-4">
+                <Avatar className="h-12 w-12 rounded-full border-2 border-secondary shadow-sm">
+                  <AvatarImage 
+                    src={googleReviews[currentTestimonial].image} 
+                    alt={googleReviews[currentTestimonial].name} 
+                  />
+                  <AvatarFallback className="bg-primary text-white">
+                    {getInitials(googleReviews[currentTestimonial].name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ml-3">
+                  <p className="font-semibold text-primary">{googleReviews[currentTestimonial].name}</p>
+                  <p className="text-sm text-gray-500">{googleReviews[currentTestimonial].location}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile Navigation Controls */}
+            <div className="flex justify-center items-center gap-6">
               <button 
-                key={`nav-${index}`}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentTestimonial ? 'bg-secondary scale-150' : 'bg-gray-300 hover:bg-gray-400'
-                }`}
-                onClick={() => goToTestimonial(index)}
-                aria-label={`Go to testimonial ${index + 1}`}
-              />
-            ))}
+                className="p-2 rounded-full bg-white/90 shadow-md flex items-center justify-center text-primary hover:text-secondary transition-all duration-300"
+                onClick={prevTestimonial}
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              
+              {/* Pagination dots */}
+              <div className="flex gap-2">
+                {googleReviews.map((_, index) => (
+                  <button 
+                    key={`nav-${index}`}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentTestimonial ? 'bg-secondary scale-150' : 'bg-white/60 hover:bg-white'
+                    }`}
+                    onClick={() => goToTestimonial(index)}
+                    aria-label={`Go to testimonial ${index + 1}`}
+                  />
+                ))}
+              </div>
+              
+              <button 
+                className="p-2 rounded-full bg-white/90 shadow-md flex items-center justify-center text-primary hover:text-secondary transition-all duration-300"
+                onClick={nextTestimonial}
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-          
-          <button 
-            className="p-3 rounded-full bg-white shadow-lg flex items-center justify-center text-primary hover:text-secondary transition-all duration-300 hover:scale-110 border border-gray-100"
-            onClick={nextTestimonial}
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
         </div>
       </div>
     </section>

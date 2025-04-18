@@ -8,6 +8,10 @@ export interface Service {
   slug: string;
   metaDescription: string;
   category: 'residential' | 'commercial';
+  features?: string[];
+  beforeImage?: string;
+  afterImage?: string;
+  description?: string;
 }
 
 export const services: Service[] = [
@@ -47,7 +51,16 @@ export const services: Service[] = [
     image: "https://images.unsplash.com/photo-1584285405450-dff1bffc5eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "hardwood",
     metaDescription: "Professional hardwood floor installation, sanding, and finishing services in Louisiana and Alabama. Premium materials, expert craftsmanship.",
-    category: "residential"
+    category: "residential",
+    description: "Our premium hardwood flooring installation service combines craftsmanship with quality materials to create stunning, long-lasting hardwood floors that elevate your home's beauty and value.",
+    features: [
+      "Wide selection of premium hardwood species including Oak, Maple, and Walnut",
+      "Custom staining and finishing options to match your decor",
+      "Expert installation with meticulous attention to detail",
+      "50+ year lifespan with proper maintenance"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1584285405450-dff1bffc5eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "2",
@@ -88,7 +101,16 @@ export const services: Service[] = [
     image: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "lvp",
     metaDescription: "Professional luxury vinyl plank installation in Louisiana and Alabama. Waterproof, durable flooring solutions for kitchens, bathrooms, and throughout your home.",
-    category: "residential"
+    category: "residential",
+    description: "Luxury Vinyl Plank (LVP) flooring offers the perfect combination of beauty, durability, and practicality for today's busy households, with 100% waterproof performance and scratch resistance.",
+    features: [
+      "100% waterproof - ideal for bathrooms, kitchens, and basements",
+      "Superior scratch and dent resistance for homes with kids and pets",
+      "Wide variety of wood-look finishes and textures",
+      "Quick installation with minimal disruption to your home"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "3",
@@ -140,7 +162,16 @@ export const services: Service[] = [
     image: "https://images.unsplash.com/photo-1581782250144-25fdb783c355?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "refinishing",
     metaDescription: "Professional hardwood floor refinishing in Louisiana and Alabama. Restore your worn hardwood floors to like-new condition with our expert refinishing services.",
-    category: "residential"
+    category: "residential",
+    description: "Our hardwood floor refinishing service breathes new life into tired, worn, or damaged hardwood floors, restoring their natural beauty and extending their lifespan for a fraction of replacement cost.",
+    features: [
+      "Removes scratches, dents, stains, and wear patterns",
+      "Option to change stain color and finish type",
+      "Fills cracks and gaps for a smooth, uniform appearance",
+      "Typically completed in 3-5 days with minimal disruption"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1585947920741-a59fe6dd233c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1581782250144-25fdb783c355?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "4",
@@ -198,7 +229,16 @@ export const services: Service[] = [
     image: "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "tile",
     metaDescription: "Expert tile installation services for floors, showers, and backsplashes in Louisiana and Alabama. Beautiful, durable custom tile solutions for your home.",
-    category: "residential"
+    category: "residential",
+    description: "Our expert tile installation transforms bathrooms, kitchens, and living spaces with beautiful, durable surfaces including custom showers, floors, and decorative backsplashes.",
+    features: [
+      "Custom shower designs with waterproofing systems for leak-free performance",
+      "Wide selection of porcelain, ceramic, and natural stone tiles",
+      "Decorative options including mosaics and custom patterns",
+      "Built-in features like niches, benches, and heated floors"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "5",
@@ -259,6 +299,85 @@ export const services: Service[] = [
     image: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     slug: "commercial",
     metaDescription: "Professional commercial flooring solutions in Louisiana and Alabama. Durable, attractive flooring for offices, retail, healthcare, and other business spaces.",
-    category: "commercial"
+    category: "commercial",
+    description: "Our commercial flooring solutions deliver exceptional durability, safety, and aesthetics for high-traffic business environments including offices, retail spaces, and healthcare facilities.",
+    features: [
+      "High-performance materials designed for commercial traffic levels",
+      "ADA compliant installations with proper transitions",
+      "Minimal disruption to business operations",
+      "Comprehensive project management from start to finish"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1565538420870-da08ff96a207?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "6",
+    title: "Epoxy Flooring",
+    shortDescription: "Seamless, durable epoxy floors for garages and commercial spaces.",
+    fullDescription: `
+      <p>Our epoxy flooring services create seamless, high-performance surfaces that combine exceptional durability with customizable aesthetics for garages, basements, commercial kitchens, industrial facilities, and more.</p>
+      
+      <h3>Benefits of Epoxy Flooring</h3>
+      <p>Epoxy floors offer numerous advantages:</p>
+      <ul>
+        <li>Exceptional durability and longevity</li>
+        <li>Chemical, stain, and impact resistance</li>
+        <li>Seamless, easy-to-clean surface</li>
+        <li>Decorative options including metallic effects and color flakes</li>
+        <li>Anti-slip additives for increased safety</li>
+        <li>Moisture-resistant properties</li>
+        <li>Dust-free and hygienic surface</li>
+      </ul>
+      
+      <h3>Our Installation Process</h3>
+      <p>Proper application is critical for epoxy performance:</p>
+      <ul>
+        <li>Thorough surface preparation including diamond grinding</li>
+        <li>Crack and joint repair</li>
+        <li>Moisture testing and vapor barrier application when needed</li>
+        <li>Application of primer coat for optimal adhesion</li>
+        <li>Installation of decorative elements if selected</li>
+        <li>Application of multiple epoxy layers for durability</li>
+        <li>Top coat application for UV stability and enhanced protection</li>
+        <li>Proper curing time with climate control as needed</li>
+      </ul>
+      
+      <h3>Customization Options</h3>
+      <p>Our epoxy floors can be customized to your preferences:</p>
+      <ul>
+        <li>Solid colors in virtually any shade</li>
+        <li>Decorative flake systems in custom color combinations</li>
+        <li>Metallic epoxy with dimensional, swirled effects</li>
+        <li>Quartz systems for aggressive environments</li>
+        <li>Custom logos and designs</li>
+        <li>Varying gloss levels from matte to high-gloss</li>
+      </ul>
+      
+      <h3>Applications</h3>
+      <p>Epoxy flooring is ideal for numerous environments:</p>
+      <ul>
+        <li>Residential garages and basements</li>
+        <li>Commercial kitchens and restaurants</li>
+        <li>Retail spaces</li>
+        <li>Warehouses and industrial facilities</li>
+        <li>Healthcare environments</li>
+        <li>Automotive showrooms</li>
+        <li>Educational institutions</li>
+      </ul>
+    `,
+    icon: "Brush",
+    image: "https://images.unsplash.com/photo-1591129841117-3adfd313e34f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    slug: "epoxy",
+    metaDescription: "Professional epoxy flooring installation in Louisiana and Alabama. Durable, seamless floors for garages, basements, and commercial spaces.",
+    category: "commercial",
+    description: "Our epoxy flooring systems provide exceptional durability, chemical resistance, and customizable aesthetics for garage floors, basements, and commercial environments.",
+    features: [
+      "Chemical and stain resistant surface that's easy to clean",
+      "Customizable with decorative chips, metallic pigments, and color options",
+      "Seamless, non-porous surface that prevents dust and allergens",
+      "5-7 day installation process with proper curing time"
+    ],
+    beforeImage: "https://images.unsplash.com/photo-1515180252313-f87e5da06db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    afterImage: "https://images.unsplash.com/photo-1591129841117-3adfd313e34f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   }
 ];

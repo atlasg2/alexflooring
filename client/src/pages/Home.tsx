@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import HeroSlider from "@/components/home/HeroSlider";
 import ServicesOverview from "@/components/home/ServicesOverview";
 import FeaturedProjects from "@/components/home/FeaturedProjects";
-import WhyChooseUs from "@/components/home/WhyChooseUs";
 import Testimonials from "@/components/home/Testimonials";
 import CTABanner from "@/components/home/CTABanner";
 
@@ -14,7 +13,7 @@ import 'aos/dist/aos.css';
 const Home = () => {
   useEffect(() => {
     // Set page title
-    document.title = "APS Flooring - Expert Flooring Services in Louisiana";
+    document.title = "APS Flooring - TEST VERSION 987654321";
 
     // Initialize AOS animation library
     AOS.init({
@@ -43,7 +42,6 @@ const Home = () => {
       <HeroSlider />
       <ServicesOverview />
       <FeaturedProjects />
-      <WhyChooseUs />
       <Testimonials />
       <CTABanner />
     </>

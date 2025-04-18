@@ -16,50 +16,67 @@ interface Slide {
   learnMoreLink: string;
 }
 
-// Import the APS Flooring logo
-import apsLogo from "@assets/aps_logo.png";
-
-// Define hero slides with specific flooring types
+// Define hero slides with specific flooring types and services
 const heroSlides: Slide[] = [
   {
     id: "1",
     image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Hardwood Flooring",
-    subtitle: "Timeless elegance that adds warmth and character to any home. Durable and classic.",
-    flooringType: "Hardwood",
-    description: "Premium oak, maple, and walnut hardwood floors that add warmth and character to any room.",
+    title: "Welcome to APS Flooring",
+    subtitle: "Your trusted provider for all commercial and residential flooring solutions throughout Louisiana.",
+    flooringType: "Intro",
+    description: "Expert flooring services with a commitment to quality craftsmanship and customer satisfaction.",
     ctaLink: "/contact",
-    learnMoreLink: "/services/hardwood-flooring"
+    learnMoreLink: "/services"
   },
   {
     id: "2",
-    image: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Luxury Vinyl Plank",
-    subtitle: "Waterproof, durable, and beautiful. Perfect for families and high-traffic areas.",
-    flooringType: "LVP",
-    description: "The perfect combination of beauty and practicality with waterproof, scratch-resistant luxury vinyl.",
+    image: "https://images.unsplash.com/photo-1562663474-6cbb3eaa4d14?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Hardwood Flooring",
+    subtitle: "Premium oak, maple, and walnut flooring for timeless beauty and durability in any space.",
+    flooringType: "Hardwood",
+    description: "Premium oak, maple, and walnut hardwood floors that add warmth and character to any room.",
     ctaLink: "/contact",
-    learnMoreLink: "/services/luxury-vinyl-flooring"
+    learnMoreLink: "/services/hardwood"
   },
   {
     id: "3",
-    image: "https://images.unsplash.com/photo-1560440021-33f9b867899d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Custom Tile",
-    subtitle: "Transform bathrooms, kitchens, and living spaces with elegant tile installations.",
-    flooringType: "Tile",
-    description: "Beautiful, durable ceramic and porcelain tile flooring for kitchens, bathrooms, and more.",
+    image: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Luxury Vinyl Plank",
+    subtitle: "Waterproof, durable flooring that looks like real wood but offers superior performance.",
+    flooringType: "LVP",
+    description: "The perfect combination of beauty and practicality with waterproof, scratch-resistant luxury vinyl.",
     ctaLink: "/contact",
-    learnMoreLink: "/services/tile-flooring"
+    learnMoreLink: "/services/lvp"
   },
   {
     id: "4",
-    image: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Carpet Flooring",
-    subtitle: "Soft, comfortable, and cozy. Create warm and inviting spaces throughout your home.",
+    image: "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Tile Flooring",
+    subtitle: "Durable, beautiful tile for kitchens, bathrooms, and living spaces with endless design options.",
+    flooringType: "Tile",
+    description: "Beautiful, durable ceramic and porcelain tile flooring for kitchens, bathrooms, and more.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/tile"
+  },
+  {
+    id: "5",
+    image: "https://images.unsplash.com/photo-1595770655257-08afd8487979?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Floor Refinishing",
+    subtitle: "Restore your worn hardwood floors to like-new condition with professional refinishing.",
+    flooringType: "Refinishing",
+    description: "Breathe new life into worn hardwood floors with expert sanding, staining, and refinishing services.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/refinishing"
+  },
+  {
+    id: "6",
+    image: "https://images.unsplash.com/photo-1536330294201-1cc650c8d263?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Carpet Installation",
+    subtitle: "Soft, comfortable carpet options for bedrooms, living areas, and commercial spaces.",
     flooringType: "Carpet",
     description: "Soft, plush carpet options that bring warmth and comfort to bedrooms and living areas.",
     ctaLink: "/contact",
-    learnMoreLink: "/services/carpet-flooring"
+    learnMoreLink: "/services/carpet"
   }
 ];
 
@@ -117,19 +134,9 @@ const HeroSlider = () => {
           <div className={`absolute bottom-[25%] md:bottom-[25%] left-0 md:left-24 max-w-xl text-left z-20 px-6 md:px-0 transform transition-all duration-1000 ${
             index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
           }`}>
-            {index === 0 ? (
-              <div className="mb-5">
-                <img 
-                  src={apsLogo} 
-                  alt="APS Flooring Logo" 
-                  className="h-auto w-[280px] md:w-[320px] lg:w-[360px] drop-shadow-lg"
-                />
-              </div>
-            ) : (
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 md:mb-4 font-montserrat drop-shadow-md">
-                {slide.title}
-              </h1>
-            )}
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 md:mb-4 font-montserrat drop-shadow-md">
+              {slide.title}
+            </h1>
             
             <p className="text-sm md:text-xl text-white/90 mb-5 md:mb-6 max-w-md leading-relaxed line-clamp-3 md:line-clamp-none">
               {slide.subtitle}

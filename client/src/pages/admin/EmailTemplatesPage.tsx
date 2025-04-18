@@ -157,12 +157,13 @@ const EmailTemplatesPage = () => {
   
   // Predefined email templates for common scenarios
   const defaultTemplates = [
+    // Review Requests
     {
       name: 'Google Review Request',
       subject: 'We Would Love Your Feedback on APS Flooring Service',
       body: `Dear {{customer_name}},
 
-Thank you for choosing APS Flooring for your recent project. We hope you're enjoying your new floors!
+Thank you for choosing APS Flooring for your recent {{project_type}} project. We hope you're enjoying your new floors!
 
 We value your feedback and would appreciate if you could take a moment to share your experience with us on Google. Your review helps us improve our service and helps others discover quality flooring solutions.
 
@@ -172,9 +173,39 @@ You can leave a review by clicking the link below:
 Thank you for your time and for trusting APS Flooring with your home improvement project.
 
 Best regards,
-The APS Flooring Team
-Louisiana's Premier Flooring Experts`,
+APS Flooring Team
+(504) 402-3895
+www.apsflooring.com`,
       category: 'review',
+      isActive: true
+    },
+    
+    // Appointment Templates
+    {
+      name: 'Appointment Confirmation',
+      subject: 'Your APS Flooring Appointment Confirmation',
+      body: `Dear {{customer_name}},
+
+Thank you for scheduling an appointment with APS Flooring. We're confirming your appointment:
+
+Date: {{appointment_date}}
+Time: {{appointment_time}}
+Location: {{customer_address}}
+Purpose: {{appointment_purpose}}
+
+What to expect:
+- Our team will arrive in a company vehicle
+- The appointment will take approximately {{appointment_duration}}
+- We'll discuss your flooring needs and provide professional recommendations
+
+If you need to reschedule or have any questions, please call us at (504) 402-3895.
+
+We look forward to helping you create the perfect flooring for your space!
+
+Best regards,
+APS Flooring Team
+www.apsflooring.com`,
+      category: 'appointment',
       isActive: true
     },
     {
@@ -186,16 +217,18 @@ This is a friendly reminder about your scheduled appointment with APS Flooring t
 
 Our team will arrive at {{customer_address}} to {{appointment_purpose}}.
 
-If you need to reschedule or have any questions, please call us at (555) 123-4567.
+If you need to reschedule or have any questions, please call us at (504) 402-3895.
 
 We look forward to seeing you!
 
 Best regards,
 APS Flooring Team
-Louisiana's Premier Flooring Experts`,
+www.apsflooring.com`,
       category: 'appointment',
       isActive: true
     },
+    
+    // Lead Management Templates
     {
       name: 'Welcome New Lead',
       subject: 'Welcome to APS Flooring - Louisiana\'s Premier Flooring Solution',
@@ -211,16 +244,76 @@ Here's what you can expect from us:
 • Transparent pricing and timelines
 • Ongoing support and maintenance advice
 
-We'll be reaching out to you shortly to discuss your project in more detail. In the meantime, feel free to browse our website to explore our services and previous projects.
+We'll be reaching out to you shortly to discuss your project in more detail. In the meantime, feel free to browse our website at www.apsflooring.com to explore our services and previous projects.
 
-If you have any immediate questions, don't hesitate to contact us at (555) 123-4567.
+If you have any immediate questions, don't hesitate to contact us at (504) 402-3895.
 
 We look forward to working with you!
 
 Best regards,
 APS Flooring Team
-Louisiana's Premier Flooring Experts`,
+www.apsflooring.com`,
       category: 'lead',
+      isActive: true
+    },
+    {
+      name: 'Quote Follow-Up',
+      subject: 'Your APS Flooring Quote',
+      body: `Dear {{customer_name}},
+
+Thank you for the opportunity to provide a quote for your flooring project. Based on our discussion and assessment, we're pleased to provide the following estimate:
+
+Project: {{project_description}}
+Material: {{material_type}}
+Area: {{project_area}}
+Estimated Cost: {{quote_amount}}
+Estimated Timeline: {{project_timeline}}
+
+This quote includes:
+• All materials as discussed
+• Professional installation
+• Cleanup and removal of old flooring
+• {{warranty_details}}
+
+The quote is valid for 30 days from today. To proceed with your project, simply reply to this email or call us at (504) 402-3895 to schedule the installation.
+
+If you have any questions or would like to discuss adjustments to the scope of work, please don't hesitate to reach out.
+
+Best regards,
+APS Flooring Team
+www.apsflooring.com`,
+      category: 'quote',
+      isActive: true
+    },
+    
+    // Project and Maintenance Templates
+    {
+      name: 'Project Start Notification',
+      subject: 'Your APS Flooring Project Begins Soon',
+      body: `Dear {{customer_name}},
+
+We're excited to let you know that your flooring project is scheduled to begin on {{project_start_date}} at approximately {{project_start_time}}.
+
+Project Details:
+• Type: {{project_type}}
+• Location: {{project_location}}
+• Estimated Duration: {{project_duration}}
+
+Before we arrive, please:
+1. Remove small furniture and fragile items from the area
+2. Ensure clear access to the rooms being worked on
+3. Secure pets in a safe area away from the work zone
+
+Our team will arrive with all necessary materials and equipment. We'll take care to protect your property during the installation process.
+
+If you have any questions before we begin, please call us at (504) 402-3895.
+
+We look forward to transforming your space!
+
+Best regards,
+APS Flooring Team
+www.apsflooring.com`,
+      category: 'project',
       isActive: true
     },
     {
@@ -228,7 +321,7 @@ Louisiana's Premier Flooring Experts`,
       subject: 'How Are Your New Floors from APS Flooring?',
       body: `Dear {{customer_name}},
 
-We hope you're enjoying your new floors from APS Flooring!
+We hope you're enjoying your new {{flooring_type}} floors from APS Flooring!
 
 It's been a week since we completed your flooring project, and we wanted to check in to ensure everything is to your satisfaction. Your happiness with our work is our top priority.
 
@@ -239,12 +332,67 @@ Here are a few tips to maintain your new floors:
 
 Is there anything else we can assist you with? We'd love to hear your feedback or answer any questions you might have.
 
+If you're pleased with our service, we would greatly appreciate it if you would share your experience by leaving us a review on Google: {{review_link}}
+
 Thank you for choosing APS Flooring for your project.
 
 Best regards,
 APS Flooring Team
-Louisiana's Premier Flooring Experts`,
+(504) 402-3895
+www.apsflooring.com`,
       category: 'follow-up',
+      isActive: true
+    },
+    
+    // Special Promotions and Seasonal Templates
+    {
+      name: 'Seasonal Promotion',
+      subject: 'Special Spring Flooring Sale - Save 15% on Selected Products',
+      body: `Dear {{customer_name}},
+
+Spring is the perfect time to refresh your home with new flooring, and we're excited to offer a special seasonal promotion!
+
+🌟 SPRING FLOORING SALE 🌟
+For a limited time, save 15% on all hardwood and luxury vinyl plank flooring installations.
+
+Special Offer Details:
+• 15% off all hardwood and LVP installations
+• Free in-home consultation and estimate
+• Promotion valid until {{promotion_end_date}}
+• Must mention code: SPRING2023
+
+This is the perfect opportunity to upgrade your home with beautiful, durable flooring from APS Flooring.
+
+To take advantage of this offer, call us at (504) 402-3895 or reply to this email to schedule your free consultation.
+
+Best regards,
+APS Flooring Team
+www.apsflooring.com
+
+*Terms and conditions apply. Cannot be combined with other offers. Minimum project size required.`,
+      category: 'promotion',
+      isActive: true
+    },
+    {
+      name: 'Customer Referral Thank You',
+      subject: 'Thank You for Your Referral to APS Flooring',
+      body: `Dear {{customer_name}},
+
+We wanted to take a moment to sincerely thank you for referring {{referred_customer}} to APS Flooring. Referrals from satisfied customers like you are the highest compliment we can receive.
+
+As a token of our appreciation, we'd like to offer you a $100 gift card to {{gift_card_vendor}} which you'll receive once your friend's project is completed.
+
+Your trust in our work means the world to us, and we're committed to providing the same level of quality and service to everyone you refer.
+
+If you know anyone else who might benefit from our flooring services, please don't hesitate to pass along our information. Our referral rewards program continues for each new customer you send our way!
+
+Thank you again for your support and confidence in APS Flooring.
+
+Best regards,
+APS Flooring Team
+(504) 402-3895
+www.apsflooring.com`,
+      category: 'referral',
       isActive: true
     }
   ];
@@ -276,7 +424,7 @@ Louisiana's Premier Flooring Experts`,
   
   // Handle creating default templates
   const handleCreateDefaultTemplates = () => {
-    if (window.confirm('This will create 4 predefined email templates. Continue?')) {
+    if (window.confirm(`This will create ${defaultTemplates.length} predefined email templates. Continue?`)) {
       createDefaultTemplatesMutation.mutate();
     }
   };

@@ -9,6 +9,7 @@ export interface Project {
   testimonial?: string;
   clientName?: string;
   category: 'residential' | 'commercial';
+  tags: string[];
 }
 
 export const projects: Project[] = [
@@ -22,7 +23,8 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1591465709840-2c91ab42fc75?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "We couldn't be happier with our new hardwood floors. The transformation is incredible, and the installation was smooth and professional.",
     clientName: "Williams Family",
-    category: "residential"
+    category: "residential",
+    tags: ["hardwood", "living room", "new construction"]
   },
   {
     id: "2",
@@ -34,7 +36,8 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "The luxury vinyl is perfect for our busy kitchen. It looks like real wood but stands up to spills and our pets much better. Great recommendation by the APS team!",
     clientName: "Thompson Family",
-    category: "residential"
+    category: "residential",
+    tags: ["lvp", "kitchen", "renovation"]
   },
   {
     id: "3",
@@ -46,7 +49,8 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1584622650111-993a426bcf0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "Our new master bathroom is a spa-like retreat! The tile work is absolutely gorgeous, and every detail was carefully handled.",
     clientName: "Johnson Residence",
-    category: "residential"
+    category: "residential",
+    tags: ["tile", "bathroom", "remodel"]
   },
   {
     id: "4",
@@ -58,7 +62,8 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1497215842964-222b430dc094?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "APS made our office renovation painless with minimal disruption to our business. The floors are both beautiful and durable.",
     clientName: "Smith Consulting Group",
-    category: "commercial"
+    category: "commercial",
+    tags: ["lvp", "office", "commercial"]
   },
   {
     id: "5",
@@ -70,7 +75,8 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "We're amazed at how our old floors turned out. The APS team took great care with our historic home and brought these original floors back to life.",
     clientName: "Historic Garden District Home",
-    category: "residential"
+    category: "residential",
+    tags: ["hardwood", "refinishing", "historic"]
   },
   {
     id: "6",
@@ -82,6 +88,46 @@ export const projects: Project[] = [
     afterImage: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     testimonial: "The floor had to withstand heavy foot traffic and frequent cleaning. APS recommended the perfect solution and installed it on our tight timeline.",
     clientName: "Local Bistro",
-    category: "commercial"
+    category: "commercial",
+    tags: ["tile", "restaurant", "commercial"]
+  },
+  {
+    id: "7",
+    title: "Luxury Home Entryway",
+    description: "Premium marble tile installation in this grand entryway of a luxury Uptown residence.",
+    location: "New Orleans, LA",
+    type: "Tile",
+    beforeImage: "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    afterImage: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    testimonial: "The marble entryway makes the perfect first impression for our home. The craftsmanship and attention to detail exceeded our expectations.",
+    clientName: "Roberts Residence",
+    category: "residential",
+    tags: ["tile", "marble", "entryway", "luxury"]
+  },
+  {
+    id: "8",
+    title: "Boutique Retail Store",
+    description: "Modern luxury vinyl plank flooring for this upscale clothing boutique on Magazine Street.",
+    location: "New Orleans, LA",
+    type: "LVP",
+    beforeImage: "https://images.unsplash.com/photo-1580976592269-dad6e481f6fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    afterImage: "https://images.unsplash.com/photo-1581539250439-c96689b516dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    testimonial: "The floors perfectly complement our store's aesthetic while standing up to the demands of retail traffic. Easy to maintain and always looks great.",
+    clientName: "Chic Boutique",
+    category: "commercial",
+    tags: ["lvp", "retail", "commercial"]
+  },
+  {
+    id: "9",
+    title: "Lakefront Home Renovation",
+    description: "Complete flooring renovation including hardwood, tile, and carpet for this lakefront property.",
+    location: "Mandeville, LA",
+    type: "Multi-surface",
+    beforeImage: "https://images.unsplash.com/photo-1558442074-3c19857bc1dc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    afterImage: "https://images.unsplash.com/photo-1561144257-e32e8efc6c4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    testimonial: "Our whole-home flooring project turned out beautifully. APS helped us select the perfect materials for each room and coordinated everything seamlessly.",
+    clientName: "Martinez Family",
+    category: "residential",
+    tags: ["hardwood", "tile", "carpet", "whole-home"]
   }
 ];

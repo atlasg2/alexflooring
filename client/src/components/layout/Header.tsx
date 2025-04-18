@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, UserCircle } from "lucide-react";
 import apsLogoPath from "@assets/aps_logo.png";
 
 const Header = () => {
@@ -61,20 +61,34 @@ const Header = () => {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-6">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.href} 
-                href={link.href}
-                className={`relative text-gray-800 hover:text-secondary font-medium transition-all duration-300 py-2
-                  after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary 
-                  after:transition-all after:duration-300 hover:after:w-full
-                  ${isActive(link.href) ? "text-secondary after:w-full" : ""}`}
+          <div className="hidden md:flex items-center">
+            <nav className="flex space-x-6 mr-6">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.href} 
+                  href={link.href}
+                  className={`relative text-gray-800 hover:text-secondary font-medium transition-all duration-300 py-2
+                    after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary 
+                    after:transition-all after:duration-300 hover:after:w-full
+                    ${isActive(link.href) ? "text-secondary after:w-full" : ""}`}
+                >
+                  {link.text}
+                </Link>
+              ))}
+            </nav>
+            
+            {/* Admin Login Button */}
+            <Link href="/admin/login">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-1 border-primary/20 text-primary hover:text-secondary hover:border-secondary/30"
               >
-                {link.text}
-              </Link>
-            ))}
-          </nav>
+                <UserCircle className="h-4 w-4" />
+                <span>Login</span>
+              </Button>
+            </Link>
+          </div>
           
           {/* Mobile Menu Button */}
           <Button 
@@ -112,6 +126,16 @@ const Header = () => {
               <Phone className="h-4 w-4 mr-2" />
               <span className="font-medium">Call Us: (504) 402-3895</span>
             </a>
+            
+            {/* Admin Login in mobile menu */}
+            <Link 
+              href="/admin/login"
+              className="flex items-center text-primary hover:text-secondary transition-colors duration-300 border-l-2 border-transparent pl-3 py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <UserCircle className="h-4 w-4 mr-2" />
+              <span className="font-medium">Admin Login</span>
+            </Link>
           </nav>
         </div>
       )}
