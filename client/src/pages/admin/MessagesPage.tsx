@@ -229,39 +229,43 @@ const MessagesPage = () => {
           filteredMessages.map((message) => (
             <Card key={message.id} className={`${!message.isRead ? 'border-l-4 border-l-blue-500' : ''}`}>
               <CardHeader className="pb-3">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                    <CardTitle className="text-lg font-medium">
-                      {message.name || 'Anonymous User'}
-                      {!message.isRead && (
-                        <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-100" variant="outline">
-                          New
-                        </Badge>
-                      )}
-                      {message.contactId && (
-                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100" variant="outline">
-                          CRM Contact
-                        </Badge>
-                      )}
-                    </CardTitle>
+                    <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <CardTitle className="text-base sm:text-lg font-medium">
+                        {message.name || 'Anonymous User'}
+                      </CardTitle>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {!message.isRead && (
+                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100" variant="outline">
+                            New
+                          </Badge>
+                        )}
+                        {message.contactId && (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100" variant="outline">
+                            CRM Contact
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
                     {formatDate(message.createdAt)}
                   </div>
                 </div>
                 <div className="flex flex-col space-y-1 mt-1">
                   {message.email && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4 mr-1" />
-                      {message.email}
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4 mr-1 flex-shrink-0" />
+                      <span className="truncate max-w-[250px]">{message.email}</span>
                     </div>
                   )}
                   {message.phone && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                      {message.phone}
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                      <span>{message.phone}</span>
                     </div>
                   )}
                 </div>

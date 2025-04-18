@@ -222,7 +222,7 @@ const ChatWidget = () => {
                 {/* Quick response options */}
                 <div className="space-y-2">
                   <Label htmlFor="quickResponses">Common Inquiries</Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col space-y-2">
                     {QUICK_RESPONSES.map((response, index) => (
                       <Button 
                         key={index}
@@ -232,7 +232,7 @@ const ChatWidget = () => {
                         onClick={() => insertQuickResponse(response.text)}
                       >
                         {response.icon}
-                        <span className="truncate">{response.text}</span>
+                        <span>{response.text}</span>
                       </Button>
                     ))}
                   </div>

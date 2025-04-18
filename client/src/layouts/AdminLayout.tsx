@@ -410,7 +410,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
           />
         )}
         
-        <div className={`${isMobile ? 'p-2 pb-20' : 'p-6'}`}>
+        <div className={`${isMobile ? 'p-2 pb-20 max-w-[100vw] overflow-x-hidden' : 'p-6'}`}>
           {children}
         </div>
       </main>
