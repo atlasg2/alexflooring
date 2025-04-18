@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { projects } from "@/data/projects";
 import { MapPin, Home, Store, ArrowRight, ChevronLeft, ChevronRight, Building } from "lucide-react";
+import BeforeAfterSlider from "@/components/ui/before-after-slider";
 
 
 // Filter projects by category
