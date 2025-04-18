@@ -257,12 +257,14 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
               const hashedPassword = await hashPassword(password);
               
               // Create customer user
+              const username = contact.email.split('@')[0]; // Use email prefix as default username
               const newUser = await storage.createCustomerUser({
                 email: contact.email,
                 name: contact.name,
                 phone: contact.phone || undefined,
                 password: hashedPassword,
-                contactId: contact.id
+                contactId: contact.id,
+                username: username
               });
               
               // Link the project to this new user
@@ -387,12 +389,14 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
       const hashedPassword = await hashPassword(password);
       
       // Create customer user
+      const username = contact.email.split('@')[0]; // Use email prefix as default username
       const newUser = await storage.createCustomerUser({
         email: contact.email,
         name: contact.name,
         phone: contact.phone || undefined,
         password: hashedPassword,
-        contactId: contact.id
+        contactId: contact.id,
+        username: username
       });
       
       // If project ID is provided, link the project to this user

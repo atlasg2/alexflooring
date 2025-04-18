@@ -29,6 +29,7 @@ export interface IStorage {
   // Customer portal user methods
   getCustomerUser(id: number): Promise<CustomerUser | undefined>;
   getCustomerUserByEmail(email: string): Promise<CustomerUser | undefined>;
+  getCustomerUserByUsername(username: string): Promise<CustomerUser | undefined>;
   getCustomerUsers(): Promise<CustomerUser[]>;
   createCustomerUser(user: InsertCustomerUser): Promise<CustomerUser>;
   updateCustomerUser(id: number, user: Partial<InsertCustomerUser>): Promise<CustomerUser | undefined>;
@@ -150,6 +151,11 @@ export class DatabaseStorage implements IStorage {
   
   async getCustomerUserByEmail(email: string): Promise<CustomerUser | undefined> {
     const [user] = await db.select().from(customerUsers).where(eq(customerUsers.email, email));
+    return user;
+  }
+  
+  async getCustomerUserByUsername(username: string): Promise<CustomerUser | undefined> {
+    const [user] = await db.select().from(customerUsers).where(eq(customerUsers.username, username));
     return user;
   }
   

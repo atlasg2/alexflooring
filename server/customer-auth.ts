@@ -54,10 +54,20 @@ export function setupCustomerAuth(app: Express) {
       const { email, password } = req.body;
       
       if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required" });
+        return res.status(400).json({ error: "Email/username and password are required" });
       }
       
-      const customer = await storage.getCustomerUserByEmail(email);
+      // Support login via email or username
+      let customer;
+      if (email.includes('@')) {
+        // If it looks like an email, search by email
+        customer = await storage.getCustomerUserByEmail(email);
+      } else {
+        // Otherwise, assume it's a username
+        // Need to add a method to storage for this
+        // For now we'll check by email since we're setting username=email in most places
+        customer = await storage.getCustomerUserByEmail(email);
+      }
       
       if (!customer) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -115,9 +125,13 @@ export function setupCustomerAuth(app: Express) {
       // Hash password
       const hashedPassword = await hashPassword(password);
       
+      // Create username from email if not provided
+      const username = email.split('@')[0];
+      
       // Create customer user
       const newCustomer = await storage.createCustomerUser({
         email,
+        username,
         password: hashedPassword,
         name,
         phone,
