@@ -59,21 +59,27 @@ export function setupCustomerAuth(app: Express) {
         return res.status(400).json({ error: "Email/username and password are required" });
       }
       
+      console.log(`Customer login attempt: ${email}`);
+      
       // Support login via email or username
       let customer;
       if (email.includes('@')) {
         // If it looks like an email, search by email
         customer = await storage.getCustomerUserByEmail(email);
+        console.log(`Searching by email: ${email}, found:`, customer ? "yes" : "no");
       } else {
         // Otherwise, assume it's a username
         customer = await storage.getCustomerUserByUsername(email);
+        console.log(`Searching by username: ${email}, found:`, customer ? "yes" : "no");
       }
       
       if (!customer) {
+        console.log(`No customer found for login: ${email}`);
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
       const validPassword = await comparePasswords(password, customer.password);
+      console.log(`Password validation for ${email}: ${validPassword ? "success" : "failed"}`);
       
       if (!validPassword) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -91,9 +97,18 @@ export function setupCustomerAuth(app: Express) {
         isCustomer: true
       };
       
-      // Return customer info without the password
-      const { password: _, ...customerData } = customer;
-      res.json(customerData);
+      // Make sure session is saved before sending response
+      req.session.save(err => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ error: "Session error" });
+        }
+        
+        // Return customer info without the password
+        const { password: _, ...customerData } = customer;
+        console.log(`Customer login successful for ${email}, customer ID: ${customer.id}`);
+        res.json(customerData);
+      });
     } catch (error) {
       console.error("Customer login error:", error);
       res.status(500).json({ error: "An error occurred during login" });
@@ -170,18 +185,66 @@ export function setupCustomerAuth(app: Express) {
   
   // Get current customer
   app.get("/api/customer/me", (req, res) => {
+    console.log("Checking customer session:", req.session.id);
+    console.log("Customer in session:", req.session.customer ? "yes" : "no");
+    
     if (!req.session.customer) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
-    res.json(req.session.customer);
+    // Access the customer from the session
+    const customerInSession = req.session.customer;
+    console.log(`Retrieved customer from session: ID ${customerInSession.id}, ${customerInSession.username}`);
+    
+    // Optionally, refresh the customer data from the database
+    if (customerInSession.id) {
+      storage.getCustomerUser(customerInSession.id)
+        .then(freshCustomer => {
+          if (freshCustomer) {
+            // Don't send the password back
+            const { password: _, ...customerData } = freshCustomer;
+            console.log(`Returning fresh customer data for ID: ${freshCustomer.id}`);
+            res.json({
+              ...customerData,
+              isCustomer: true // Ensure this flag is set
+            });
+          } else {
+            // If the customer no longer exists in the DB but is in the session
+            console.log("Customer found in session but not in DB - using session data");
+            res.json(customerInSession);
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching fresh customer data:", err);
+          // Fallback to session data if DB fetch fails
+          res.json(customerInSession);
+        });
+    } else {
+      // If no customer ID, just return session data
+      res.json(customerInSession);
+    }
   });
 }
 
 // Middleware to check if user is authenticated as a customer
 export function isCustomer(req: Request, res: Response, next: NextFunction) {
-  if (!req.session.customer || !req.session.customer.isCustomer) {
-    return res.status(401).json({ error: "Unauthorized" });
+  console.log("isCustomer middleware - session ID:", req.session.id);
+  
+  if (!req.session) {
+    console.log("CRITICAL ERROR: No session object available");
+    return res.status(401).json({ error: "No session available" });
   }
+  
+  if (!req.session.customer) {
+    console.log("Customer auth failed: No customer in session");
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  if (!req.session.customer.isCustomer) {
+    console.log("Customer auth failed: Session user is not a customer");
+    return res.status(401).json({ error: "Not authorized as customer" });
+  }
+  
+  console.log(`Customer auth success: ID ${req.session.customer.id}, username: ${req.session.customer.username}`);
   next();
 }

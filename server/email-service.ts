@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
-// Initialize with API key from environment variables
-const resend = new Resend(process.env.RESEND_KEY);
+// Initialize with API key directly (temporary fix)
+const resend = new Resend('re_759NvBX2_BbtXDFqN5eNpLFjvUW6WTYbw');
 
 // Base configuration for all emails
 const BASE_CONFIG = {
