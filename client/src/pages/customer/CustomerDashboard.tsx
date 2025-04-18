@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +7,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, Image, Calendar, Clock, LogOut } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Loader2, FileText, Image, Calendar, Clock, LogOut, Eye, Download, ExternalLink } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 // Type definitions
@@ -154,43 +159,57 @@ function ProjectCard({ project }: { project: Project }) {
           </TabsList>
           
           <TabsContent value="progress" className="mt-6 space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Project Timeline</h3>
-              {project.progressUpdates && project.progressUpdates.length > 0 ? (
-                <div className="space-y-4 mt-4">
-                  {project.progressUpdates.map((update, index) => (
-                    <div key={index} className="relative pl-6 pb-6 border-l border-border">
-                      <div className="absolute left-0 top-0 -translate-x-1/2 w-3 h-3 rounded-full bg-primary"></div>
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className="text-sm font-medium">{new Date(update.date).toLocaleDateString()}</span>
-                        <StatusBadge status={update.status} size="sm" />
-                      </div>
-                      <p className="text-muted-foreground">{update.note}</p>
-                      {update.images && update.images.length > 0 && (
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {update.images.map((img, imgIndex) => (
-                            <a 
-                              href={img} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              key={imgIndex}
-                              className="relative aspect-video block overflow-hidden rounded-md border"
-                            >
-                              <img 
-                                src={img} 
-                                alt={`Update ${index + 1} image ${imgIndex + 1}`} 
-                                className="object-cover w-full h-full hover:scale-105 transition-transform"
-                              />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <div className="space-y-6">
+              {/* Project Stage Indicator */}
+              <div>
+                <h3 className="text-lg font-medium mb-3">Project Progress</h3>
+                <div className="rounded-lg border p-4 bg-muted/20">
+                  <ProgressStageIndicator status={project.status} />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {getStatusDescription(project.status)}
+                  </p>
                 </div>
-              ) : (
-                <p className="text-muted-foreground">No progress updates available yet.</p>
-              )}
+              </div>
+              
+              {/* Timeline */}
+              <div>
+                <h3 className="text-lg font-medium">Timeline</h3>
+                {project.progressUpdates && project.progressUpdates.length > 0 ? (
+                  <div className="space-y-4 mt-4">
+                    {project.progressUpdates.map((update, index) => (
+                      <div key={index} className="relative pl-6 pb-6 border-l border-border">
+                        <div className={`absolute left-0 top-0 -translate-x-1/2 w-3 h-3 rounded-full ${getStatusColor(update.status)}`}></div>
+                        <div className="mb-1 flex items-center gap-2">
+                          <span className="text-sm font-medium">{new Date(update.date).toLocaleDateString()}</span>
+                          <StatusBadge status={update.status} size="sm" />
+                        </div>
+                        <p className="text-muted-foreground">{update.note}</p>
+                        {update.images && update.images.length > 0 && (
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {update.images.map((img, imgIndex) => (
+                              <a 
+                                href={img} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                key={imgIndex}
+                                className="relative aspect-video block overflow-hidden rounded-md border"
+                              >
+                                <img 
+                                  src={img} 
+                                  alt={`Update ${index + 1} image ${imgIndex + 1}`} 
+                                  className="object-cover w-full h-full hover:scale-105 transition-transform"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground mt-2">No progress updates available yet.</p>
+                )}
+              </div>
             </div>
           </TabsContent>
           
@@ -264,30 +283,24 @@ function ProjectCard({ project }: { project: Project }) {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Project Documents</h3>
               {project.documents && project.documents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.documents.map((doc, index) => (
-                    <a
-                      key={index}
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="mr-4">
-                        {getDocumentIcon(doc.type)}
-                      </div>
-                      <div>
-                        <p className="font-medium">{doc.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(doc.uploadDate).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground capitalize mt-1">
-                          {doc.type}
-                        </p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 gap-4">
+                    {project.documents.map((doc, index) => (
+                      <DocumentCard key={index} document={doc} />
+                    ))}
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+                    <h4 className="text-sm font-medium mb-2 flex items-center">
+                      <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                      Document Tips
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Documents may take a moment to load depending on your internet connection. 
+                      If you encounter any issues accessing these files, please contact our office.
+                    </p>
+                  </div>
+                </>
               ) : (
                 <p className="text-muted-foreground">No documents available yet.</p>
               )}
@@ -352,17 +365,228 @@ function getStatusDescription(status: string): string {
   }
 }
 
+function getStatusColor(status: string): string {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "bg-amber-500";
+    case "in_progress":
+      return "bg-blue-500";
+    case "completed":
+      return "bg-green-500";
+    case "on_hold":
+      return "bg-orange-500";
+    case "cancelled":
+      return "bg-red-500";
+    default:
+      return "bg-gray-500";
+  }
+}
+
+function ProgressStageIndicator({ status }: { status: string }) {
+  // Define the project stages
+  const stages = [
+    { id: "pending", label: "Planning" },
+    { id: "in_progress", label: "In Progress" },
+    { id: "completed", label: "Completed" }
+  ];
+  
+  // Determine active stage
+  let activeIndex = stages.findIndex(stage => stage.id === status.toLowerCase());
+  if (activeIndex === -1) {
+    // Handle special cases
+    switch (status.toLowerCase()) {
+      case "on_hold":
+        activeIndex = 1; // Show in progress but with special color
+        break;
+      case "cancelled":
+        activeIndex = 0; // Show at beginning but with special color
+        break;
+      default:
+        activeIndex = 0;
+    }
+  }
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between mb-1">
+        {stages.map((stage, index) => (
+          <div key={stage.id} className="flex flex-col items-center">
+            <div className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+              index <= activeIndex 
+                ? getStatusColor(index === activeIndex ? status : 'completed')
+                : 'bg-muted border-border'
+            }`}>
+              <span className={`text-xs font-bold ${
+                index <= activeIndex ? 'text-white' : 'text-muted-foreground'
+              }`}>
+                {index + 1}
+              </span>
+            </div>
+            <span className={`text-xs mt-1 ${
+              index <= activeIndex ? 'font-medium' : 'text-muted-foreground'
+            }`}>
+              {stage.label}
+            </span>
+          </div>
+        ))}
+      </div>
+      
+      <div className="w-full bg-muted rounded-full h-2.5 relative">
+        <div 
+          className={`h-2.5 rounded-full ${getStatusColor(status)}`}
+          style={{ 
+            width: status.toLowerCase() === 'completed' 
+              ? '100%' 
+              : status.toLowerCase() === 'in_progress' || status.toLowerCase() === 'on_hold'
+                ? '50%' 
+                : '15%'
+          }}
+        ></div>
+      </div>
+    </div>
+  );
+}
+
+// Document Card Component with preview functionality
+interface DocumentProps {
+  name: string;
+  url: string;
+  type: string;
+  uploadDate: string;
+}
+
+function DocumentCard({ document }: { document: DocumentProps }) {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const isPdf = document.url.toLowerCase().endsWith('.pdf');
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document.url);
+  
+  return (
+    <>
+      <div className="relative flex flex-col sm:flex-row items-start p-4 rounded-lg border bg-card hover:bg-accent/20 transition-colors">
+        <div className="flex-shrink-0 mr-4 mb-3 sm:mb-0">
+          {getDocumentIcon(document.type)}
+        </div>
+        
+        <div className="flex-grow">
+          <h4 className="font-medium">{document.name}</h4>
+          <p className="text-xs text-muted-foreground">
+            Added on {new Date(document.uploadDate).toLocaleDateString()}
+          </p>
+          <p className="text-xs text-muted-foreground capitalize mt-1">
+            {document.type}
+          </p>
+          
+          <div className="flex mt-3 space-x-2">
+            {(isPdf || isImage) && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center" 
+                onClick={() => setIsPreviewOpen(true)}
+              >
+                <Eye className="mr-1 h-3 w-3" />
+                Preview
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center"
+              asChild
+            >
+              <a 
+                href={document.url} 
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download className="mr-1 h-3 w-3" />
+                Download
+              </a>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center"
+              asChild
+            >
+              <a 
+                href={document.url} 
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="mr-1 h-3 w-3" />
+                Open
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Document Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] p-0">
+          <div className="p-4 border-b">
+            <h3 className="font-medium">{document.name}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{document.type}</p>
+          </div>
+          <div className="relative w-full overflow-auto p-1" style={{ height: '70vh' }}>
+            {isPdf ? (
+              <iframe 
+                src={`${document.url}#toolbar=0&navpanes=0`} 
+                className="w-full h-full border-0" 
+                title={document.name}
+              />
+            ) : isImage ? (
+              <img 
+                src={document.url} 
+                alt={document.name} 
+                className="max-w-full max-h-full object-contain mx-auto"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full">
+                <FileText className="h-16 w-16 text-muted" />
+                <p className="mt-4 text-center text-muted-foreground">
+                  Preview not available for this file type.<br />
+                  Please download or open the file to view it.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4"
+                  asChild
+                >
+                  <a 
+                    href={document.url} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Open file
+                  </a>
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function getDocumentIcon(type: string) {
   switch (type.toLowerCase()) {
     case "invoice":
     case "estimate":
     case "contract":
     case "quote":
-      return <FileText className="h-6 w-6 text-primary" />;
+      return <FileText className="h-10 w-10 text-primary" />;
     case "image":
     case "photo":
-      return <Image className="h-6 w-6 text-primary" />;
+      return <Image className="h-10 w-10 text-primary" />;
     default:
-      return <FileText className="h-6 w-6 text-primary" />;
+      return <FileText className="h-10 w-10 text-primary" />;
   }
 }

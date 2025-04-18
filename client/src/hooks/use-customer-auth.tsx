@@ -58,12 +58,19 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           return res.json();
         }
+        // Silently return null for unauthenticated users (401 error)
         return null;
       } catch (error) {
-        console.error("Error fetching customer:", error);
+        // Don't log errors for expected auth failures
+        if (error instanceof Error && !error.message.includes("401")) {
+          // Only log unexpected errors
+          console.error("Unexpected error in customer auth:", error);
+        }
         return null;
       }
     },
+    // Reduce refetch attempts for unauthenticated users
+    retry: false
   });
 
   const login = async (credentials: LoginCredentials): Promise<CustomerUser> => {
