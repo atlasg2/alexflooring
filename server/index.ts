@@ -13,21 +13,18 @@ console.log("*******************************************");
 // Run database setup script for production environments
 const isProduction = process.env.REPL_SLUG && process.env.REPL_OWNER;
 if (isProduction) {
-  log("Running in production environment - executing database setup script");
-  try {
-    exec('node scripts/ensure-db.js', (error, stdout, stderr) => {
-      if (error) {
-        log(`Database setup error: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        log(`Database setup stderr: ${stderr}`);
-        return;
-      }
-      log(`Database setup output: ${stdout}`);
-    });
-  } catch (error) {
-    log(`Failed to run database setup script: ${error.message}`);
+  log("Running in production environment");
+  
+  // Construct DATABASE_URL from parts if in production and not already set
+  if (!process.env.DATABASE_URL && process.env.PGHOST && process.env.PGUSER && process.env.PGPASSWORD && process.env.PGDATABASE) {
+    const pgHost = process.env.PGHOST;
+    const pgUser = process.env.PGUSER;
+    const pgPassword = process.env.PGPASSWORD;
+    const pgDatabase = process.env.PGDATABASE;
+    const pgPort = process.env.PGPORT || '5432';
+    
+    process.env.DATABASE_URL = `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/${pgDatabase}?sslmode=require`;
+    log("DATABASE_URL constructed from environment variables");
   }
 }
 

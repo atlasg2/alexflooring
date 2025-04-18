@@ -1,6 +1,6 @@
 // This script ensures that drizzle.config.ts works in both development and production environments
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function logInfo(message) {
   console.log(`[DB CONFIG] ${message}`);

@@ -1,8 +1,8 @@
 // This script ensures the database is initialized in production
 // It will run automatically when the application starts in production
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 function logInfo(message) {
   console.log(`[DB SETUP] ${message}`);
