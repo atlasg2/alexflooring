@@ -29,13 +29,16 @@ export interface IStorage {
   // Customer portal user methods
   getCustomerUser(id: number): Promise<CustomerUser | undefined>;
   getCustomerUserByEmail(email: string): Promise<CustomerUser | undefined>;
+  getCustomerUsers(): Promise<CustomerUser[]>;
   createCustomerUser(user: InsertCustomerUser): Promise<CustomerUser>;
   updateCustomerUser(id: number, user: Partial<InsertCustomerUser>): Promise<CustomerUser | undefined>;
+  deleteCustomerUser(id: number): Promise<void>;
   verifyCustomerUserCredentials(email: string, password: string): Promise<CustomerUser | undefined>;
   updateCustomerLastLogin(id: number): Promise<void>;
   
   // Customer project methods
   getCustomerProjects(customerId: number): Promise<CustomerProject[]>;
+  getAllCustomerProjects(): Promise<CustomerProject[]>;
   getCustomerProject(id: number): Promise<CustomerProject | undefined>;
   createCustomerProject(project: InsertCustomerProject): Promise<CustomerProject>;
   updateCustomerProject(id: number, project: Partial<InsertCustomerProject>): Promise<CustomerProject | undefined>;
@@ -150,9 +153,17 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
+  async getCustomerUsers(): Promise<CustomerUser[]> {
+    return await db.select().from(customerUsers).orderBy(desc(customerUsers.createdAt));
+  }
+  
   async createCustomerUser(user: InsertCustomerUser): Promise<CustomerUser> {
     const [result] = await db.insert(customerUsers).values(user).returning();
     return result;
+  }
+  
+  async deleteCustomerUser(id: number): Promise<void> {
+    await db.delete(customerUsers).where(eq(customerUsers.id, id));
   }
   
   async updateCustomerUser(id: number, userData: Partial<InsertCustomerUser>): Promise<CustomerUser | undefined> {
@@ -191,6 +202,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(customerProjects)
       .where(eq(customerProjects.customerId, customerId))
+      .orderBy(desc(customerProjects.updatedAt));
+  }
+  
+  async getAllCustomerProjects(): Promise<CustomerProject[]> {
+    return await db
+      .select()
+      .from(customerProjects)
       .orderBy(desc(customerProjects.updatedAt));
   }
   
