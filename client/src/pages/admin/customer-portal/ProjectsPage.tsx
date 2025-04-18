@@ -192,11 +192,61 @@ export default function CustomerProjectsPage() {
       if (!res.ok) throw new Error("Failed to create project");
       return res.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Project created",
-        description: "The project has been created successfully.",
-      });
+    onSuccess: (response) => {
+      const accountCreation = response.accountCreation;
+      
+      // Show appropriate toast based on account creation status
+      if (accountCreation) {
+        if (accountCreation.status === 'created') {
+          toast({
+            title: "Project created with customer account",
+            description: (
+              <div className="space-y-2">
+                <p>Project successfully created.</p>
+                <p className="font-medium">✓ {accountCreation.message}</p>
+                {accountCreation.temporaryPassword && (
+                  <p className="bg-amber-50 p-2 rounded text-amber-800 border border-amber-200 mt-2">
+                    Temporary password: <span className="font-bold">{accountCreation.temporaryPassword}</span>
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  (Remember to save this password. In the future, this will be automatically emailed to the customer.)
+                </p>
+              </div>
+            ),
+            duration: 10000, // Show for 10 seconds to give admin time to save password
+          });
+        } else if (accountCreation.status === 'linked') {
+          toast({
+            title: "Project created",
+            description: (
+              <div>
+                <p>Project successfully created.</p>
+                <p className="font-medium">✓ {accountCreation.message}</p>
+              </div>
+            ),
+          });
+        } else {
+          // Error in account creation
+          toast({
+            title: "Project created",
+            description: (
+              <div>
+                <p>Project successfully created.</p>
+                <p className="text-amber-600">⚠️ {accountCreation.message}</p>
+              </div>
+            ),
+            variant: "default",
+          });
+        }
+      } else {
+        // No account creation attempted (no contact associated)
+        toast({
+          title: "Project created",
+          description: "The project has been created successfully.",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/admin/customer-projects"] });
       setIsCreatingProject(false);
       setProjectFormData(initialProjectFormData);

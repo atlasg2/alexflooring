@@ -192,7 +192,70 @@ export function setupAdminCustomerPortalRoutes(app: Express) {
       // Create the project
       const newProject = await storage.createCustomerProject(validProjectData);
       
-      res.status(201).json(newProject);
+      // Automatically generate customer account if contactId is provided
+      let accountCreationResult = null;
+      if (validProjectData.contactId) {
+        try {
+          // Get the contact
+          const contact = await storage.getContact(validProjectData.contactId);
+          
+          if (contact && contact.email) {
+            // Check if customer user already exists with this email
+            const existingUser = await storage.getCustomerUserByEmail(contact.email);
+            
+            if (existingUser) {
+              // If user exists, link the project to this user
+              await storage.updateCustomerProject(newProject.id, { 
+                customerId: existingUser.id 
+              });
+              accountCreationResult = {
+                status: 'linked',
+                message: `Project linked to existing customer account: ${contact.email}`
+              };
+            } else {
+              // Generate random password
+              const password = generateRandomPassword();
+              
+              // Hash the password
+              const hashedPassword = await hashPassword(password);
+              
+              // Create customer user
+              const newUser = await storage.createCustomerUser({
+                email: contact.email,
+                name: contact.name,
+                phone: contact.phone || undefined,
+                password: hashedPassword,
+                contactId: contact.id
+              });
+              
+              // Link the project to this new user
+              await storage.updateCustomerProject(newProject.id, { 
+                customerId: newUser.id 
+              });
+              
+              accountCreationResult = {
+                status: 'created',
+                message: `Customer portal account created with email: ${contact.email}`,
+                temporaryPassword: password
+              };
+              
+              // TODO: Send welcome email with login credentials
+            }
+          }
+        } catch (accountError) {
+          // Log error but don't fail the entire request
+          console.error("Error auto-generating customer account:", accountError);
+          accountCreationResult = {
+            status: 'error',
+            message: 'Project created but failed to create customer portal account'
+          };
+        }
+      }
+      
+      res.status(201).json({
+        ...newProject,
+        accountCreation: accountCreationResult
+      });
     } catch (error) {
       console.error("Error creating customer project:", error);
       
