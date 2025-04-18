@@ -109,78 +109,94 @@ const ServicesOverview = () => {
   const commercialService = commercialServices[0];
 
   return (
-    <section id="services" className="bg-gradient-to-b from-white to-gray-50 py-20">
+    <section id="services" className="py-24 bg-black text-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary relative inline-block">
-            Our Services
-            <span className="absolute -bottom-3 left-1/2 w-24 h-1 bg-secondary transform -translate-x-1/2"></span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
+              Expert Flooring Services
+            </span>
           </h2>
-          <p className="mt-8 text-lg text-gray-600 max-w-2xl mx-auto">
-            Professional flooring solutions tailored to your needs and style preferences.
+          <div className="h-1 w-24 bg-secondary mx-auto mt-4 mb-6"></div>
+          <p className="mt-6 text-lg text-white/80 max-w-2xl mx-auto">
+            Premium flooring solutions for residential and commercial spaces throughout Louisiana
           </p>
         </div>
         
-        {/* Residential section with heading */}
-        <div className="mb-20">
-          <div className="flex items-center mb-6 gap-4">
-            <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-              <Home className="h-10 w-10 text-secondary" />
+        {/* Residential services section */}
+        <div className="mb-24 relative">
+          {/* Background design elements */}
+          <div className="absolute -top-10 -left-10 w-32 h-32 border-2 border-secondary/30 rounded-full opacity-20"></div>
+          <div className="absolute top-1/3 -right-10 w-64 h-64 border-2 border-secondary/20 rounded-full opacity-10"></div>
+          
+          {/* Section header */}
+          <div className="relative z-10 flex items-center mb-10 gap-4 backdrop-blur-sm">
+            <div className="p-4 rounded-full bg-secondary/20 flex items-center justify-center shadow-lg border border-secondary/30">
+              <Home className="h-8 w-8 text-secondary" />
             </div>
-            <h2 className="text-3xl font-bold text-primary relative">
-              Residential
-              <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-            </h2>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-1">Residential Flooring</h2>
+              <div className="h-1 w-20 bg-secondary"></div>
+            </div>
           </div>
           
-          <p className="text-gray-600 max-w-3xl mb-10">
-            Transform your home with our premium residential flooring solutions, from hardwood to luxury vinyl and custom tile installations.
+          <p className="text-white/70 max-w-3xl mb-12 text-lg">
+            Transform your home with our premium residential flooring options. Choose from a wide variety of materials and styles to create a space that's uniquely yours.
           </p>
           
-          {/* Grid of service cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Service cards in a scrollable flex layout */}
+          <div className="flex overflow-x-auto pb-6 gap-6 snap-x snap-mandatory hide-scrollbar">
             {residentialServices.map((service) => (
-              <ServiceItem key={service.id} service={service} />
+              <div key={service.id} className="flex-none w-full md:w-[500px] snap-center">
+                <ServiceItem service={service} />
+              </div>
             ))}
           </div>
           
-          <div className="mt-10 flex justify-center">
+          <div className="mt-12 flex justify-center">
             <Link 
               href="/services?category=residential"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
+              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
             >
               View All Residential Services
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
         
-        {/* Commercial section with heading */}
-        <div className="pt-10 mt-20 border-t border-gray-200">
-          <div className="flex items-center mb-6 gap-4">
-            <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center">
-              <Store className="h-10 w-10 text-secondary" />
+        {/* Commercial section with dark contrast */}
+        <div className="pt-20 mt-20 relative border-t border-white/10">
+          {/* Background design elements */}
+          <div className="absolute top-0 right-0 w-48 h-48 border-2 border-secondary/20 rounded-full opacity-10"></div>
+          <div className="absolute bottom-20 -left-20 w-72 h-72 border-2 border-secondary/10 rounded-full opacity-5"></div>
+          
+          {/* Section header */}
+          <div className="relative z-10 flex items-center mb-10 gap-4">
+            <div className="p-4 rounded-full bg-secondary/20 flex items-center justify-center shadow-lg border border-secondary/30">
+              <Store className="h-8 w-8 text-secondary" />
             </div>
-            <h2 className="text-3xl font-bold text-primary relative">
-              Commercial
-              <span className="absolute -bottom-3 left-0 w-24 h-1 bg-secondary"></span>
-            </h2>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-1">Commercial Flooring</h2>
+              <div className="h-1 w-20 bg-secondary"></div>
+            </div>
           </div>
           
-          <p className="text-gray-600 max-w-3xl mb-10">
-            Durable, attractive flooring solutions designed for businesses, offices, restaurants, and commercial spaces that withstand high traffic.
+          <p className="text-white/70 max-w-3xl mb-12 text-lg">
+            Durable, high-performance flooring solutions for commercial spaces. We understand the unique needs of businesses and provide flooring that withstands high traffic while maintaining its appearance.
           </p>
           
-          {/* Featured commercial service */}
-          <FeaturedService service={commercialService} />
+          {/* Featured commercial service with enhanced visual appeal */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-1 shadow-2xl overflow-hidden border border-white/10">
+            <FeaturedService service={commercialService} />
+          </div>
           
-          <div className="mt-10 flex justify-center">
+          <div className="mt-12 flex justify-center">
             <Link 
               href="/services?category=commercial"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-xl"
+              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
             >
               View Commercial Services
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>

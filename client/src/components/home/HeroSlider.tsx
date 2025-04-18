@@ -1,35 +1,61 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Construction, Info } from "lucide-react";
 
-// Define slide interface
+// Enhanced slide interface with specific flooring type and buttons
 interface Slide {
   id: string;
   image: string;
   title: string;
   subtitle: string;
+  flooringType: string;
+  description: string;
+  ctaLink: string;
+  learnMoreLink: string;
 }
 
-// Define hero slides
+// Define hero slides with specific flooring types
 const heroSlides: Slide[] = [
   {
     id: "1",
     image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Premium Flooring Solutions",
-    subtitle: "For Homes & Businesses"
+    title: "Hardwood Flooring",
+    subtitle: "Timeless Elegance for Your Home",
+    flooringType: "Hardwood",
+    description: "Premium oak, maple, and walnut hardwood floors that add warmth and character to any room.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/hardwood-flooring"
   },
   {
     id: "2",
     image: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Expert Installation",
-    subtitle: "Exceptional Quality"
+    title: "Luxury Vinyl Plank",
+    subtitle: "Waterproof & Durable",
+    flooringType: "LVP",
+    description: "The perfect combination of beauty and practicality with waterproof, scratch-resistant luxury vinyl.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/luxury-vinyl-flooring"
   },
   {
     id: "3",
     image: "https://images.unsplash.com/photo-1560440021-33f9b867899d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Transforming Spaces",
-    subtitle: "Throughout Louisiana"
+    title: "Custom Tile",
+    subtitle: "Premium Tile Installations",
+    flooringType: "Tile",
+    description: "Beautiful, durable ceramic and porcelain tile flooring for kitchens, bathrooms, and more.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/tile-flooring"
+  },
+  {
+    id: "4",
+    image: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Carpet Flooring",
+    subtitle: "Comfort & Style Underfoot",
+    flooringType: "Carpet",
+    description: "Soft, plush carpet options that bring warmth and comfort to bedrooms and living areas.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services/carpet-flooring"
   }
 ];
 
@@ -83,22 +109,46 @@ const HeroSlider = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
           
           {/* Text container with animation */}
-          <div className={`absolute bottom-[15%] left-0 md:left-24 max-w-md text-left z-20 px-8 md:px-0 transform transition-all duration-1000 ${
+          <div className={`absolute bottom-[15%] left-0 md:left-24 max-w-lg text-left z-20 px-8 md:px-0 transform transition-all duration-1000 ${
             index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
           }`}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 font-montserrat drop-shadow-md">
+            {/* Flooring type tag */}
+            <span className="inline-block bg-secondary/90 text-black px-4 py-1.5 rounded-full text-sm font-semibold mb-4 shadow-md">
+              {slide.flooringType}
+            </span>
+            
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2 font-montserrat drop-shadow-md">
               {slide.title}
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8 drop-shadow-md max-w-md">
+            
+            <p className="text-lg md:text-xl text-white/90 mb-3 drop-shadow-md">
               {slide.subtitle}
             </p>
-            <Link href="/contact" className="inline-block">
-              <Button 
-                className="bg-secondary text-black hover:bg-secondary/90 px-8 py-4 rounded-md flex items-center gap-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
-              >
-                Free Estimate <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
+            
+            <p className="text-white/80 mb-8 max-w-md">
+              {slide.description}
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              {/* Free Estimate Button */}
+              <Link href={slide.ctaLink} className="inline-block">
+                <Button 
+                  className="bg-secondary text-black hover:bg-secondary/90 px-6 py-3 rounded-md flex items-center gap-2 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                >
+                  <Construction className="h-4 w-4" /> Free Estimate
+                </Button>
+              </Link>
+              
+              {/* Learn More Button */}
+              <Link href={slide.learnMoreLink} className="inline-block">
+                <Button 
+                  variant="outline"
+                  className="bg-black/40 text-white border-white/30 hover:bg-black/60 px-6 py-3 rounded-md flex items-center gap-2 text-base font-semibold backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                >
+                  <Info className="h-4 w-4" /> Learn More
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       ))}
