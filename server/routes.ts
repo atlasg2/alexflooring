@@ -17,6 +17,7 @@ import { setupAuth as setupNewAuth } from "./auth-new";
 import { setupSimpleAuth, isAdminSimple } from "./simple-auth";
 import { setupCustomerAuth } from "./customer-auth";
 import { setupCustomerProjectRoutes } from "./customer-projects";
+import { setupProjectManagementRoutes } from "./project-management"; 
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
 import { setupSalesWorkflowRoutes } from "./sales-workflow";
 
@@ -34,6 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up admin customer portal routes
   setupAdminCustomerPortalRoutes(app);
+  
+  // Set up project management routes
+  setupProjectManagementRoutes(app);
   
   // Set up sales workflow routes (estimates, contracts, invoices)
   setupSalesWorkflowRoutes(app);

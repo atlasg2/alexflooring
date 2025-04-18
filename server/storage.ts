@@ -44,6 +44,7 @@ export interface IStorage {
   // Customer project methods
   getCustomerProjects(customerId: number): Promise<CustomerProject[]>;
   getAllCustomerProjects(): Promise<CustomerProject[]>;
+  getAllProjects(): Promise<CustomerProject[]>; // New method for projects page
   getCustomerProject(id: number): Promise<CustomerProject | undefined>;
   createCustomerProject(project: InsertCustomerProject): Promise<CustomerProject>;
   updateCustomerProject(id: number, project: Partial<InsertCustomerProject>): Promise<CustomerProject | undefined>;
@@ -270,6 +271,14 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAllCustomerProjects(): Promise<CustomerProject[]> {
+    return await db
+      .select()
+      .from(customerProjects)
+      .orderBy(desc(customerProjects.updatedAt));
+  }
+  
+  // Alias for the project management module - the same as getAllCustomerProjects
+  async getAllProjects(): Promise<CustomerProject[]> {
     return await db
       .select()
       .from(customerProjects)

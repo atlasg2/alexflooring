@@ -1,31 +1,26 @@
 import { Request, Response, Express } from "express";
 import { storage } from "./storage";
-import { isCustomer } from "./customer-auth";
+import { isAdminSimple } from "./simple-auth";
 import { insertCustomerProjectSchema } from "@shared/schema";
 import { z } from "zod";
 import { emailService } from "./email-service";
 
-// Setup customer project routes
-export function setupCustomerProjectRoutes(app: Express) {
-  // Get all projects for the current customer
-  app.get("/api/customer/projects", isCustomer, async (req, res) => {
+// Setup project management routes
+export function setupProjectManagementRoutes(app: Express) {
+  // Get all projects
+  app.get("/api/admin/projects", isAdminSimple, async (req, res) => {
     try {
-      if (!req.session.customer || !req.session.customer.id) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      
-      const customerId = req.session.customer.id;
-      const projects = await storage.getCustomerProjects(customerId);
-      
+      // Reuse the existing customer projects table but expose it as a general projects endpoint
+      const projects = await storage.getAllProjects();
       res.json(projects);
     } catch (error) {
-      console.error("Error fetching customer projects:", error);
+      console.error("Error fetching projects:", error);
       res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
-  
-  // Get a specific project by ID
-  app.get("/api/customer/projects/:id", isCustomer, async (req, res) => {
+
+  // Get project by ID
+  app.get("/api/admin/projects/:id", isAdminSimple, async (req, res) => {
     try {
       const projectId = parseInt(req.params.id);
       
@@ -39,20 +34,15 @@ export function setupCustomerProjectRoutes(app: Express) {
         return res.status(404).json({ error: "Project not found" });
       }
       
-      // Security check: make sure the project belongs to the current customer
-      if (project.customerId !== req.session.customer?.id) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-      
       res.json(project);
     } catch (error) {
       console.error("Error fetching project:", error);
       res.status(500).json({ error: "Failed to fetch project" });
     }
   });
-  
-  // Create a new project (admin-only for now)
-  app.post("/api/admin/customer-projects", async (req, res) => {
+
+  // Create new project - similar to customer projects but with different route
+  app.post("/api/admin/projects", isAdminSimple, async (req, res) => {
     try {
       // Extract portal account data before validation
       const { createPortalAccount, portalCredentials, ...projectRequestData } = req.body;
@@ -236,9 +226,31 @@ export function setupCustomerProjectRoutes(app: Express) {
       res.status(500).json({ error: "Failed to create project" });
     }
   });
-  
-  // Add a progress update to a project (admin-only for now)
-  app.post("/api/admin/customer-projects/:id/progress", async (req, res) => {
+
+  // Update project
+  app.put("/api/admin/projects/:id", isAdminSimple, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      
+      if (isNaN(projectId)) {
+        return res.status(400).json({ error: "Invalid project ID" });
+      }
+      
+      const project = await storage.updateCustomerProject(projectId, req.body);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+
+  // Add a progress update to a project
+  app.post("/api/admin/projects/:id/progress", isAdminSimple, async (req, res) => {
     try {
       const projectId = parseInt(req.params.id);
       
@@ -301,9 +313,9 @@ export function setupCustomerProjectRoutes(app: Express) {
       res.status(500).json({ error: "Failed to add progress update" });
     }
   });
-  
-  // Add a document to a project (admin-only for now)
-  app.post("/api/admin/customer-projects/:id/documents", async (req, res) => {
+
+  // Add a document to a project
+  app.post("/api/admin/projects/:id/documents", isAdminSimple, async (req, res) => {
     try {
       const projectId = parseInt(req.params.id);
       
