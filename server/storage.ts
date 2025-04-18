@@ -2,10 +2,16 @@ import {
   users, type User, type InsertUser,
   contactSubmissions, type ContactSubmission, type InsertContactSubmission,
   chatMessages, type ChatMessage, type InsertChatMessage,
-  appointments, type Appointment, type InsertAppointment
+  appointments, type Appointment, type InsertAppointment,
+  contacts, type Contact, type InsertContact,
+  communicationLogs, type CommunicationLog, type InsertCommunicationLog,
+  reviews, type Review, type InsertReview,
+  emailTemplates, type EmailTemplate, type InsertEmailTemplate,
+  smsTemplates, type SmsTemplate, type InsertSmsTemplate,
+  automationWorkflows, type AutomationWorkflow, type InsertAutomationWorkflow
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, like, sql } from "drizzle-orm";
+import { eq, desc, and, like, sql, ilike } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -17,11 +23,23 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Contact management methods
+  getContacts(): Promise<Contact[]>;
+  getContact(id: number): Promise<Contact | undefined>;
+  createContact(contact: InsertContact): Promise<Contact>;
+  updateContact(id: number, contact: Partial<InsertContact>): Promise<Contact | undefined>;
+  deleteContact(id: number): Promise<void>;
+  searchContacts(query: string): Promise<Contact[]>;
+  
   // Contact submission methods
   getContactSubmissions(): Promise<ContactSubmission[]>;
   getContactSubmission(id: number): Promise<ContactSubmission | undefined>;
   updateContactSubmissionStatus(id: number, status: string): Promise<ContactSubmission | undefined>;
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
+  
+  // Communication logs methods
+  getCommunicationLogs(contactId?: number): Promise<CommunicationLog[]>;
+  createCommunicationLog(log: InsertCommunicationLog): Promise<CommunicationLog>;
   
   // Chat message methods
   getChatMessages(): Promise<ChatMessage[]>;
@@ -36,6 +54,34 @@ export interface IStorage {
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   updateAppointmentStatus(id: number, status: string): Promise<Appointment | undefined>;
   getAppointmentsByDate(date: Date): Promise<Appointment[]>;
+  
+  // Review methods
+  getReviews(): Promise<Review[]>;
+  getReview(id: number): Promise<Review | undefined>;
+  createReview(review: InsertReview): Promise<Review>;
+  updateReviewStatus(id: number, status: string): Promise<Review | undefined>;
+  
+  // Email Template methods
+  getEmailTemplates(): Promise<EmailTemplate[]>;
+  getEmailTemplate(id: number): Promise<EmailTemplate | undefined>;
+  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
+  updateEmailTemplate(id: number, template: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
+  deleteEmailTemplate(id: number): Promise<void>;
+  
+  // SMS Template methods
+  getSmsTemplates(): Promise<SmsTemplate[]>;
+  getSmsTemplate(id: number): Promise<SmsTemplate | undefined>;
+  createSmsTemplate(template: InsertSmsTemplate): Promise<SmsTemplate>;
+  updateSmsTemplate(id: number, template: Partial<InsertSmsTemplate>): Promise<SmsTemplate | undefined>;
+  deleteSmsTemplate(id: number): Promise<void>;
+  
+  // Automation Workflow methods
+  getAutomationWorkflows(): Promise<AutomationWorkflow[]>;
+  getAutomationWorkflow(id: number): Promise<AutomationWorkflow | undefined>;
+  createAutomationWorkflow(workflow: InsertAutomationWorkflow): Promise<AutomationWorkflow>;
+  updateAutomationWorkflow(id: number, workflow: Partial<InsertAutomationWorkflow>): Promise<AutomationWorkflow | undefined>;
+  toggleAutomationWorkflow(id: number, isActive: boolean): Promise<AutomationWorkflow | undefined>;
+  deleteAutomationWorkflow(id: number): Promise<void>;
   
   // Session store for authentication
   sessionStore: session.Store;
@@ -53,7 +99,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
   
-  // User methods
+  // USER METHODS
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -69,7 +115,48 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
-  // Contact submission methods
+  // CONTACT MANAGEMENT METHODS
+  async getContacts(): Promise<Contact[]> {
+    return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+  }
+  
+  async getContact(id: number): Promise<Contact | undefined> {
+    const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
+    return contact;
+  }
+  
+  async createContact(contact: InsertContact): Promise<Contact> {
+    const [result] = await db.insert(contacts).values(contact).returning();
+    return result;
+  }
+  
+  async updateContact(id: number, contact: Partial<InsertContact>): Promise<Contact | undefined> {
+    const [updated] = await db
+      .update(contacts)
+      .set({ ...contact, updatedAt: new Date() })
+      .where(eq(contacts.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteContact(id: number): Promise<void> {
+    await db.delete(contacts).where(eq(contacts.id, id));
+  }
+  
+  async searchContacts(query: string): Promise<Contact[]> {
+    return await db
+      .select()
+      .from(contacts)
+      .where(
+        sql`${contacts.name} ILIKE ${`%${query}%`} OR 
+            ${contacts.email} ILIKE ${`%${query}%`} OR
+            ${contacts.phone} ILIKE ${`%${query}%`} OR
+            ${contacts.company} ILIKE ${`%${query}%`}`
+      )
+      .orderBy(desc(contacts.createdAt));
+  }
+  
+  // CONTACT SUBMISSION METHODS
   async getContactSubmissions(): Promise<ContactSubmission[]> {
     return await db.select().from(contactSubmissions).orderBy(desc(contactSubmissions.createdAt));
   }
@@ -93,7 +180,28 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
   
-  // Chat message methods
+  // COMMUNICATION LOGS METHODS
+  async getCommunicationLogs(contactId?: number): Promise<CommunicationLog[]> {
+    if (contactId) {
+      return await db
+        .select()
+        .from(communicationLogs)
+        .where(eq(communicationLogs.contactId, contactId))
+        .orderBy(desc(communicationLogs.createdAt));
+    } else {
+      return await db
+        .select()
+        .from(communicationLogs)
+        .orderBy(desc(communicationLogs.createdAt));
+    }
+  }
+  
+  async createCommunicationLog(log: InsertCommunicationLog): Promise<CommunicationLog> {
+    const [result] = await db.insert(communicationLogs).values(log).returning();
+    return result;
+  }
+  
+  // CHAT MESSAGE METHODS
   async getChatMessages(): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages).orderBy(desc(chatMessages.createdAt));
   }
@@ -120,7 +228,7 @@ export class DatabaseStorage implements IStorage {
     return result[0].count;
   }
   
-  // Appointment methods
+  // APPOINTMENT METHODS
   async getAppointments(): Promise<Appointment[]> {
     return await db.select().from(appointments).orderBy(desc(appointments.date));
   }
@@ -153,6 +261,123 @@ export class DatabaseStorage implements IStorage {
       .from(appointments)
       .where(sql`${appointments.date}::text = ${dateStr}`)
       .orderBy(appointments.startTime);
+  }
+  
+  // REVIEW METHODS
+  async getReviews(): Promise<Review[]> {
+    return await db.select().from(reviews).orderBy(desc(reviews.createdAt));
+  }
+  
+  async getReview(id: number): Promise<Review | undefined> {
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
+    return review;
+  }
+  
+  async createReview(review: InsertReview): Promise<Review> {
+    const [result] = await db.insert(reviews).values(review).returning();
+    return result;
+  }
+  
+  async updateReviewStatus(id: number, status: string): Promise<Review | undefined> {
+    const [updated] = await db
+      .update(reviews)
+      .set({ status })
+      .where(eq(reviews.id, id))
+      .returning();
+    return updated;
+  }
+  
+  // EMAIL TEMPLATE METHODS
+  async getEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db.select().from(emailTemplates).orderBy(emailTemplates.name);
+  }
+  
+  async getEmailTemplate(id: number): Promise<EmailTemplate | undefined> {
+    const [template] = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id));
+    return template;
+  }
+  
+  async createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate> {
+    const [result] = await db.insert(emailTemplates).values(template).returning();
+    return result;
+  }
+  
+  async updateEmailTemplate(id: number, template: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
+    const [updated] = await db
+      .update(emailTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteEmailTemplate(id: number): Promise<void> {
+    await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+  }
+  
+  // SMS TEMPLATE METHODS
+  async getSmsTemplates(): Promise<SmsTemplate[]> {
+    return await db.select().from(smsTemplates).orderBy(smsTemplates.name);
+  }
+  
+  async getSmsTemplate(id: number): Promise<SmsTemplate | undefined> {
+    const [template] = await db.select().from(smsTemplates).where(eq(smsTemplates.id, id));
+    return template;
+  }
+  
+  async createSmsTemplate(template: InsertSmsTemplate): Promise<SmsTemplate> {
+    const [result] = await db.insert(smsTemplates).values(template).returning();
+    return result;
+  }
+  
+  async updateSmsTemplate(id: number, template: Partial<InsertSmsTemplate>): Promise<SmsTemplate | undefined> {
+    const [updated] = await db
+      .update(smsTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(smsTemplates.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteSmsTemplate(id: number): Promise<void> {
+    await db.delete(smsTemplates).where(eq(smsTemplates.id, id));
+  }
+  
+  // AUTOMATION WORKFLOW METHODS
+  async getAutomationWorkflows(): Promise<AutomationWorkflow[]> {
+    return await db.select().from(automationWorkflows).orderBy(automationWorkflows.name);
+  }
+  
+  async getAutomationWorkflow(id: number): Promise<AutomationWorkflow | undefined> {
+    const [workflow] = await db.select().from(automationWorkflows).where(eq(automationWorkflows.id, id));
+    return workflow;
+  }
+  
+  async createAutomationWorkflow(workflow: InsertAutomationWorkflow): Promise<AutomationWorkflow> {
+    const [result] = await db.insert(automationWorkflows).values(workflow).returning();
+    return result;
+  }
+  
+  async updateAutomationWorkflow(id: number, workflow: Partial<InsertAutomationWorkflow>): Promise<AutomationWorkflow | undefined> {
+    const [updated] = await db
+      .update(automationWorkflows)
+      .set({ ...workflow, updatedAt: new Date() })
+      .where(eq(automationWorkflows.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async toggleAutomationWorkflow(id: number, isActive: boolean): Promise<AutomationWorkflow | undefined> {
+    const [updated] = await db
+      .update(automationWorkflows)
+      .set({ isActive, updatedAt: new Date() })
+      .where(eq(automationWorkflows.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteAutomationWorkflow(id: number): Promise<void> {
+    await db.delete(automationWorkflows).where(eq(automationWorkflows.id, id));
   }
 }
 
