@@ -212,7 +212,7 @@ export const emailService = {
         html: template.html,
       });
       console.log('Sent password reset email to', options.to, 'with result:', result);
-      return { success: true, messageId: result.id };
+      return { success: true, messageId: result.data?.id || 'unknown' };
     } catch (error) {
       console.error('Failed to send password reset email:', error);
       return { success: false, error };
@@ -248,7 +248,7 @@ export const emailService = {
         html: template.html,
       });
       console.log('Sent project update email to', options.to, 'with result:', result);
-      return { success: true, messageId: result.id };
+      return { success: true, messageId: result.data?.id || 'unknown' };
     } catch (error) {
       console.error('Failed to send project update email:', error);
       return { success: false, error };
@@ -286,7 +286,7 @@ export const emailService = {
         html: template.html,
       });
       console.log('Sent new document notification to', options.to, 'with result:', result);
-      return { success: true, messageId: result.id };
+      return { success: true, messageId: result.data?.id || 'unknown' };
     } catch (error) {
       console.error('Failed to send document notification:', error);
       return { success: false, error };
@@ -310,7 +310,7 @@ export const emailService = {
         html: options.html,
       });
       console.log('Sent custom email to', options.to, 'with result:', result);
-      return { success: true, messageId: result.id };
+      return { success: true, messageId: result.data?.id || 'unknown' };
     } catch (error) {
       console.error('Failed to send custom email:', error);
       return { success: false, error };
