@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -9,8 +8,8 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 const residentialProjects = projects.filter(project => project.category === 'residential');
 const commercialProjects = projects.filter(project => project.category === 'commercial');
 
-// Enhanced project card for both residential and commercial
-const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
+// Enhanced project card for residential
+const ResidentialProjectCard = ({ project }: { project: typeof projects[0] }) => (
   <div className="relative group overflow-hidden rounded-xl h-[450px] shadow-lg hover:shadow-xl transition-all duration-500">
     {/* Project image with zoom effect on hover */}
     <div 
@@ -39,8 +38,35 @@ const ProjectCard = ({ project }: { project: typeof projects[0] }) => (
   </div>
 );
 
+// Commercial project card - simplified design
+const CommercialProjectCard = ({ project }: { project: typeof projects[0] }) => (
+  <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl">
+    <div className="h-[300px] relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${project.afterImage})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40" />
+    </div>
+
+    <div className="p-6">
+      <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+      <p className="text-white/80 text-sm mb-4 line-clamp-2">
+        {project.description}
+      </p>
+
+      <Link
+        href={`/projects/${project.id}`}
+        className="inline-flex items-center text-secondary font-medium text-sm hover:text-white transition-colors duration-300"
+      >
+        View Details <ArrowRight className="ml-1 h-4 w-4" />
+      </Link>
+    </div>
+  </div>
+);
+
 const FeaturedProjects = () => {
-  // State for project sliders
+  // State for residential projects slider
   const [activeResidentialIndex, setActiveResidentialIndex] = useState(0);
   const [activeCommercialIndex, setActiveCommercialIndex] = useState(0);
   const totalResidentialProjects = residentialProjects.length;
@@ -99,34 +125,32 @@ const FeaturedProjects = () => {
 
         {/* Residential Projects Section */}
         <div className="mb-20">
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-8">Residential Projects</h3>
-          
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-white">Residential Projects</h3>
+
+            {/* Navigation controls moved next to the heading */}
+            <div className="flex gap-3">
+              <button 
+                onClick={() => scrollResidential('left')}
+                disabled={activeResidentialIndex === 0}
+                className={`p-3 rounded-full ${activeResidentialIndex === 0 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Previous residential projects"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => scrollResidential('right')}
+                disabled={activeResidentialIndex === totalResidentialProjects - 1}
+                className={`p-3 rounded-full ${activeResidentialIndex === totalResidentialProjects - 1 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Next residential projects"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
           {/* Residential Projects Carousel */}
           <div className="relative mb-10 overflow-hidden">
-            {/* Navigation buttons positioned in the middle of the carousel */}
-            <button 
-              onClick={() => scrollResidential('left')}
-              disabled={activeResidentialIndex === 0}
-              className={`absolute left-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full ${
-                activeResidentialIndex === 0 ? 'bg-gray-800/50 text-gray-600 cursor-not-allowed' : 'bg-black/60 text-white hover:bg-black/80'
-              } transition-all duration-300 backdrop-blur-sm`}
-              aria-label="Previous residential projects"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            
-            <button 
-              onClick={() => scrollResidential('right')}
-              disabled={activeResidentialIndex === totalResidentialProjects - 1}
-              className={`absolute right-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full ${
-                activeResidentialIndex === totalResidentialProjects - 1 ? 'bg-gray-800/50 text-gray-600 cursor-not-allowed' : 'bg-black/60 text-white hover:bg-black/80'
-              } transition-all duration-300 backdrop-blur-sm`}
-              aria-label="Next residential projects"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-            
-            {/* Scrollable container */}
             <div 
               ref={residentialScrollRef}
               className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar"
@@ -134,10 +158,10 @@ const FeaturedProjects = () => {
               {residentialProjects.map((project) => (
                 <div 
                   key={project.id} 
-                  className="flex-none w-full md:w-[95%] lg:w-[90%] snap-center"
-                  style={{scrollSnapAlign: 'center'}}
+                  className="flex-none w-full md:w-[400px] lg:w-[450px] xl:w-[500px] snap-center"
+                  style={{scrollSnapAlign: 'start'}}
                 >
-                  <ProjectCard project={project} />
+                  <ResidentialProjectCard project={project} />
                 </div>
               ))}
             </div>
@@ -175,70 +199,39 @@ const FeaturedProjects = () => {
           </div>
         </div>
 
-        {/* Commercial Projects Section - Matching the residential design */}
+        {/* Commercial Projects Section - Completely redesigned */}
         <div className="pt-10 mt-16 relative border-t border-white/10">
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-8">Commercial Projects</h3>
-          
-          {/* Commercial Projects Carousel */}
-          <div className="relative mb-10 overflow-hidden">
-            {/* Navigation buttons positioned in the middle of the carousel */}
-            <button 
-              onClick={() => scrollCommercial('left')}
-              disabled={activeCommercialIndex === 0}
-              className={`absolute left-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full ${
-                activeCommercialIndex === 0 ? 'bg-gray-800/50 text-gray-600 cursor-not-allowed' : 'bg-black/60 text-white hover:bg-black/80'
-              } transition-all duration-300 backdrop-blur-sm`}
-              aria-label="Previous commercial projects"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            
-            <button 
-              onClick={() => scrollCommercial('right')}
-              disabled={activeCommercialIndex === totalCommercialProjects - 1}
-              className={`absolute right-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full ${
-                activeCommercialIndex === totalCommercialProjects - 1 ? 'bg-gray-800/50 text-gray-600 cursor-not-allowed' : 'bg-black/60 text-white hover:bg-black/80'
-              } transition-all duration-300 backdrop-blur-sm`}
-              aria-label="Next commercial projects"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-            
-            {/* Scrollable container */}
-            <div 
-              ref={commercialScrollRef}
-              className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar"
-            >
-              {commercialProjects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className="flex-none w-full md:w-[95%] lg:w-[90%] snap-center"
-                  style={{scrollSnapAlign: 'center'}}
-                >
-                  <ProjectCard project={project} />
-                </div>
-              ))}
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-white">Commercial Projects</h3>
+
+            {/* Navigation controls moved next to the heading */}
+            <div className="flex gap-3">
+              <button 
+                onClick={() => scrollCommercial('left')}
+                disabled={activeCommercialIndex === 0}
+                className={`p-3 rounded-full ${activeCommercialIndex === 0 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Previous commercial projects"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => scrollCommercial('right')}
+                disabled={activeCommercialIndex === totalCommercialProjects - 1}
+                className={`p-3 rounded-full ${activeCommercialIndex === totalCommercialProjects - 1 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
+                aria-label="Next commercial projects"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
-          {/* Pagination dots */}
-          <div className="flex justify-center gap-2 mt-8">
-            {commercialProjects.map((_, index) => (
-              <button
-                key={`commercial-dot-${index}`}
-                className={`w-8 h-1.5 rounded-sm transition-all ${
-                  index === activeCommercialIndex ? 'bg-secondary' : 'bg-white/20'
-                }`}
-                onClick={() => {
-                  if (commercialScrollRef.current) {
-                    const container = commercialScrollRef.current;
-                    const cardWidth = container.clientWidth;
-                    container.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
-                    setActiveCommercialIndex(index);
-                  }
-                }}
-                aria-label={`Go to commercial project ${index + 1}`}
-              />
+          {/* Commercial Projects Grid */}
+          <div 
+            ref={commercialScrollRef}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
+          >
+            {commercialProjects.map((project) => (
+              <CommercialProjectCard key={project.id} project={project} />
             ))}
           </div>
 
