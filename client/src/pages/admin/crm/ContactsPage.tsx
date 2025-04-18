@@ -108,8 +108,9 @@ const ContactsPage = () => {
   
   // Update local contacts whenever fetched contacts change
   useEffect(() => {
-    if (fetchedContacts) {
-      setLocalContacts(fetchedContacts);
+    if (fetchedContacts && Array.isArray(fetchedContacts)) {
+      // Add defensive check to make sure we have an array
+      setLocalContacts(fetchedContacts as Contact[]);
     }
   }, [fetchedContacts]);
   
@@ -126,20 +127,33 @@ const ContactsPage = () => {
       return newContact;
     },
     onSuccess: async (newContact) => {
-      // Force clear the cache completely
-      await queryClient.resetQueries({ queryKey: ['/api/admin/crm/contacts'] });
-      // Force a hard reload of the contacts data
-      await refetch({ throwOnError: true });
-      
-      // Update our local state as well to ensure immediate UI update
-      setLocalContacts(prev => [...prev, newContact]);
-      
-      toast({
-        title: 'Contact created',
-        description: 'The contact was created successfully',
-      });
-      setIsContactDialogOpen(false);
-      resetForm();
+      try {
+        // Force clear the cache completely
+        await queryClient.resetQueries({ queryKey: ['/api/admin/crm/contacts'] });
+        
+        // Manual UI update to ensure the UI reflects the new contact immediately
+        setLocalContacts(prevContacts => {
+          // First check if contact already exists to avoid duplicates
+          const exists = prevContacts.some(c => c.id === newContact.id);
+          if (exists) {
+            return prevContacts;
+          }
+          return [...prevContacts, newContact];
+        });
+        
+        // Force a hard reload of the contacts data (happens async)
+        refetch().catch(err => console.log("Refetch error:", err));
+        
+        toast({
+          title: 'Contact created',
+          description: 'The contact was created successfully',
+        });
+        
+        setIsContactDialogOpen(false);
+        resetForm();
+      } catch (error) {
+        console.error("Error in onSuccess:", error);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -156,15 +170,30 @@ const ContactsPage = () => {
       const response = await apiRequest('PUT', `/api/admin/crm/contacts/${id}`, data);
       return await response.json();
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
-      await refetch(); // Force immediate refetch
-      toast({
-        title: 'Contact updated',
-        description: 'The contact was updated successfully',
-      });
-      setIsContactDialogOpen(false);
-      resetForm();
+    onSuccess: async (updatedContact) => {
+      try {
+        // Force clear the cache 
+        await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+        
+        // Update in our local state 
+        setLocalContacts(prevContacts => {
+          return prevContacts.map(contact => 
+            contact.id === updatedContact.id ? updatedContact : contact
+          );
+        });
+        
+        // Async refetch
+        refetch().catch(err => console.error("Refetch error:", err));
+        
+        toast({
+          title: 'Contact updated',
+          description: 'The contact was updated successfully',
+        });
+        setIsContactDialogOpen(false);
+        resetForm();
+      } catch (error) {
+        console.error("Error in update onSuccess:", error);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -180,13 +209,26 @@ const ContactsPage = () => {
     mutationFn: async (id: number) => {
       await apiRequest('DELETE', `/api/admin/crm/contacts/${id}`);
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
-      await refetch(); // Force immediate refetch
-      toast({
-        title: 'Contact deleted',
-        description: 'The contact was deleted successfully',
-      });
+    onSuccess: async (_, deletedId) => {
+      try {
+        // Force clear the cache
+        await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
+        
+        // Update in our local state - remove the deleted contact
+        setLocalContacts(prevContacts => 
+          prevContacts.filter(contact => contact.id !== deletedId)
+        );
+        
+        // Async refetch
+        refetch().catch(err => console.error("Refetch error:", err));
+        
+        toast({
+          title: 'Contact deleted',
+          description: 'The contact was deleted successfully',
+        });
+      } catch (error) {
+        console.error("Error in delete onSuccess:", error);
+      }
     },
     onError: (error: Error) => {
       toast({
