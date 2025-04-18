@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/test-email", async (req, res) => {
     try {
       const result = await emailService.sendCustomEmail({
-        to: "Nicholas@atlasgrowth.ai",
+        to: "nicksanford2341@gmail.com",
         subject: "Test Email from APS Flooring Portal",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333333;">
