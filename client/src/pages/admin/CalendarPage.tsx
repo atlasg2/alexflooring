@@ -69,21 +69,21 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
   const [endTime, setEndTime] = useState('10:00');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Check if we have pre-filled data (from contact page)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name');
     const email = params.get('email');
     const contactId = params.get('contactId');
-    
+
     if (name) setClientName(name);
     if (email) setClientEmail(email);
   }, []);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedDate) {
       toast({
         title: "Please select a date",
@@ -91,17 +91,17 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Format date to YYYY-MM-DD
       const formattedDate = selectedDate.toISOString().split('T')[0];
-      
+
       // Get contactId from URL if it exists
       const params = new URLSearchParams(window.location.search);
       const contactId = params.get('contactId');
-      
+
       const appointmentData = {
         title,
         description,
@@ -114,17 +114,17 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
         notes,
         contactSubmissionId: contactId ? parseInt(contactId) : null
       };
-      
+
       await apiRequest('POST', '/api/admin/appointments', appointmentData);
-      
+
       toast({
         title: "Appointment created",
         description: "The appointment has been scheduled successfully",
       });
-      
+
       onSuccess();
       onClose();
-      
+
     } catch (error) {
       toast({
         title: "Error creating appointment",
@@ -135,7 +135,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -148,7 +148,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           required
         />
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="description">Description (Optional)</Label>
         <Textarea
@@ -158,7 +158,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="clientName">Client Name</Label>
@@ -170,7 +170,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
             required
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="clientPhone">Phone Number</Label>
           <Input
@@ -181,7 +181,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           />
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="clientEmail">Email Address</Label>
         <Input
@@ -192,7 +192,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           onChange={(e) => setClientEmail(e.target.value)}
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="startTime">Start Time</Label>
@@ -204,7 +204,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
             required
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="endTime">End Time</Label>
           <Input
@@ -215,7 +215,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           />
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (Optional)</Label>
         <Textarea
@@ -225,7 +225,7 @@ const NewAppointmentForm = ({ selectedDate, onClose, onSuccess }: {
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
-      
+
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
@@ -252,9 +252,9 @@ const StatusBadge = ({ status }: { status: string }) => {
     completed: 'bg-green-100 text-green-800 hover:bg-green-100',
     cancelled: 'bg-red-100 text-red-800 hover:bg-red-100',
   };
-  
+
   const style = statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800';
-  
+
   return (
     <Badge className={style} variant="outline">
       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -277,25 +277,25 @@ const CalendarPage = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [, navigate] = useLocation();
-  
+
   // Check if we're on the new appointment route
   const [isNewRoute] = useRoute('/admin/calendar/new');
-  
+
   useEffect(() => {
     if (isNewRoute) {
       setIsNewAppointmentOpen(true);
     }
   }, [isNewRoute]);
-  
+
   // Fetch appointments for the selected date
   const fetchAppointments = async (selectedDate: Date) => {
     if (!selectedDate) return;
-    
+
     setLoading(true);
     try {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       const response = await fetch(`/api/admin/calendar/${formattedDate}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setAppointments(data);
@@ -316,24 +316,24 @@ const CalendarPage = () => {
       setLoading(false);
     }
   };
-  
+
   // When date changes, fetch appointments
   useEffect(() => {
     if (date) {
       fetchAppointments(date);
     }
   }, [date]);
-  
+
   // Update appointment status
   const updateAppointmentStatus = async (id: number, status: string) => {
     try {
       await apiRequest('PUT', `/api/admin/appointments/${id}/status`, { status });
-      
+
       // Update local state
       setAppointments(appointments.map(appointment => 
         appointment.id === id ? { ...appointment, status } : appointment
       ));
-      
+
       toast({
         title: "Status updated",
         description: `Appointment marked as ${status}`,
@@ -346,7 +346,7 @@ const CalendarPage = () => {
       });
     }
   };
-  
+
   return (
     <AdminLayout title="Schedule">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -376,7 +376,7 @@ const CalendarPage = () => {
             </Button>
           </CardFooter>
         </Card>
-        
+
         {/* Appointments for selected date */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -434,14 +434,14 @@ const CalendarPage = () => {
                           {appointment.clientEmail && <p className="text-sm">{appointment.clientEmail}</p>}
                           {appointment.clientPhone && <p className="text-sm">{appointment.clientPhone}</p>}
                         </div>
-                        
+
                         {appointment.description && (
                           <div>
                             <p className="font-medium">Description:</p>
                             <p className="text-sm">{appointment.description}</p>
                           </div>
                         )}
-                        
+
                         {appointment.notes && (
                           <div>
                             <p className="font-medium">Notes:</p>
@@ -460,7 +460,7 @@ const CalendarPage = () => {
                       >
                         Call Client
                       </Button>
-                      
+
                       <Select
                         value={appointment.status}
                         onValueChange={(value) => updateAppointmentStatus(appointment.id, value)}
@@ -482,7 +482,7 @@ const CalendarPage = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* New Appointment Dialog */}
       <Dialog open={isNewAppointmentOpen} onOpenChange={setIsNewAppointmentOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
@@ -492,7 +492,7 @@ const CalendarPage = () => {
               Create a new appointment for {date?.toLocaleDateString()}
             </DialogDescription>
           </DialogHeader>
-          
+
           <NewAppointmentForm 
             selectedDate={date} 
             onClose={() => {

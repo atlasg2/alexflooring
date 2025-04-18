@@ -89,7 +89,7 @@ export default function ProjectsPage() {
       type: "document",
     },
   });
-  
+
   // Fetch all projects
   const {
     data: projects = [],
@@ -271,7 +271,7 @@ export default function ProjectsPage() {
         serviceType: selectedProject.serviceType || "",
         contactId: selectedProject.contactId || null,
       };
-      
+
       form.reset(formData);
     }
   }, [selectedProject, isEditing, form]);
@@ -292,7 +292,7 @@ export default function ProjectsPage() {
         return;
       }
     }
-    
+
     createProjectMutation.mutate(values);
   };
 
@@ -332,16 +332,16 @@ export default function ProjectsPage() {
     const matchesSearch = searchFilter === "" || 
       (project.title && project.title.toLowerCase().includes(searchFilter.toLowerCase())) ||
       (project.description && project.description.toLowerCase().includes(searchFilter.toLowerCase()));
-    
+
     // Filter by status
     const matchesStatus = statusFilter === null || project.status === statusFilter;
-    
+
     // Filter by tab
     const matchesTab = activeTab === "all" || 
       (activeTab === "active" && project.status !== "completed" && project.status !== "cancelled") ||
       (activeTab === "completed" && project.status === "completed") ||
       (activeTab === "cancelled" && project.status === "cancelled");
-    
+
     return matchesSearch && matchesStatus && matchesTab;
   });
 
@@ -382,7 +382,7 @@ export default function ProjectsPage() {
                 <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
               </TabsList>
             </Tabs>
-            
+
             <Dialog open={isCreating} onOpenChange={setIsCreating}>
               <DialogTrigger asChild>
                 <Button className="ml-4">
@@ -412,7 +412,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="customerId"
@@ -453,7 +453,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="status"
@@ -481,7 +481,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="description"
@@ -499,7 +499,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -514,7 +514,7 @@ export default function ProjectsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="endDate"
@@ -529,7 +529,7 @@ export default function ProjectsPage() {
                         )}
                       />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -544,7 +544,7 @@ export default function ProjectsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="location"
@@ -563,7 +563,7 @@ export default function ProjectsPage() {
                         )}
                       />
                     </div>
-                    
+
                     <FormField
                       control={form.control}
                       name="serviceType"
@@ -581,7 +581,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="notes"
@@ -599,7 +599,7 @@ export default function ProjectsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <DialogFooter>
                       <Button
                         type="button"
@@ -623,7 +623,7 @@ export default function ProjectsPage() {
               </DialogContent>
             </Dialog>
           </div>
-          
+
           <div className="flex justify-between items-center space-x-4">
             <Input
               placeholder="Search projects..."
@@ -631,7 +631,7 @@ export default function ProjectsPage() {
               onChange={(e) => setSearchFilter(e.target.value)}
               className="max-w-sm"
             />
-            
+
             <Select
               value={statusFilter || ""}
               onValueChange={(value) => setStatusFilter(value === "" ? null : value)}
@@ -649,7 +649,7 @@ export default function ProjectsPage() {
               </SelectContent>
             </Select>
           </div>
-          
+
           {projectsLoading ? (
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -741,7 +741,7 @@ export default function ProjectsPage() {
           )}
         </div>
       </div>
-      
+
       {/* Edit Project Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -766,7 +766,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="customerId"
@@ -804,7 +804,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="status"
@@ -832,7 +832,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="description"
@@ -850,7 +850,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -865,7 +865,7 @@ export default function ProjectsPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="endDate"
@@ -880,7 +880,7 @@ export default function ProjectsPage() {
                   )}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -895,7 +895,7 @@ export default function ProjectsPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="location"
@@ -914,7 +914,7 @@ export default function ProjectsPage() {
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="serviceType"
@@ -932,7 +932,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="notes"
@@ -950,7 +950,7 @@ export default function ProjectsPage() {
                   </FormItem>
                 )}
               />
-              
+
               <DialogFooter>
                 <Button
                   type="button"
@@ -976,7 +976,7 @@ export default function ProjectsPage() {
           </Form>
         </DialogContent>
       </Dialog>
-      
+
       {/* Add Progress Update Dialog */}
       <Dialog open={isAddingProgress} onOpenChange={setIsAddingProgress}>
         <DialogContent className="sm:max-w-[500px]">
@@ -1012,7 +1012,7 @@ export default function ProjectsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
               <Input
@@ -1021,7 +1021,7 @@ export default function ProjectsPage() {
                 {...progressForm.register("date")}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="note">Progress Note</Label>
               <Textarea
@@ -1030,7 +1030,7 @@ export default function ProjectsPage() {
                 {...progressForm.register("note")}
               />
             </div>
-            
+
             <DialogFooter>
               <Button
                 type="button"
@@ -1055,7 +1055,7 @@ export default function ProjectsPage() {
           </form>
         </DialogContent>
       </Dialog>
-      
+
       {/* Add Document Dialog */}
       <Dialog open={isAddingDocument} onOpenChange={setIsAddingDocument}>
         <DialogContent className="sm:max-w-[500px]">
@@ -1081,7 +1081,7 @@ export default function ProjectsPage() {
                 {...documentForm.register("name")}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="url">Document URL</Label>
               <Input
@@ -1090,7 +1090,7 @@ export default function ProjectsPage() {
                 {...documentForm.register("url")}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="type">Document Type</Label>
               <Select
@@ -1109,7 +1109,7 @@ export default function ProjectsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <DialogFooter>
               <Button
                 type="button"
