@@ -608,7 +608,7 @@ export default function CustomerProjectsPage() {
           setProjectFormData(initialProjectFormData);
         }
       }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {isCreatingProject ? "Create New Project" : "Edit Project"}

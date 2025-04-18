@@ -88,7 +88,7 @@ const ContactsPage = () => {
   });
   
   // Get contacts query
-  const { data: contacts = [], isLoading } = useQuery<Contact[]>({
+  const { data: contacts = [], isLoading, refetch } = useQuery<Contact[]>({
     queryKey: ['/api/admin/crm/contacts', searchQuery],
     queryFn: async () => {
       const url = searchQuery
@@ -283,13 +283,28 @@ const ContactsPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button 
-              onClick={handleAddContact}
-              className={isMobile ? 'w-full' : ''}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Contact
-            </Button>
+            <div className={`flex ${isMobile ? 'w-full space-x-2' : 'space-x-2'}`}>
+              <Button 
+                onClick={() => refetch()}
+                variant="outline"
+                className={isMobile ? 'flex-1' : ''}
+              >
+                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+                Refresh
+              </Button>
+              <Button 
+                onClick={handleAddContact}
+                className={isMobile ? 'flex-1' : ''}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Contact
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
