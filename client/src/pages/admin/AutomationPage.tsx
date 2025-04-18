@@ -209,10 +209,99 @@ const AutomationPage = () => {
     setSelectedAutomation(null);
   };
   
+  // Template selection state
+  const [isTemplateSelectionOpen, setIsTemplateSelectionOpen] = useState(false);
+  
+  // Predefined automation templates
+  const automationTemplates = [
+    {
+      id: 'google-review',
+      name: 'Google Review Request',
+      description: 'Automatically send review requests to customers after service completion',
+      icon: <ThumbsUp className="h-10 w-10 text-green-500" />,
+      template: {
+        name: 'Google Review Request',
+        description: 'Send automated review requests after service completion',
+        triggerType: 'review_request',
+        triggerCondition: 'Sent 3 days after project completion',
+        emailTemplateId: 0,
+        smsTemplateId: 0,
+        delay: 72,
+        isActive: true
+      }
+    },
+    {
+      id: 'appointment-reminder',
+      name: 'Appointment Reminder',
+      description: 'Send reminders before scheduled appointments to reduce no-shows',
+      icon: <Bell className="h-10 w-10 text-blue-500" />,
+      template: {
+        name: 'Appointment Reminder',
+        description: 'Remind customers about upcoming appointments',
+        triggerType: 'appointment',
+        triggerCondition: 'Sent 24 hours before appointment',
+        emailTemplateId: 0,
+        smsTemplateId: 0,
+        delay: 24,
+        isActive: true
+      }
+    },
+    {
+      id: 'lead-nurture',
+      name: 'Lead Nurturing Sequence',
+      description: 'Engage with new leads through a series of helpful messages',
+      icon: <Zap className="h-10 w-10 text-purple-500" />,
+      template: {
+        name: 'Lead Nurturing Sequence',
+        description: 'Engage and educate new leads about your services',
+        triggerType: 'lead_stage_change',
+        triggerCondition: 'When lead stage changes to "new"',
+        emailTemplateId: 0,
+        smsTemplateId: 0,
+        delay: 2,
+        isActive: true
+      }
+    },
+    {
+      id: 'follow-up',
+      name: 'Post-Service Follow-up',
+      description: 'Check in with customers after service completion to ensure satisfaction',
+      icon: <Clock className="h-10 w-10 text-amber-500" />,
+      template: {
+        name: 'Post-Service Follow-up',
+        description: 'Check customer satisfaction after service completion',
+        triggerType: 'form_submission',
+        triggerCondition: 'Sent 7 days after project completion',
+        emailTemplateId: 0,
+        smsTemplateId: 0,
+        delay: 168,
+        isActive: true
+      }
+    }
+  ];
+  
+  // Handle selecting a template
+  const handleSelectTemplate = (template: any) => {
+    setFormData({
+      ...template.template,
+      emailTemplateId: emailTemplates.length > 0 ? emailTemplates[0].id : 0,
+      smsTemplateId: smsTemplates.length > 0 ? smsTemplates[0].id : 0,
+    });
+    setIsTemplateSelectionOpen(false);
+    setIsAutomationDialogOpen(true);
+  };
+  
+  // Handle creating a blank automation
+  const handleCreateBlankAutomation = () => {
+    resetForm();
+    setIsTemplateSelectionOpen(false);
+    setIsAutomationDialogOpen(true);
+  };
+  
   // Open dialog for new automation
   const handleAddAutomation = () => {
     resetForm();
-    setIsAutomationDialogOpen(true);
+    setIsTemplateSelectionOpen(true);
   };
   
   // Open dialog for editing automation
@@ -332,19 +421,21 @@ const AutomationPage = () => {
   // Determine number of actions in a workflow
   const getActionCount = (workflow: AutomationWorkflow): number => {
     let count = 0;
-    if (workflow.emailTemplateId) count++;
-    if (workflow.smsTemplateId) count++;
+    if (workflow.emailTemplateId && workflow.emailTemplateId > 0) count++;
+    if (workflow.smsTemplateId && workflow.smsTemplateId > 0) count++;
     return count || 1; // At least 1
   };
   
   // Get email template name by ID
-  const getEmailTemplateName = (id: number): string => {
+  const getEmailTemplateName = (id: number | null): string => {
+    if (!id) return 'None';
     const template = emailTemplates.find(t => t.id === id);
     return template ? template.name : 'None';
   };
   
   // Get SMS template name by ID
-  const getSmsTemplateName = (id: number): string => {
+  const getSmsTemplateName = (id: number | null): string => {
+    if (!id) return 'None';
     const template = smsTemplates.find(t => t.id === id);
     return template ? template.name : 'None';
   };
@@ -493,6 +584,66 @@ const AutomationPage = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Template Selection Dialog */}
+      <Dialog open={isTemplateSelectionOpen} onOpenChange={setIsTemplateSelectionOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Choose an Automation Template</DialogTitle>
+            <DialogDescription>
+              Select a pre-configured template or create a custom workflow from scratch.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            {automationTemplates.map((template) => (
+              <Card 
+                key={template.id} 
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => handleSelectTemplate(template)}
+              >
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="p-2 rounded-lg bg-muted">
+                    {template.icon}
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{template.name}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{template.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+            
+            <Card 
+              className="cursor-pointer hover:border-primary transition-colors border-dashed"
+              onClick={handleCreateBlankAutomation}
+            >
+              <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                <div className="p-2 rounded-lg bg-muted">
+                  <Plus className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Custom Workflow</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Create a blank workflow and customize it to your specific needs</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsTemplateSelectionOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Add/Edit Automation Dialog */}
       <Dialog open={isAutomationDialogOpen} onOpenChange={setIsAutomationDialogOpen}>

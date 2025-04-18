@@ -155,6 +155,132 @@ const EmailTemplatesPage = () => {
     setSelectedTemplate(null);
   };
   
+  // Predefined email templates for common scenarios
+  const defaultTemplates = [
+    {
+      name: 'Google Review Request',
+      subject: 'We Would Love Your Feedback on APS Flooring Service',
+      body: `Dear {{customer_name}},
+
+Thank you for choosing APS Flooring for your recent project. We hope you're enjoying your new floors!
+
+We value your feedback and would appreciate if you could take a moment to share your experience with us on Google. Your review helps us improve our service and helps others discover quality flooring solutions.
+
+You can leave a review by clicking the link below:
+{{review_link}}
+
+Thank you for your time and for trusting APS Flooring with your home improvement project.
+
+Best regards,
+The APS Flooring Team
+Louisiana's Premier Flooring Experts`,
+      category: 'review',
+      isActive: true
+    },
+    {
+      name: 'Appointment Reminder',
+      subject: 'Reminder: Your APS Flooring Appointment Tomorrow',
+      body: `Dear {{customer_name}},
+
+This is a friendly reminder about your scheduled appointment with APS Flooring tomorrow at {{appointment_time}}.
+
+Our team will arrive at {{customer_address}} to {{appointment_purpose}}.
+
+If you need to reschedule or have any questions, please call us at (555) 123-4567.
+
+We look forward to seeing you!
+
+Best regards,
+APS Flooring Team
+Louisiana's Premier Flooring Experts`,
+      category: 'appointment',
+      isActive: true
+    },
+    {
+      name: 'Welcome New Lead',
+      subject: 'Welcome to APS Flooring - Louisiana\'s Premier Flooring Solution',
+      body: `Dear {{customer_name}},
+
+Thank you for your interest in APS Flooring! We're excited to help you with your flooring project.
+
+At APS Flooring, we specialize in providing high-quality flooring solutions for residential and commercial properties throughout Louisiana. Our team of experts is committed to delivering exceptional service and craftsmanship.
+
+Here's what you can expect from us:
+• Professional consultation to understand your specific needs
+• Quality materials and installation techniques
+• Transparent pricing and timelines
+• Ongoing support and maintenance advice
+
+We'll be reaching out to you shortly to discuss your project in more detail. In the meantime, feel free to browse our website to explore our services and previous projects.
+
+If you have any immediate questions, don't hesitate to contact us at (555) 123-4567.
+
+We look forward to working with you!
+
+Best regards,
+APS Flooring Team
+Louisiana's Premier Flooring Experts`,
+      category: 'lead',
+      isActive: true
+    },
+    {
+      name: 'Post-Service Follow-up',
+      subject: 'How Are Your New Floors from APS Flooring?',
+      body: `Dear {{customer_name}},
+
+We hope you're enjoying your new floors from APS Flooring!
+
+It's been a week since we completed your flooring project, and we wanted to check in to ensure everything is to your satisfaction. Your happiness with our work is our top priority.
+
+Here are a few tips to maintain your new floors:
+• {{maintenance_tip_1}}
+• {{maintenance_tip_2}}
+• {{maintenance_tip_3}}
+
+Is there anything else we can assist you with? We'd love to hear your feedback or answer any questions you might have.
+
+Thank you for choosing APS Flooring for your project.
+
+Best regards,
+APS Flooring Team
+Louisiana's Premier Flooring Experts`,
+      category: 'follow-up',
+      isActive: true
+    }
+  ];
+  
+  // Create default templates
+  const createDefaultTemplatesMutation = useMutation({
+    mutationFn: async () => {
+      // Create templates sequentially to avoid race conditions
+      for (const template of defaultTemplates) {
+        await apiRequest('POST', '/api/admin/email-templates', template);
+      }
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      toast({
+        title: 'Default templates created',
+        description: 'The predefined email templates were created successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to create default templates: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Handle creating default templates
+  const handleCreateDefaultTemplates = () => {
+    if (window.confirm('This will create 4 predefined email templates. Continue?')) {
+      createDefaultTemplatesMutation.mutate();
+    }
+  };
+  
   // Open dialog for new template
   const handleAddTemplate = () => {
     resetForm();
@@ -231,10 +357,27 @@ const EmailTemplatesPage = () => {
               Create and manage templates for customer communications
             </CardDescription>
           </div>
-          <Button onClick={handleAddTemplate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Template
-          </Button>
+          <div className="flex gap-2">
+            {templates.length === 0 && (
+              <Button 
+                variant="outline" 
+                onClick={handleCreateDefaultTemplates}
+                disabled={createDefaultTemplatesMutation.isPending}
+              >
+                {createDefaultTemplatesMutation.isPending && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                Create Default Templates
+              </Button>
+            )}
+            <Button onClick={handleAddTemplate}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Template
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

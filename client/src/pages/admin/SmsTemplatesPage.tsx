@@ -159,6 +159,66 @@ const SmsTemplatesPage = () => {
     setSelectedTemplate(null);
   };
   
+  // Predefined SMS templates for common scenarios
+  const defaultTemplates = [
+    {
+      name: 'Google Review Request',
+      content: `Thanks for choosing APS Flooring! We'd love your feedback. Please leave a review: {{review_link}} - Your opinion helps us improve!`,
+      category: 'review',
+      isActive: true
+    },
+    {
+      name: 'Appointment Reminder',
+      content: `Reminder: Your APS Flooring appointment is tomorrow at {{appointment_time}}. Call (555) 123-4567 if you need to reschedule.`,
+      category: 'appointment',
+      isActive: true
+    },
+    {
+      name: 'New Lead Response',
+      content: `Thanks for your interest in APS Flooring! We've received your inquiry and will contact you shortly. Questions? Call (555) 123-4567.`,
+      category: 'lead',
+      isActive: true
+    },
+    {
+      name: 'Service Follow-up',
+      content: `How are you enjoying your new floors from APS Flooring? Let us know if you have any questions about maintenance or care!`,
+      category: 'follow-up',
+      isActive: true
+    }
+  ];
+  
+  // Create default templates
+  const createDefaultTemplatesMutation = useMutation({
+    mutationFn: async () => {
+      // Create templates sequentially to avoid race conditions
+      for (const template of defaultTemplates) {
+        await apiRequest('POST', '/api/admin/sms-templates', template);
+      }
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/sms-templates'] });
+      toast({
+        title: 'Default templates created',
+        description: 'The predefined SMS templates were created successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to create default templates: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Handle creating default templates
+  const handleCreateDefaultTemplates = () => {
+    if (window.confirm('This will create 4 predefined SMS templates. Continue?')) {
+      createDefaultTemplatesMutation.mutate();
+    }
+  };
+  
   // Open dialog for new template
   const handleAddTemplate = () => {
     resetForm();
@@ -243,10 +303,27 @@ const SmsTemplatesPage = () => {
               Create and manage templates for SMS messages
             </CardDescription>
           </div>
-          <Button onClick={handleAddTemplate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Template
-          </Button>
+          <div className="flex gap-2">
+            {templates.length === 0 && (
+              <Button 
+                variant="outline" 
+                onClick={handleCreateDefaultTemplates}
+                disabled={createDefaultTemplatesMutation.isPending}
+              >
+                {createDefaultTemplatesMutation.isPending && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                Create Default Templates
+              </Button>
+            )}
+            <Button onClick={handleAddTemplate}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Template
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
