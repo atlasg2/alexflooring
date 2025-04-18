@@ -16,6 +16,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { cn } from '@/lib/utils';
 import apsLogo from "@/assets/aps_logo.png";
 
+const LOCALSTORAGE_KEY = 'aps_chat_user_info';
+
 const ChatWidget = () => {
   // State for chat widget functionality
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +28,21 @@ const ChatWidget = () => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Load saved user information when component mounts
+  useEffect(() => {
+    try {
+      const savedUserInfo = localStorage.getItem(LOCALSTORAGE_KEY);
+      if (savedUserInfo) {
+        const { name: savedName, email: savedEmail, phone: savedPhone } = JSON.parse(savedUserInfo);
+        if (savedName) setName(savedName);
+        if (savedEmail) setEmail(savedEmail);
+        if (savedPhone) setPhone(savedPhone);
+      }
+    } catch (error) {
+      console.error('Error loading saved chat user info:', error);
+    }
+  }, []);
   
   // Toggle the chat widget open/closed state
   const toggleChat = () => {
@@ -50,6 +67,13 @@ const ChatWidget = () => {
         variant: "destructive"
       });
       return;
+    }
+    
+    // Save user info to localStorage for future use
+    try {
+      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify({ name, email, phone }));
+    } catch (error) {
+      console.error('Error saving chat user info:', error);
     }
     
     setIsInitial(false);
