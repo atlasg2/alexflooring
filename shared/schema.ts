@@ -57,6 +57,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   message: text("message").notNull(),
   service: text("service"),
   status: text("status").default("new").notNull(), // new, contacted, scheduled, completed
+  type: text("type").default("contact").notNull(), // contact, quote, chat
   contactId: integer("contact_id").references(() => contacts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -67,6 +68,8 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   phone: true,
   message: true,
   service: true,
+  type: true,
+  status: true,
 });
 
 // Communication logs - track all emails, calls, texts

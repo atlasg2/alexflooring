@@ -113,7 +113,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.put("/api/admin/chat/:id/read", isAdmin, async (req, res) => {
     try {
-      await storage.markChatMessageAsRead(parseInt(req.params.id));
+      // Try to update the contact submission status first
+      await storage.updateContactSubmissionStatus(parseInt(req.params.id), 'read');
+      
+      // For legacy support, also try to mark chat message as read
+      try {
+        await storage.markChatMessageAsRead(parseInt(req.params.id));
+      } catch (error) {
+        // Ignore errors from the chat message system
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Error marking message as read:", error);

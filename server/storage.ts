@@ -221,11 +221,25 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUnreadMessageCount(): Promise<number> {
-    const result = await db
+    // Count unread chat messages (legacy method)
+    const chatResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(chatMessages)
       .where(eq(chatMessages.isRead, false));
-    return result[0].count;
+    
+    // Count new contact submissions of type 'chat'
+    const contactResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(contactSubmissions)
+      .where(
+        and(
+          eq(contactSubmissions.type, 'chat'),
+          eq(contactSubmissions.status, 'new')
+        )
+      );
+    
+    // Combine both counts
+    return chatResult[0].count + contactResult[0].count;
   }
   
   // APPOINTMENT METHODS
