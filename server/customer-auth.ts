@@ -64,9 +64,7 @@ export function setupCustomerAuth(app: Express) {
         customer = await storage.getCustomerUserByEmail(email);
       } else {
         // Otherwise, assume it's a username
-        // Need to add a method to storage for this
-        // For now we'll check by email since we're setting username=email in most places
-        customer = await storage.getCustomerUserByEmail(email);
+        customer = await storage.getCustomerUserByUsername(email);
       }
       
       if (!customer) {
@@ -86,6 +84,7 @@ export function setupCustomerAuth(app: Express) {
       req.session.customer = {
         id: customer.id,
         email: customer.email,
+        username: customer.username,
         name: customer.name,
         isCustomer: true
       };
@@ -142,6 +141,7 @@ export function setupCustomerAuth(app: Express) {
       req.session.customer = {
         id: newCustomer.id,
         email: newCustomer.email,
+        username: newCustomer.username,
         name: newCustomer.name,
         isCustomer: true
       };

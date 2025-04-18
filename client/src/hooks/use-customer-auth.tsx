@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 type CustomerUser = {
   id: number;
   email: string;
+  username: string;
   name: string;
   phone?: string;
   lastLogin?: string;

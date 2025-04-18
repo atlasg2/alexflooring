@@ -13,7 +13,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 
 // Form schemas
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(3, "Please enter a valid email or username"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -131,10 +131,10 @@ export default function CustomerAuth() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Email or Username</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="your.email@example.com" 
+                            placeholder="your.email@example.com or username" 
                             {...field} 
                             autoComplete="email"
                           />
@@ -222,7 +222,7 @@ export default function CustomerAuth() {
                         </FormControl>
                         <FormMessage />
                         <FormDescription>
-                          You'll use this email to sign in to your account
+                          You'll use this email or your username to sign in to your account
                         </FormDescription>
                       </FormItem>
                     )}
