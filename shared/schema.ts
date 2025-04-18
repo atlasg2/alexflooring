@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -17,7 +17,38 @@ export const insertUserSchema = createInsertSchema(users).pick({
   role: true,
 });
 
-// Contact form submissions with status
+// Contact management - expanded from just form submissions to handle manual entries
+export const contacts = pgTable("contacts", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  company: text("company"),
+  source: text("source").default("manual").notNull(), // manual, form, import, etc.
+  leadStage: text("lead_stage").default("new").notNull(), // new, contacted, qualified, proposal, won, lost
+  leadScore: integer("lead_score").default(0),
+  assignedTo: text("assigned_to"),
+  lastContactedDate: timestamp("last_contacted_date"),
+  preferredContact: text("preferred_contact").default("email"), // email, phone, text
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  notes: text("notes"),
+  tags: text("tags").array(),
+  customFields: json("custom_fields").$type<Record<string, string>>(),
+  isCustomer: boolean("is_customer").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertContactSchema = createInsertSchema(contacts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Contact form submissions - links to contacts
 export const contactSubmissions = pgTable("contact_submissions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -26,6 +57,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   message: text("message").notNull(),
   service: text("service"),
   status: text("status").default("new").notNull(), // new, contacted, scheduled, completed
+  contactId: integer("contact_id").references(() => contacts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -37,12 +69,31 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   service: true,
 });
 
+// Communication logs - track all emails, calls, texts
+export const communicationLogs = pgTable("communication_logs", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  type: text("type").notNull(), // email, sms, call, note
+  direction: text("direction").notNull(), // inbound, outbound
+  subject: text("subject"),
+  content: text("content").notNull(),
+  status: text("status").default("sent").notNull(), // sent, delivered, failed, etc.
+  sentBy: text("sent_by"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertCommunicationLogSchema = createInsertSchema(communicationLogs).omit({
+  id: true,
+  createdAt: true
+});
+
 // Chat messages from the widget
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   name: text("name"),
   email: text("email"),
   message: text("message").notNull(),
+  contactId: integer("contact_id").references(() => contacts.id),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -65,33 +116,117 @@ export const appointments = pgTable("appointments", {
   startTime: text("start_time").notNull(), 
   endTime: text("end_time"),
   status: text("status").default("scheduled").notNull(), // scheduled, completed, cancelled
+  location: text("location"),
+  appointmentType: text("appointment_type").default("consultation"), // consultation, estimate, installation, followup
   notes: text("notes"),
-  contactSubmissionId: integer("contact_submission_id").references(() => contactSubmissions.id),
+  contactId: integer("contact_id").references(() => contacts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertAppointmentSchema = createInsertSchema(appointments).pick({
-  title: true,
-  description: true,
-  clientName: true,
-  clientEmail: true,
-  clientPhone: true,
-  date: true,
-  startTime: true,
-  endTime: true,
-  notes: true,
-  contactSubmissionId: true,
+export const insertAppointmentSchema = createInsertSchema(appointments).omit({
+  id: true,
+  createdAt: true
+});
+
+// Customer reviews
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  platform: text("platform").notNull(), // google, yelp, facebook, etc.
+  rating: integer("rating"), // 1-5 stars
+  reviewText: text("review_text"),
+  reviewDate: timestamp("review_date"),
+  reviewUrl: text("review_url"),
+  isPublished: boolean("is_published").default(false),
+  requestSentDate: timestamp("request_sent_date"),
+  status: text("status").default("pending").notNull(), // pending, requested, received, published
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  createdAt: true
+});
+
+// Email templates
+export const emailTemplates = pgTable("email_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content").notNull(),
+  category: text("category").default("general").notNull(), // general, follow-up, review-request, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// SMS templates
+export const smsTemplates = pgTable("sms_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  content: text("content").notNull(),
+  category: text("category").default("general").notNull(), // general, follow-up, review-request, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSmsTemplateSchema = createInsertSchema(smsTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Automation workflows
+export const automationWorkflows = pgTable("automation_workflows", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  trigger: text("trigger").notNull(), // new-contact, appointment-scheduled, etc.
+  actions: json("actions").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAutomationWorkflowSchema = createInsertSchema(automationWorkflows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
 });
 
 // Type exports
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export type InsertContact = z.infer<typeof insertContactSchema>;
+export type Contact = typeof contacts.$inferSelect;
+
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
+export type CommunicationLog = typeof communicationLogs.$inferSelect;
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 export type Appointment = typeof appointments.$inferSelect;
+
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviews.$inferSelect;
+
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+
+export type InsertSmsTemplate = z.infer<typeof insertSmsTemplateSchema>;
+export type SmsTemplate = typeof smsTemplates.$inferSelect;
+
+export type InsertAutomationWorkflow = z.infer<typeof insertAutomationWorkflowSchema>;
+export type AutomationWorkflow = typeof automationWorkflows.$inferSelect;
