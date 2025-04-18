@@ -133,7 +133,8 @@ export default function CustomerProjectsPage() {
     title: "",
     status: "pending",
     description: "",
-    customerId: undefined // Will be set when creating a project
+    customerId: 1, // Default to first customer - since we don't require it anymore
+    contactId: undefined // Required field to be set when creating a project
   };
   
   const initialProgressUpdateFormData: ProgressUpdateFormData = {
@@ -322,10 +323,10 @@ export default function CustomerProjectsPage() {
       return;
     }
     
-    if (!projectFormData.customerId) {
+    if (!projectFormData.contactId) {
       toast({
         title: "Validation error",
-        description: "You must select a customer",
+        description: "You must select an associated contact",
         variant: "destructive",
       });
       return;
@@ -654,7 +655,7 @@ export default function CustomerProjectsPage() {
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="customer">Customer <span className="text-red-500">*</span></Label>
+                <Label htmlFor="customer">Customer</Label>
                 <Button type="button" variant="link" className="text-xs h-5 p-0" onClick={() => {
                   // Create a customer user from the selected contact
                   if (projectFormData.contactId) {
@@ -808,7 +809,7 @@ export default function CustomerProjectsPage() {
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="contact">Associated Contact</Label>
+                <Label htmlFor="contact">Associated Contact <span className="text-red-500">*</span></Label>
                 <div className="flex items-center text-xs text-muted-foreground">
                   <ChevronDown className="h-3 w-3 mr-1" />
                   Select first, then create customer
