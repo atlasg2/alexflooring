@@ -20,6 +20,11 @@ import ContactsPage from "@/pages/admin/ContactsPage";
 import MessagesPage from "@/pages/admin/MessagesPage";
 import CalendarPage from "@/pages/admin/CalendarPage";
 
+// Admin pages - Sales Workflow
+import EstimatesPage from "@/pages/admin/EstimatesPage";
+import ContractsPage from "@/pages/admin/ContractsPage";
+import InvoicesPage from "@/pages/admin/InvoicesPage";
+
 // Admin pages - CRM
 import CRMContactsPage from "@/pages/admin/crm/ContactsPage";
 
@@ -91,6 +96,11 @@ function Router() {
       {/* Admin Routes - Settings */}
       <Route path="/admin/automation" component={AutomationPage} />
       <Route path="/admin/account" component={ContactsPage} />
+      
+      {/* Admin Routes - Sales Workflow */}
+      <Route path="/admin/estimates" component={EstimatesPage} />
+      <Route path="/admin/contracts" component={ContractsPage} />
+      <Route path="/admin/invoices" component={InvoicesPage} />
       
       {/* Admin Routes - Customer Portal */}
       <Route path="/admin/customer-portal/projects" component={CustomerProjectsPage} />

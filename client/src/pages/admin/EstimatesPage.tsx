@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
-import { Alert, AlertDescription } from '../../components/ui/alert';
-import { Textarea } from '../../components/ui/textarea';
-import { Badge } from '../../components/ui/badge';
-import { Separator } from '../../components/ui/separator';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Plus, Edit, Eye, Send, Check, X, FileText, AlertTriangle, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/layouts/AdminLayout';
 
 // Type for Estimate
 type Estimate = {
@@ -82,7 +83,7 @@ export default function EstimatesPage() {
   const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   // Fetch all estimates
   const { data: estimates, isLoading } = useQuery({
@@ -162,7 +163,8 @@ export default function EstimatesPage() {
   });
 
   return (
-    <div className="container mx-auto p-4">
+    <AdminLayout>
+      <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Estimates Management</h1>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -527,5 +529,6 @@ export default function EstimatesPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminLayout>
   );
 }

@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
-import { Badge } from '../../components/ui/badge';
-import { Separator } from '../../components/ui/separator';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Plus, Edit, Eye, Send, CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
-import { Label } from '../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AdminLayout from '@/layouts/AdminLayout';
 
 // Types
 type Invoice = {
@@ -89,7 +90,7 @@ export default function InvoicesPage() {
   });
   
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   // Fetch all invoices
   const { data: invoices, isLoading } = useQuery({
@@ -195,7 +196,8 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <AdminLayout>
+      <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Invoices Management</h1>
         <Button onClick={() => navigate('/admin/invoices/create')}>
@@ -626,5 +628,6 @@ export default function InvoicesPage() {
         </Dialog>
       )}
     </div>
+    </AdminLayout>
   );
 }

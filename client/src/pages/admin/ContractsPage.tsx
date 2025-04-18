@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Badge } from '../../components/ui/badge';
-import { Separator } from '../../components/ui/separator';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Plus, Edit, Eye, Send, CreditCard, FileText, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/layouts/AdminLayout';
 
 // Types
 type Contract = {
@@ -71,7 +72,7 @@ export default function ContractsPage() {
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   // Fetch all contracts
   const { data: contracts, isLoading } = useQuery({
@@ -140,7 +141,8 @@ export default function ContractsPage() {
   });
 
   return (
-    <div className="container mx-auto p-4">
+    <AdminLayout>
+      <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Contracts Management</h1>
         <Button onClick={() => navigate('/admin/contracts/create')}>
@@ -493,5 +495,6 @@ export default function ContractsPage() {
         </Dialog>
       )}
     </div>
+    </AdminLayout>
   );
 }

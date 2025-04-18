@@ -13,7 +13,10 @@ import {
   LogOut,
   Folder,
   User,
-  Mail
+  Mail,
+  ClipboardCheck,
+  FileSignature,
+  Receipt
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -94,6 +97,29 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       icon: <Calendar className="h-5 w-5 mr-3" />, 
       href: "/admin/calendar",
       active: location.includes("/admin/calendar")
+    },
+    {
+      title: "Sales Workflow",
+      icon: <ClipboardCheck className="h-5 w-5 mr-3" />,
+      href: "/admin/estimates",
+      active: location.includes("/admin/estimates") || location.includes("/admin/contracts") || location.includes("/admin/invoices"),
+      submenu: [
+        {
+          title: "Estimates",
+          href: "/admin/estimates",
+          active: location.includes("/admin/estimates")
+        },
+        {
+          title: "Contracts",
+          href: "/admin/contracts",
+          active: location.includes("/admin/contracts")
+        },
+        {
+          title: "Invoices",
+          href: "/admin/invoices",
+          active: location.includes("/admin/invoices")
+        }
+      ]
     },
     { 
       title: "Website Inquiries", 
