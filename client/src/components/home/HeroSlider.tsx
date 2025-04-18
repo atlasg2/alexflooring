@@ -19,6 +19,16 @@ interface Slide {
 // Define hero slides with specific flooring types
 const heroSlides: Slide[] = [
   {
+    id: "welcome",
+    image: "https://images.unsplash.com/photo-1581141889073-7d0beb6336d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Welcome to APS Flooring",
+    subtitle: "Specializing in premium residential and commercial flooring solutions tailored to your unique style and needs.",
+    flooringType: "All",
+    description: "From elegant hardwood to practical luxury vinyl, APS Flooring delivers expert installation and exceptional quality for every project.",
+    ctaLink: "/contact",
+    learnMoreLink: "/services"
+  },
+  {
     id: "1",
     image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Hardwood Flooring",
@@ -97,7 +107,7 @@ const HeroSlider = () => {
   }, [nextSlide]);
 
   return (
-    <section className="hero-slider h-[90vh] relative overflow-hidden mt-24 md:mt-16">
+    <section className="hero-slider h-[90vh] relative overflow-hidden mt-16 md:mt-12">
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div 
@@ -111,32 +121,32 @@ const HeroSlider = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
           
           {/* Text container with animation */}
-          <div className={`absolute bottom-[20%] md:bottom-[25%] left-0 md:left-24 max-w-lg text-left z-20 px-6 md:px-0 transform transition-all duration-1000 ${
+          <div className={`absolute bottom-[25%] md:bottom-[25%] left-0 md:left-24 max-w-xl text-left z-20 px-6 md:px-0 transform transition-all duration-1000 ${
             index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
           }`}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 font-montserrat drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 md:mb-4 font-montserrat drop-shadow-md">
               {slide.title}
             </h1>
             
-            <p className="text-base md:text-xl text-white/90 mb-6 max-w-md leading-relaxed">
+            <p className="text-sm md:text-xl text-white/90 mb-5 md:mb-6 max-w-md leading-relaxed line-clamp-3 md:line-clamp-none">
               {slide.subtitle}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="flex flex-row gap-3 mt-4">
               {/* Free Estimate Button */}
-              <Link href={slide.ctaLink} className="inline-block w-full sm:w-auto">
+              <Link href={slide.ctaLink} className="inline-block">
                 <Button 
-                  className="w-full sm:w-auto bg-secondary text-black hover:bg-secondary/90 px-6 py-3 rounded-md flex items-center justify-center gap-2 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                  className="bg-secondary text-black hover:bg-secondary/90 px-4 md:px-6 py-2 md:py-3 rounded-md flex items-center justify-center gap-2 text-sm md:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
                 >
                   <Construction className="h-4 w-4" /> Free Estimate
                 </Button>
               </Link>
               
               {/* Learn More Button */}
-              <Link href={slide.learnMoreLink} className="inline-block w-full sm:w-auto">
+              <Link href={slide.learnMoreLink} className="inline-block">
                 <Button 
                   variant="outline"
-                  className="w-full sm:w-auto bg-black/40 text-white border-white/30 hover:bg-black/60 px-6 py-3 rounded-md flex items-center justify-center gap-2 text-base font-semibold backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
+                  className="bg-black/40 text-white border-white/30 hover:bg-black/60 px-4 md:px-6 py-2 md:py-3 rounded-md flex items-center justify-center gap-2 text-sm md:text-base font-semibold backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:translate-y-[-2px]"
                 >
                   <Info className="h-4 w-4" /> Learn More
                 </Button>
