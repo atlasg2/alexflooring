@@ -9,22 +9,22 @@
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
+
     --primary: 0 0% 10%;
     --primary-foreground: 0 0% 100%;
- 
+
     --secondary: 45 95% 50%;
     --secondary-foreground: 0 0% 10%;
- 
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 210 60% 95%;
     --accent-foreground: 222.2 47.4% 11.2%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
@@ -37,35 +37,35 @@
     --chart-3: 160 60% 40%;
     --chart-4: 340 70% 50%;
     --chart-5: 260 60% 55%;
- 
+
     --radius: 0.75rem;
   }
- 
+
   .dark {
     --background: 220 20% 12%;
     --foreground: 210 40% 98%;
- 
+
     --card: 220 20% 10%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 220 20% 12%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 0 0% 80%;
     --primary-foreground: 0 0% 10%;
- 
+
     --secondary: 45 100% 55%;
     --secondary-foreground: 0 0% 10%;
- 
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
+
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
- 
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 210 60% 60%;
@@ -145,16 +145,16 @@
     @apply absolute z-10 top-4 text-white bg-black/50 px-3 py-1 rounded-full text-sm font-medium shadow-md;
     content: "Before";
   }
-  
+
   .before-after::before {
     left: 4%;
   }
-  
+
   .before-after::after {
     content: "After";
     right: 4%;
   }
-  
+
   .before-after img {
     @apply transition-transform duration-300 hover:scale-[1.03];
   }
@@ -246,4 +246,50 @@
 .section-title-center::after {
   content: "";
   @apply absolute -bottom-3 left-1/2 w-16 h-1 bg-secondary transform -translate-x-1/2;
+}
+
+/* Custom CSS */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animation classes for scroll effects */
+[data-aos] {
+  opacity: 0;
+  transition-property: opacity, transform;
+}
+
+[data-aos="fade-up"] {
+  transform: translate3d(0, 30px, 0);
+}
+
+[data-aos="fade-down"] {
+  transform: translate3d(0, -30px, 0);
+}
+
+[data-aos="fade-right"] {
+  transform: translate3d(-30px, 0, 0);
+}
+
+[data-aos="fade-left"] {
+  transform: translate3d(30px, 0, 0);
+}
+
+[data-aos="zoom-in"] {
+  transform: scale(0.9);
+}
+
+[data-aos="zoom-out"] {
+  transform: scale(1.1);
+}
+
+/* Active states when scrolled into view */
+[data-aos].aos-animate {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
 }
