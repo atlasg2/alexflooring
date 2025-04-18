@@ -20,6 +20,7 @@ import { setupCustomerProjectRoutes } from "./customer-projects";
 import { setupProjectManagementRoutes } from "./project-management"; 
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
 import { setupSalesWorkflowRoutes } from "./sales-workflow";
+import { emailService } from "./email-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication and admin protection
@@ -41,6 +42,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up sales workflow routes (estimates, contracts, invoices)
   setupSalesWorkflowRoutes(app);
+  
+  // Test email functionality
+  app.get("/api/test-email", async (req, res) => {
+    try {
+      const result = await emailService.sendCustomEmail({
+        to: "Nicholas@atlasgrowth.ai",
+        subject: "Test Email from APS Flooring Portal",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333333;">
+            <div style="background-color: #000000; padding: 20px; text-align: center; margin-bottom: 20px;">
+              <h1 style="color: #D4AF37; margin: 0;">APS Flooring</h1>
+              <p style="color: #ffffff; margin: 10px 0 0 0;">Test Email</p>
+            </div>
+            
+            <div style="padding: 20px; border: 1px solid #E5E5E5; border-radius: 5px;">
+              <h2 style="color: #000000; margin-top: 0;">This is a test email</h2>
+              <p>This email was sent as a test of the email functionality in the APS Flooring admin portal.</p>
+              <p>Date/Time: ${new Date().toLocaleString()}</p>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; border-top: 1px solid #E5E5E5; text-align: center; font-size: 12px; color: #777777;">
+              <p>&copy; ${new Date().getFullYear()} APS Flooring LLC. All rights reserved.</p>
+            </div>
+          </div>
+        `
+      });
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
   
   // Public endpoints
   
