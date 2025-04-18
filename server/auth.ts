@@ -5,7 +5,9 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as UserType, InsertUser } from "@shared/schema";
+import { User as UserType, InsertUser, users } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Extend Express.User to include our User type properties
 declare global {
@@ -154,25 +156,31 @@ export function setupAuth(app: Express) {
   // Debug route to create admin
   app.post("/api/debug/create-admin", async (req, res) => {
     try {
-      const adminUser = await storage.getUserByUsername("admin");
-      
-      if (adminUser) {
-        return res.json({ 
-          message: "Admin already exists",
-          id: adminUser.id
-        });
+      // Force recreate admin user by recreating it
+      try {
+        // Delete existing admin if any
+        await db.delete(users).where(eq(users.username, "admin"));
+        console.log("Deleted existing admin user");
+      } catch (err) {
+        console.error("Error deleting admin:", err);
       }
       
+      // Create new admin with known password
       const hashedPassword = await hashPassword("admin123");
+      console.log("Created password hash:", hashedPassword);
+      
       const user = await storage.createUser({
         username: "admin",
         password: hashedPassword,
         role: "admin"
       });
       
+      console.log("Created new admin user:", user);
+      
       res.json({ 
-        message: "Admin created successfully", 
-        id: user.id
+        message: "Admin created/recreated successfully", 
+        id: user.id,
+        passwordHash: hashedPassword
       });
     } catch (error) {
       console.error("Error creating admin:", error);
