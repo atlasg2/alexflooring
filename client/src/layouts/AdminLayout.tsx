@@ -15,7 +15,9 @@ import {
   Activity,
   Star,
   Settings,
-  Database
+  Database,
+  Menu,
+  X
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -25,6 +27,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -100,24 +103,61 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     return () => clearInterval(interval);
   }, []);
 
+  // State for mobile navigation
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const isMobile = useIsMobile();
+  
   // If on login page, just render the children without the admin layout
   if (isOnLoginPage) {
     return <>{children}</>;
   }
   
+  // Handle navigation item click (close mobile menu on navigation)
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (isMobile) {
+      setMobileNavOpen(false);
+    }
+  };
+  
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+      {/* Mobile header */}
+      {isMobile && (
+        <header className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="py-3 px-4 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-primary">APS Admin</h1>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              className="p-1"
+            >
+              {mobileNavOpen ? <X /> : <Menu />}
+            </Button>
+          </div>
+        </header>
+      )}
+      
       {/* Sidebar */}
-      <aside className="w-72 bg-white shadow-md p-4 flex flex-col overflow-y-auto">
-        <div className="p-2 flex items-center justify-center mb-6">
-          <h1 className="text-xl font-semibold text-primary">APS Admin</h1>
-        </div>
+      <aside 
+        className={`${
+          isMobile 
+            ? `fixed inset-0 z-20 transform ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out w-4/5 max-w-xs bg-white shadow-xl`
+            : 'w-72 bg-white shadow-md'
+        } p-4 flex flex-col overflow-y-auto`}
+      >
+        {!isMobile && (
+          <div className="p-2 flex items-center justify-center mb-6">
+            <h1 className="text-xl font-semibold text-primary">APS Admin</h1>
+          </div>
+        )}
         
         <nav className="space-y-1 flex-1">
           <Button
             variant="ghost"
             className="w-full justify-start"
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => handleNavigation('/admin/dashboard')}
           >
             <LayoutDashboard className="mr-2 h-5 w-5" />
             Dashboard
@@ -139,7 +179,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/crm/contacts')}
+                onClick={() => handleNavigation('/admin/crm/contacts')}
               >
                 <Users className="mr-2 h-4 w-4" />
                 All Contacts
@@ -148,7 +188,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/crm/leads')}
+                onClick={() => handleNavigation('/admin/crm/leads')}
               >
                 <Activity className="mr-2 h-4 w-4" />
                 Lead Management
@@ -157,7 +197,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/form-submissions')}
+                onClick={() => handleNavigation('/admin/form-submissions')}
               >
                 <BookOpen className="mr-2 h-4 w-4" />
                 Form Submissions
@@ -181,7 +221,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start relative"
-                onClick={() => navigate('/admin/messages')}
+                onClick={() => handleNavigation('/admin/messages')}
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Chat Messages
@@ -195,7 +235,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/email-templates')}
+                onClick={() => handleNavigation('/admin/email-templates')}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Email Templates
@@ -204,7 +244,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/sms-templates')}
+                onClick={() => handleNavigation('/admin/sms-templates')}
               >
                 <Send className="mr-2 h-4 w-4" />
                 SMS Templates
@@ -228,7 +268,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/reviews')}
+                onClick={() => handleNavigation('/admin/reviews')}
               >
                 <Star className="mr-2 h-4 w-4" />
                 All Reviews
@@ -237,7 +277,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/review-requests')}
+                onClick={() => handleNavigation('/admin/review-requests')}
               >
                 <Send className="mr-2 h-4 w-4" />
                 Review Requests
@@ -249,7 +289,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
           <Button
             variant="ghost"
             className="w-full justify-start"
-            onClick={() => navigate('/admin/calendar')}
+            onClick={() => handleNavigation('/admin/calendar')}
           >
             <Calendar className="mr-2 h-5 w-5" />
             Schedule
@@ -271,7 +311,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/automation')}
+                onClick={() => handleNavigation('/admin/automation')}
               >
                 <Activity className="mr-2 h-4 w-4" />
                 Automation
@@ -280,7 +320,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => navigate('/admin/account')}
+                onClick={() => handleNavigation('/admin/account')}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Account
@@ -302,14 +342,25 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <header className="bg-white shadow-sm">
-          <div className="py-4 px-6">
-            <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
-          </div>
-        </header>
+      <main className="flex-1 overflow-auto pt-0 md:pt-0">
+        {/* Desktop header */}
+        {!isMobile && (
+          <header className="bg-white shadow-sm">
+            <div className="py-4 px-6">
+              <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
+            </div>
+          </header>
+        )}
         
-        <div className="p-6">
+        {/* Mobile overlay */}
+        {isMobile && mobileNavOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-10" 
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
+        
+        <div className="p-3 md:p-6">
           {children}
         </div>
       </main>
