@@ -341,6 +341,18 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         <Separator className="my-4" />
         
         <Button 
+          variant="default" 
+          className="w-full justify-start mb-3 bg-primary hover:bg-primary/90"
+          onClick={() => window.location.href = '/'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          View Website
+        </Button>
+        
+        <Button 
           variant="ghost" 
           className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50"
           onClick={handleLogout}

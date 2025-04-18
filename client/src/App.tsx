@@ -51,6 +51,7 @@ function Router() {
       
       {/* Admin Routes - Core */}
       <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin" component={DashboardPage} /> {/* Default route for /admin redirects to dashboard */}
       <Route path="/admin/dashboard" component={DashboardPage} />
       <Route path="/admin/contacts" component={ContactsPage} />
       <Route path="/admin/messages" component={MessagesPage} />
