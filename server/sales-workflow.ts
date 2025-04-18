@@ -197,6 +197,14 @@ export function setupSalesWorkflowRoutes(app: Express) {
       // Notify admin via email
       // TODO: Add notification to admin about the approval
       
+      // Trigger workflow automation for estimate approval
+      try {
+        const { workflowEvents } = require('./workflow-automation');
+        await workflowEvents.onEstimateApproved(id);
+      } catch (error) {
+        console.error("Failed to trigger estimate approval workflow:", error);
+      }
+      
       res.json(approvedEstimate);
     } catch (error) {
       console.error("Error approving estimate:", error);
@@ -417,6 +425,14 @@ export function setupSalesWorkflowRoutes(app: Express) {
       
       // Notify admin via email
       // TODO: Add notification to admin about the signature
+      
+      // Trigger workflow automation for contract signing
+      try {
+        const { workflowEvents } = require('./workflow-automation');
+        await workflowEvents.onContractSigned(id);
+      } catch (error) {
+        console.error("Failed to trigger contract signed workflow:", error);
+      }
       
       res.json(signedContract);
     } catch (error) {

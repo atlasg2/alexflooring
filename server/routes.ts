@@ -20,6 +20,7 @@ import { setupCustomerProjectRoutes } from "./customer-projects";
 import { setupProjectManagementRoutes } from "./project-management"; 
 import { setupAdminCustomerPortalRoutes } from "./admin-customer-portal";
 import { setupSalesWorkflowRoutes } from "./sales-workflow";
+import { setupWorkflowRoutes } from "./workflow-automation";
 import { emailService } from "./email-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -42,6 +43,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up sales workflow routes (estimates, contracts, invoices)
   setupSalesWorkflowRoutes(app);
+  
+  // Set up workflow automation routes
+  setupWorkflowRoutes(app);
   
   // Test email functionality
   app.get("/api/test-email", async (req, res) => {

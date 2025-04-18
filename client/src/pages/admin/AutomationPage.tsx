@@ -1,846 +1,1533 @@
-import { useState } from 'react';
-import AdminLayout from '@/layouts/AdminLayout';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
   CardDescription, 
+  CardFooter, 
   CardHeader, 
-  CardTitle,
-  CardFooter 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+  CardTitle 
+} from "@/components/ui/card";
 import { 
   Table, 
   TableBody, 
+  TableCaption, 
   TableCell, 
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import { 
   Dialog, 
+  DialogTrigger, 
   DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
   DialogDescription, 
   DialogFooter, 
-  DialogHeader, 
-  DialogTitle
-} from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DialogClose 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { 
   Select, 
   SelectContent, 
+  SelectGroup,
   SelectItem, 
+  SelectLabel, 
   SelectTrigger, 
   SelectValue 
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Copy, 
-  Activity,
-  Play,
-  Pause,
-  Calendar,
-  Mail,
-  MessageSquare,
-  Star,
-  ChevronRight,
-  Zap,
-  Clock,
-  ThumbsUp,
-  Bell
-} from 'lucide-react';
+} from "@/components/ui/select";
 import { toast } from '@/hooks/use-toast';
-import { queryClient, getQueryFn, apiRequest } from '@/lib/queryClient';
-import { AutomationWorkflow, EmailTemplate, SmsTemplate } from '@shared/schema';
+import { PlusCircle, Play, Trash, Edit } from 'lucide-react';
 
-const AutomationPage = () => {
-  const [isAutomationDialogOpen, setIsAutomationDialogOpen] = useState(false);
-  const [selectedAutomation, setSelectedAutomation] = useState<AutomationWorkflow | null>(null);
+export default function AutomationPage() {
+  const [workflows, setWorkflows] = useState([]);
+  const [triggers, setTriggers] = useState([]);
+  const [actions, setActions] = useState([]);
+  const [emailTemplates, setEmailTemplates] = useState([]);
+  const [smsTemplates, setSmsTemplates] = useState([]);
   
-  // Form state for new/edit automation
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    triggerType: 'manual',
+    triggerType: '',
     triggerCondition: '',
-    emailTemplateId: 0,
-    smsTemplateId: 0,
+    emailTemplateId: null,
+    smsTemplateId: null,
     delay: 0,
+    trigger: '',
+    actions: [],
     isActive: true
   });
   
-  // Get automation workflows query
-  const { data: automations = [], isLoading } = useQuery<AutomationWorkflow[]>({
-    queryKey: ['/api/admin/automation'],
-    queryFn: getQueryFn({ on401: 'throw' }),
+  const [actionFormData, setActionFormData] = useState({
+    type: '',
+    data: {}
   });
   
-  // Get email templates for selection
-  const { data: emailTemplates = [] } = useQuery<EmailTemplate[]>({
-    queryKey: ['/api/admin/email-templates'],
-    queryFn: getQueryFn({ on401: 'throw' }),
-  });
+  useEffect(() => {
+    fetchWorkflows();
+    fetchTriggers();
+    fetchActions();
+    fetchTemplates();
+  }, []);
   
-  // Get SMS templates for selection
-  const { data: smsTemplates = [] } = useQuery<SmsTemplate[]>({
-    queryKey: ['/api/admin/sms-templates'],
-    queryFn: getQueryFn({ on401: 'throw' }),
-  });
-  
-  // Create automation mutation
-  const createAutomationMutation = useMutation({
-    mutationFn: async (data: Omit<AutomationWorkflow, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const response = await apiRequest('POST', '/api/admin/automation', data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/automation'] });
+  const fetchWorkflows = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/admin/workflows');
+      const data = await response.json();
+      setWorkflows(data);
+    } catch (error) {
+      console.error('Error fetching workflows:', error);
       toast({
-        title: 'Automation created',
-        description: 'The automation workflow was created successfully',
+        title: 'Failed to fetch workflows',
+        description: 'Please try again later',
+        variant: 'destructive'
       });
-      setIsAutomationDialogOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const fetchTriggers = async () => {
+    try {
+      const response = await fetch('/api/admin/workflows/triggers');
+      const data = await response.json();
+      setTriggers(data);
+    } catch (error) {
+      console.error('Error fetching triggers:', error);
+    }
+  };
+  
+  const fetchActions = async () => {
+    try {
+      const response = await fetch('/api/admin/workflows/actions');
+      const data = await response.json();
+      setActions(data);
+    } catch (error) {
+      console.error('Error fetching actions:', error);
+    }
+  };
+  
+  const fetchTemplates = async () => {
+    try {
+      // Fetch email templates
+      const emailResponse = await fetch('/api/admin/email-templates');
+      const emailData = await emailResponse.json();
+      setEmailTemplates(emailData);
+      
+      // Fetch SMS templates
+      const smsResponse = await fetch('/api/admin/sms-templates');
+      const smsData = await smsResponse.json();
+      setSmsTemplates(smsData);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  
+  const handleSelectChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
+    
+    // If we selected a trigger type, set the legacy trigger field as well
+    if (name === 'triggerType') {
+      setFormData(prev => ({ ...prev, triggerType: value, trigger: value }));
+    }
+  };
+  
+  const handleSwitchChange = (name, checked) => {
+    setFormData({ ...formData, [name]: checked });
+  };
+  
+  const handleActionInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith('data.')) {
+      const dataKey = name.split('.')[1];
+      setActionFormData({
+        ...actionFormData,
+        data: {
+          ...actionFormData.data,
+          [dataKey]: value
+        }
+      });
+    } else {
+      setActionFormData({ ...actionFormData, [name]: value });
+    }
+  };
+  
+  const handleActionSelectChange = (name, value) => {
+    if (name.startsWith('data.')) {
+      const dataKey = name.split('.')[1];
+      setActionFormData({
+        ...actionFormData,
+        data: {
+          ...actionFormData.data,
+          [dataKey]: value
+        }
+      });
+    } else {
+      setActionFormData({ ...actionFormData, [name]: value });
+      
+      // Reset data when changing action type
+      if (name === 'type') {
+        setActionFormData(prev => ({ ...prev, data: {} }));
+      }
+    }
+  };
+  
+  const addAction = () => {
+    // Basic validation
+    if (!actionFormData.type) {
+      toast({
+        title: 'Action type required',
+        description: 'Please select an action type',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // More validation depending on action type
+    if (actionFormData.type === 'send_email') {
+      if (!actionFormData.data.recipientEmail && !actionFormData.data.templateId) {
+        toast({
+          title: 'Email information required',
+          description: 'Please provide either an email template or recipient information',
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+    
+    const updatedActions = [...formData.actions, actionFormData];
+    setFormData({ ...formData, actions: updatedActions });
+    
+    // Reset action form
+    setActionFormData({ type: '', data: {} });
+  };
+  
+  const removeAction = (index) => {
+    const updatedActions = formData.actions.filter((_, i) => i !== index);
+    setFormData({ ...formData, actions: updatedActions });
+  };
+  
+  const handleCreateWorkflow = async () => {
+    try {
+      // Basic validation
+      if (!formData.name || !formData.triggerType) {
+        toast({
+          title: 'Missing required fields',
+          description: 'Name and trigger type are required',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      const response = await fetch('/api/admin/workflows', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create workflow');
+      }
+      
+      await fetchWorkflows();
+      setCreateDialogOpen(false);
       resetForm();
-    },
-    onError: (error: Error) => {
+      
       toast({
-        title: 'Error',
-        description: `Failed to create automation: ${error.message}`,
-        variant: 'destructive',
+        title: 'Workflow created',
+        description: 'The workflow has been created successfully'
       });
-    },
-  });
+    } catch (error) {
+      console.error('Error creating workflow:', error);
+      toast({
+        title: 'Failed to create workflow',
+        description: error.message || 'Please try again later',
+        variant: 'destructive'
+      });
+    }
+  };
   
-  // Update automation mutation
-  const updateAutomationMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number, data: Partial<AutomationWorkflow> }) => {
-      const response = await apiRequest('PUT', `/api/admin/automation/${id}`, data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/automation'] });
-      toast({
-        title: 'Automation updated',
-        description: 'The automation workflow was updated successfully',
+  const handleUpdateWorkflow = async () => {
+    try {
+      if (!selectedWorkflow) return;
+      
+      const response = await fetch(`/api/admin/workflows/${selectedWorkflow.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
       });
-      setIsAutomationDialogOpen(false);
+      
+      if (!response.ok) {
+        throw new Error('Failed to update workflow');
+      }
+      
+      await fetchWorkflows();
+      setEditDialogOpen(false);
       resetForm();
-    },
-    onError: (error: Error) => {
+      
       toast({
-        title: 'Error',
-        description: `Failed to update automation: ${error.message}`,
-        variant: 'destructive',
+        title: 'Workflow updated',
+        description: 'The workflow has been updated successfully'
       });
-    },
-  });
+    } catch (error) {
+      console.error('Error updating workflow:', error);
+      toast({
+        title: 'Failed to update workflow',
+        description: error.message || 'Please try again later',
+        variant: 'destructive'
+      });
+    }
+  };
   
-  // Delete automation mutation
-  const deleteAutomationMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/admin/automation/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/automation'] });
-      toast({
-        title: 'Automation deleted',
-        description: 'The automation workflow was deleted successfully',
+  const handleDeleteWorkflow = async (id) => {
+    try {
+      setIsDeleting(true);
+      
+      const response = await fetch(`/api/admin/workflows/${id}`, {
+        method: 'DELETE'
       });
-    },
-    onError: (error: Error) => {
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete workflow');
+      }
+      
+      await fetchWorkflows();
+      
       toast({
-        title: 'Error',
-        description: `Failed to delete automation: ${error.message}`,
-        variant: 'destructive',
+        title: 'Workflow deleted',
+        description: 'The workflow has been deleted successfully'
       });
-    },
-  });
+    } catch (error) {
+      console.error('Error deleting workflow:', error);
+      toast({
+        title: 'Failed to delete workflow',
+        description: error.message || 'Please try again later',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
-  // Toggle automation mutation
-  const toggleAutomationMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: number, isActive: boolean }) => {
-      const response = await apiRequest('PATCH', `/api/admin/automation/${id}/toggle`, { isActive });
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/automation'] });
-      toast({
-        title: data.isActive ? 'Automation enabled' : 'Automation disabled',
-        description: `The automation workflow was ${data.isActive ? 'enabled' : 'disabled'} successfully`,
+  const handleToggleWorkflow = async (id, isActive) => {
+    try {
+      const response = await fetch(`/api/admin/workflows/${id}/toggle`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isActive: !isActive })
       });
-    },
-    onError: (error: Error) => {
+      
+      if (!response.ok) {
+        throw new Error('Failed to toggle workflow');
+      }
+      
+      await fetchWorkflows();
+      
       toast({
-        title: 'Error',
-        description: `Failed to toggle automation: ${error.message}`,
-        variant: 'destructive',
+        title: `Workflow ${isActive ? 'disabled' : 'enabled'}`,
+        description: `The workflow has been ${isActive ? 'disabled' : 'enabled'} successfully`
       });
-    },
-  });
+    } catch (error) {
+      console.error('Error toggling workflow:', error);
+      toast({
+        title: 'Failed to toggle workflow',
+        description: error.message || 'Please try again later',
+        variant: 'destructive'
+      });
+    }
+  };
   
-  // Reset form
+  const handleRunWorkflow = async (id) => {
+    try {
+      setIsRunning(true);
+      
+      // Sample test data - in a real app, you might prompt the user for this
+      const testData = {
+        customerId: 1,
+        contactId: 1,
+        estimateId: 1,
+        contractId: 1,
+        customerName: 'Test Customer',
+        projectTitle: 'Test Project',
+        estimateNumber: 'EST-2025-0001',
+        estimateTotal: '1000.00',
+        contractTitle: 'Test Contract',
+        contractDescription: 'Description of test contract',
+        flooringDetails: 'Hardwood',
+        contractAmount: '1000.00',
+        appUrl: 'https://apsflooring.info'
+      };
+      
+      const response = await fetch(`/api/admin/workflows/${id}/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(testData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to run workflow');
+      }
+      
+      const result = await response.json();
+      
+      toast({
+        title: 'Workflow executed',
+        description: `The workflow was executed successfully: ${JSON.stringify(result.results)}`
+      });
+    } catch (error) {
+      console.error('Error running workflow:', error);
+      toast({
+        title: 'Failed to run workflow',
+        description: error.message || 'Please try again later',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRunning(false);
+    }
+  };
+  
+  const handleEditWorkflow = (workflow) => {
+    setSelectedWorkflow(workflow);
+    setFormData({
+      name: workflow.name,
+      description: workflow.description || '',
+      triggerType: workflow.triggerType,
+      triggerCondition: workflow.triggerCondition || '',
+      emailTemplateId: workflow.emailTemplateId,
+      smsTemplateId: workflow.smsTemplateId,
+      delay: workflow.delay || 0,
+      trigger: workflow.trigger,
+      actions: workflow.actions || [],
+      isActive: workflow.isActive
+    });
+    setEditDialogOpen(true);
+  };
+  
   const resetForm = () => {
     setFormData({
       name: '',
       description: '',
-      triggerType: 'manual',
+      triggerType: '',
       triggerCondition: '',
-      emailTemplateId: 0,
-      smsTemplateId: 0,
+      emailTemplateId: null,
+      smsTemplateId: null,
       delay: 0,
+      trigger: '',
+      actions: [],
       isActive: true
     });
-    setSelectedAutomation(null);
-  };
-  
-  // Template selection state
-  const [isTemplateSelectionOpen, setIsTemplateSelectionOpen] = useState(false);
-  
-  // Predefined automation templates
-  const automationTemplates = [
-    {
-      id: 'google-review',
-      name: 'Google Review Request',
-      description: 'Automatically send review requests to customers after service completion',
-      icon: <ThumbsUp className="h-10 w-10 text-green-500" />,
-      template: {
-        name: 'Google Review Request',
-        description: 'Send automated review requests after service completion',
-        triggerType: 'review_request',
-        triggerCondition: 'Sent 3 days after project completion',
-        emailTemplateId: 0,
-        smsTemplateId: 0,
-        delay: 72,
-        isActive: true
-      }
-    },
-    {
-      id: 'appointment-reminder',
-      name: 'Appointment Reminder',
-      description: 'Send reminders before scheduled appointments to reduce no-shows',
-      icon: <Bell className="h-10 w-10 text-blue-500" />,
-      template: {
-        name: 'Appointment Reminder',
-        description: 'Remind customers about upcoming appointments',
-        triggerType: 'appointment',
-        triggerCondition: 'Sent 24 hours before appointment',
-        emailTemplateId: 0,
-        smsTemplateId: 0,
-        delay: 24,
-        isActive: true
-      }
-    },
-    {
-      id: 'lead-nurture',
-      name: 'Lead Nurturing Sequence',
-      description: 'Engage with new leads through a series of helpful messages',
-      icon: <Zap className="h-10 w-10 text-purple-500" />,
-      template: {
-        name: 'Lead Nurturing Sequence',
-        description: 'Engage and educate new leads about your services',
-        triggerType: 'lead_stage_change',
-        triggerCondition: 'When lead stage changes to "new"',
-        emailTemplateId: 0,
-        smsTemplateId: 0,
-        delay: 2,
-        isActive: true
-      }
-    },
-    {
-      id: 'follow-up',
-      name: 'Post-Service Follow-up',
-      description: 'Check in with customers after service completion to ensure satisfaction',
-      icon: <Clock className="h-10 w-10 text-amber-500" />,
-      template: {
-        name: 'Post-Service Follow-up',
-        description: 'Check customer satisfaction after service completion',
-        triggerType: 'form_submission',
-        triggerCondition: 'Sent 7 days after project completion',
-        emailTemplateId: 0,
-        smsTemplateId: 0,
-        delay: 168,
-        isActive: true
-      }
-    }
-  ];
-  
-  // Handle selecting a template
-  const handleSelectTemplate = (template: any) => {
-    setFormData({
-      ...template.template,
-      emailTemplateId: emailTemplates.length > 0 ? emailTemplates[0].id : 0,
-      smsTemplateId: smsTemplates.length > 0 ? smsTemplates[0].id : 0,
-    });
-    setIsTemplateSelectionOpen(false);
-    setIsAutomationDialogOpen(true);
-  };
-  
-  // Handle creating a blank automation
-  const handleCreateBlankAutomation = () => {
-    resetForm();
-    setIsTemplateSelectionOpen(false);
-    setIsAutomationDialogOpen(true);
-  };
-  
-  // Open dialog for new automation
-  const handleAddAutomation = () => {
-    resetForm();
-    setIsTemplateSelectionOpen(true);
-  };
-  
-  // Open dialog for editing automation
-  const handleEditAutomation = (automation: AutomationWorkflow) => {
-    setSelectedAutomation(automation);
-    setFormData({
-      name: automation.name,
-      description: automation.description || '',
-      triggerType: automation.triggerType,
-      triggerCondition: automation.triggerCondition || '',
-      emailTemplateId: automation.emailTemplateId || 0,
-      smsTemplateId: automation.smsTemplateId || 0,
-      delay: automation.delay || 0,
-      isActive: automation.isActive
-    });
-    setIsAutomationDialogOpen(true);
-  };
-  
-  // Handle delete automation
-  const handleDeleteAutomation = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this automation workflow?')) {
-      deleteAutomationMutation.mutate(id);
-    }
-  };
-  
-  // Handle toggle automation
-  const handleToggleAutomation = (id: number, currentStatus: boolean) => {
-    toggleAutomationMutation.mutate({ id, isActive: !currentStatus });
-  };
-  
-  // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-  
-  // Handle numeric input changes
-  const handleNumericChange = (name: string, value: string) => {
-    const numValue = parseInt(value) || 0;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: numValue,
-    }));
-  };
-  
-  // Handle select changes
-  const handleSelectChange = (name: string, value: string) => {
-    if (name === 'emailTemplateId' || name === 'smsTemplateId') {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: parseInt(value) || 0,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-  
-  // Handle checkbox/switch changes
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      isActive: checked,
-    }));
-  };
-  
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (selectedAutomation) {
-      updateAutomationMutation.mutate({ 
-        id: selectedAutomation.id, 
-        data: formData
-      });
-    } else {
-      createAutomationMutation.mutate(formData as any);
-    }
-  };
-  
-  // Helper to get trigger type description
-  const getTriggerTypeDisplay = (type: string): { label: string, icon: React.ReactNode } => {
-    switch (type) {
-      case 'lead_stage_change':
-        return { 
-          label: 'Lead Stage Change', 
-          icon: <Activity className="h-4 w-4 text-amber-500" /> 
-        };
-      case 'appointment':
-        return { 
-          label: 'Appointment', 
-          icon: <Calendar className="h-4 w-4 text-purple-500" /> 
-        };
-      case 'form_submission':
-        return { 
-          label: 'Form Submission', 
-          icon: <Mail className="h-4 w-4 text-blue-500" /> 
-        };
-      case 'review_request':
-        return { 
-          label: 'Review Request', 
-          icon: <Star className="h-4 w-4 text-yellow-500" /> 
-        };
-      default:
-        return { 
-          label: 'Manual Trigger', 
-          icon: <Play className="h-4 w-4 text-green-500" /> 
-        };
-    }
-  };
-  
-  // Determine number of actions in a workflow
-  const getActionCount = (workflow: AutomationWorkflow): number => {
-    let count = 0;
-    if (workflow.emailTemplateId && workflow.emailTemplateId > 0) count++;
-    if (workflow.smsTemplateId && workflow.smsTemplateId > 0) count++;
-    return count || 1; // At least 1
-  };
-  
-  // Get email template name by ID
-  const getEmailTemplateName = (id: number | null): string => {
-    if (!id) return 'None';
-    const template = emailTemplates.find(t => t.id === id);
-    return template ? template.name : 'None';
-  };
-  
-  // Get SMS template name by ID
-  const getSmsTemplateName = (id: number | null): string => {
-    if (!id) return 'None';
-    const template = smsTemplates.find(t => t.id === id);
-    return template ? template.name : 'None';
+    setActionFormData({ type: '', data: {} });
+    setSelectedWorkflow(null);
   };
   
   return (
-    <AdminLayout title="Automation Workflows">
-      <Card className="shadow-sm">
-        <CardHeader className="flex-row justify-between items-center">
-          <div>
-            <CardTitle className="text-2xl">Automation Workflows</CardTitle>
-            <CardDescription>
-              Create and manage automation workflows to streamline your customer communications
-            </CardDescription>
-          </div>
-          <Button onClick={handleAddAutomation}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Workflow
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center p-8">
-              <svg className="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-          ) : automations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Activity className="h-12 w-12 mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium">No automation workflows found</p>
-              <p className="text-muted-foreground">You don't have any automation workflows yet.</p>
-              <Button onClick={handleAddAutomation} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" />
-                Create your first workflow
-              </Button>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Workflow Name</TableHead>
-                    <TableHead>Trigger</TableHead>
-                    <TableHead>Actions</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {automations.map((automation) => {
-                    const triggerInfo = getTriggerTypeDisplay(automation.triggerType);
-                    return (
-                      <TableRow key={automation.id}>
-                        <TableCell>
-                          <div className="font-medium">{automation.name}</div>
-                          {automation.description && (
-                            <div className="text-sm text-muted-foreground mt-1">
-                              {automation.description}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            {triggerInfo.icon}
-                            <span className="ml-2 capitalize">{triggerInfo.label}</span>
-                          </div>
-                          {automation.triggerCondition && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              When: {automation.triggerCondition}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {automation.emailTemplateId > 0 && (
-                              <div className="flex items-center text-sm">
-                                <Mail className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                                <span>Email: {getEmailTemplateName(automation.emailTemplateId)}</span>
-                              </div>
-                            )}
-                            {automation.smsTemplateId > 0 && (
-                              <div className="flex items-center text-sm">
-                                <MessageSquare className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                                <span>SMS: {getSmsTemplateName(automation.smsTemplateId)}</span>
-                              </div>
-                            )}
-                            {automation.delay > 0 && (
-                              <div className="text-xs text-muted-foreground">
-                                Delay: {automation.delay} {automation.delay === 1 ? 'hour' : 'hours'}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={automation.isActive ? 'default' : 'secondary'}
-                            className="cursor-pointer"
-                            onClick={() => handleToggleAutomation(automation.id, automation.isActive)}
-                          >
-                            {automation.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleEditAutomation(automation)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleToggleAutomation(automation.id, automation.isActive)}>
-                                {automation.isActive ? (
-                                  <>
-                                    <Pause className="h-4 w-4 mr-2" />
-                                    Disable
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="h-4 w-4 mr-2" />
-                                    Enable
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteAutomation(automation.id)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      
-      {/* Template Selection Dialog */}
-      <Dialog open={isTemplateSelectionOpen} onOpenChange={setIsTemplateSelectionOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Choose an Automation Template</DialogTitle>
-            <DialogDescription>
-              Select a pre-configured template or create a custom workflow from scratch.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            {automationTemplates.map((template) => (
-              <Card 
-                key={template.id} 
-                className="cursor-pointer hover:border-primary transition-colors"
-                onClick={() => handleSelectTemplate(template)}
-              >
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="p-2 rounded-lg bg-muted">
-                    {template.icon}
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{template.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-            
-            <Card 
-              className="cursor-pointer hover:border-primary transition-colors border-dashed"
-              onClick={handleCreateBlankAutomation}
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Workflow Automation</h1>
+          <p className="text-muted-foreground">
+            Create and manage automated workflows
+          </p>
+        </div>
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => {
+                resetForm();
+                setCreateDialogOpen(true);
+              }}
             >
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div className="p-2 rounded-lg bg-muted">
-                  <Plus className="h-10 w-10 text-muted-foreground" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Custom Workflow</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Create a blank workflow and customize it to your specific needs</p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsTemplateSelectionOpen(false)}
-            >
-              Cancel
+              <PlusCircle size={18} />
+              Create Workflow
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Add/Edit Automation Dialog */}
-      <Dialog open={isAutomationDialogOpen} onOpenChange={setIsAutomationDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{selectedAutomation ? 'Edit Automation Workflow' : 'Create Automation Workflow'}</DialogTitle>
-            <DialogDescription>
-              {selectedAutomation
-                ? 'Update the automation workflow below.'
-                : 'Set up a new automated workflow to engage with your customers.'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <form onSubmit={handleSubmit}>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Workflow</DialogTitle>
+              <DialogDescription>
+                Define an automated workflow to respond to events
+              </DialogDescription>
+            </DialogHeader>
+            
             <div className="grid gap-4 py-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1">
-                  Workflow Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Name this workflow"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium mb-1">
-                  Description
-                </label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Briefly describe what this workflow does"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={2}
-                />
-              </div>
-              
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-3">Trigger</h3>
-                
-                <div>
-                  <label htmlFor="triggerType" className="block text-sm font-medium mb-1">
-                    Trigger Type <span className="text-red-500">*</span>
-                  </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Workflow Name</Label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleInputChange} 
+                    placeholder="E.g., Send welcome email" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="triggerType">Trigger Type</Label>
                   <Select 
                     value={formData.triggerType} 
                     onValueChange={(value) => handleSelectChange('triggerType', value)}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="When should this workflow run?" />
+                    <SelectTrigger id="triggerType">
+                      <SelectValue placeholder="Select a trigger" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="manual">Manual Trigger</SelectItem>
-                      <SelectItem value="lead_stage_change">Lead Stage Change</SelectItem>
-                      <SelectItem value="appointment">Appointment</SelectItem>
-                      <SelectItem value="form_submission">Form Submission</SelectItem>
-                      <SelectItem value="review_request">Review Request</SelectItem>
+                      <SelectGroup>
+                        <SelectLabel>Choose a trigger event</SelectLabel>
+                        {triggers.map(trigger => (
+                          <SelectItem key={trigger.name} value={trigger.type}>
+                            {trigger.description}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
-                
-                {formData.triggerType !== 'manual' && (
-                  <div className="mt-3">
-                    <label htmlFor="triggerCondition" className="block text-sm font-medium mb-1">
-                      Condition
-                    </label>
-                    <Input
-                      id="triggerCondition"
-                      name="triggerCondition"
-                      placeholder={
-                        formData.triggerType === 'lead_stage_change' 
-                          ? 'e.g., When lead stage changes to "qualified"'
-                          : formData.triggerType === 'appointment'
-                          ? 'e.g., 1 day before appointment'
-                          : 'Specify condition'
-                      }
-                      value={formData.triggerCondition}
-                      onChange={handleChange}
-                    />
-                  </div>
-                )}
               </div>
               
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-3">Actions</h3>
-                
-                <div>
-                  <label htmlFor="emailTemplateId" className="block text-sm font-medium mb-1">
-                    Email Template
-                  </label>
-                  <Select 
-                    value={formData.emailTemplateId.toString()} 
-                    onValueChange={(value) => handleSelectChange('emailTemplateId', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an email template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">None</SelectItem>
-                      {emailTemplates.map(template => (
-                        <SelectItem key={template.id} value={template.id.toString()}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="mt-3">
-                  <label htmlFor="smsTemplateId" className="block text-sm font-medium mb-1">
-                    SMS Template
-                  </label>
-                  <Select 
-                    value={formData.smsTemplateId.toString()} 
-                    onValueChange={(value) => handleSelectChange('smsTemplateId', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an SMS template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">None</SelectItem>
-                      {smsTemplates.map(template => (
-                        <SelectItem key={template.id} value={template.id.toString()}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="mt-3">
-                  <label htmlFor="delay" className="block text-sm font-medium mb-1">
-                    Delay (hours)
-                  </label>
-                  <Input
-                    id="delay"
-                    name="delay"
-                    type="number"
-                    min="0"
-                    placeholder="Wait this many hours before sending"
-                    value={formData.delay.toString()}
-                    onChange={(e) => handleNumericChange('delay', e.target.value)}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleInputChange} 
+                  placeholder="Describe what this workflow does" 
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="triggerCondition">Trigger Condition (Optional)</Label>
+                  <Input 
+                    id="triggerCondition" 
+                    name="triggerCondition" 
+                    value={formData.triggerCondition} 
+                    onChange={handleInputChange} 
+                    placeholder="E.g., approved" 
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enter 0 for immediate sending
+                  <p className="text-xs text-muted-foreground">
+                    Specific condition to match, like a status
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="delay">Delay (Hours)</Label>
+                  <Input 
+                    id="delay" 
+                    name="delay" 
+                    type="number" 
+                    min="0" 
+                    value={formData.delay} 
+                    onChange={handleInputChange} 
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Time to wait before executing actions
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2 pt-2">
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={handleSwitchChange}
-                />
-                <Label htmlFor="isActive">
-                  Enable this workflow
-                </Label>
+              <div className="space-y-2 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="isActive">Workflow Active</Label>
+                  <Switch 
+                    id="isActive" 
+                    checked={formData.isActive} 
+                    onCheckedChange={(checked) => handleSwitchChange('isActive', checked)} 
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Only active workflows will be executed
+                </p>
+              </div>
+              
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Actions</h3>
+                  <Badge variant="outline">{formData.actions.length} actions</Badge>
+                </div>
+                
+                {formData.actions.length > 0 && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <ul className="space-y-4">
+                        {formData.actions.map((action, index) => (
+                          <li key={index} className="flex items-start justify-between border-b pb-2">
+                            <div>
+                              <div className="font-medium">{action.type}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {action.type === 'send_email' && (
+                                  action.data.templateId 
+                                    ? `Using template ID: ${action.data.templateId}` 
+                                    : `To: ${action.data.recipientEmail}`
+                                )}
+                                {action.type === 'create_customer_account' && (
+                                  `For contact ID: ${action.data.contactId}`
+                                )}
+                                {action.type === 'create_project' && (
+                                  `Project: ${action.data.title || 'from contract'}`
+                                )}
+                                {action.type === 'convert_to_contract' && (
+                                  `From estimate ID: ${action.data.estimateId}`
+                                )}
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeAction(index)}
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Add Action</CardTitle>
+                    <CardDescription>
+                      Define what should happen when the workflow is triggered
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="actionType">Action Type</Label>
+                        <Select 
+                          value={actionFormData.type} 
+                          onValueChange={(value) => handleActionSelectChange('type', value)}
+                        >
+                          <SelectTrigger id="actionType">
+                            <SelectValue placeholder="Select an action" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Choose an action</SelectLabel>
+                              {actions.map(action => (
+                                <SelectItem key={action.name} value={action.type}>
+                                  {action.description}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {actionFormData.type === 'send_email' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="templateId">Email Template (Optional)</Label>
+                              <Select 
+                                value={actionFormData.data.templateId} 
+                                onValueChange={(value) => handleActionSelectChange('data.templateId', value)}
+                              >
+                                <SelectTrigger id="templateId">
+                                  <SelectValue placeholder="Select a template" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectGroup>
+                                    <SelectLabel>Email Templates</SelectLabel>
+                                    {emailTemplates.map(template => (
+                                      <SelectItem key={template.id} value={template.id.toString()}>
+                                        {template.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="recipientEmail">Recipient Email (or Variable)</Label>
+                              <Input 
+                                id="recipientEmail" 
+                                name="data.recipientEmail" 
+                                value={actionFormData.data.recipientEmail || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="customer@example.com or {{email}}" 
+                              />
+                            </div>
+                          </div>
+                          
+                          {!actionFormData.data.templateId && (
+                            <>
+                              <div className="space-y-2">
+                                <Label htmlFor="customSubject">Email Subject</Label>
+                                <Input 
+                                  id="customSubject" 
+                                  name="data.customSubject" 
+                                  value={actionFormData.data.customSubject || ''} 
+                                  onChange={handleActionInputChange} 
+                                  placeholder="Your subject line" 
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="customBody">Email Body (HTML)</Label>
+                                <Textarea 
+                                  id="customBody" 
+                                  name="data.customBody" 
+                                  value={actionFormData.data.customBody || ''} 
+                                  onChange={handleActionInputChange} 
+                                  placeholder="<p>Your email content</p>" 
+                                  rows={5}
+                                />
+                              </div>
+                            </>
+                          )}
+                          
+                          <div className="space-y-2">
+                            <Label>Template Variables (Optional)</Label>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              Add key-value pairs for template variables
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input 
+                                name="data.variableKey" 
+                                value={actionFormData.data.variableKey || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Variable name (e.g., name)" 
+                              />
+                              <Input 
+                                name="data.variableValue" 
+                                value={actionFormData.data.variableValue || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Value or {{placeholder}}" 
+                              />
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                if (!actionFormData.data.variableKey) return;
+                                
+                                const variables = actionFormData.data.variables || {};
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    variables: {
+                                      ...variables,
+                                      [actionFormData.data.variableKey]: actionFormData.data.variableValue || ''
+                                    },
+                                    variableKey: '',
+                                    variableValue: ''
+                                  }
+                                });
+                              }}
+                            >
+                              Add Variable
+                            </Button>
+                            
+                            {actionFormData.data.variables && Object.keys(actionFormData.data.variables).length > 0 && (
+                              <div className="mt-2">
+                                <Label>Added Variables:</Label>
+                                <ul className="text-xs mt-1">
+                                  {Object.entries(actionFormData.data.variables).map(([key, value]) => (
+                                    <li key={key} className="text-muted-foreground">
+                                      {key}: {value}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'create_customer_account' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="contactId">Contact ID</Label>
+                            <Input 
+                              id="contactId" 
+                              name="data.contactId" 
+                              value={actionFormData.data.contactId || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="1 or {{contactId}}" 
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              The contact to create an account for
+                            </p>
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="sendWelcomeEmail" 
+                              checked={actionFormData.data.sendWelcomeEmail !== false} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    sendWelcomeEmail: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="sendWelcomeEmail">Send welcome email</Label>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'create_project' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="projectCustomerId">Customer ID</Label>
+                              <Input 
+                                id="projectCustomerId" 
+                                name="data.customerId" 
+                                value={actionFormData.data.customerId || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1 or {{customerUserId}}" 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="projectContactId">Contact ID (Optional)</Label>
+                              <Input 
+                                id="projectContactId" 
+                                name="data.contactId" 
+                                value={actionFormData.data.contactId || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1 or {{contactId}}" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="projectTitle">Project Title</Label>
+                            <Input 
+                              id="projectTitle" 
+                              name="data.title" 
+                              value={actionFormData.data.title || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="Project title or {{contractTitle}}" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="projectDescription">Description (Optional)</Label>
+                            <Textarea 
+                              id="projectDescription" 
+                              name="data.description" 
+                              value={actionFormData.data.description || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="Project description or {{contractDescription}}" 
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="flooringType">Flooring Type (Optional)</Label>
+                              <Input 
+                                id="flooringType" 
+                                name="data.flooringType" 
+                                value={actionFormData.data.flooringType || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Hardwood or {{flooringType}}" 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="estimatedCost">Estimated Cost (Optional)</Label>
+                              <Input 
+                                id="estimatedCost" 
+                                name="data.estimatedCost" 
+                                value={actionFormData.data.estimatedCost || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1000.00 or {{contractAmount}}" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="notifyCustomer" 
+                              checked={actionFormData.data.notifyCustomer !== false} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    notifyCustomer: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="notifyCustomer">Notify customer</Label>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'convert_to_contract' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="estimateId">Estimate ID</Label>
+                            <Input 
+                              id="estimateId" 
+                              name="data.estimateId" 
+                              value={actionFormData.data.estimateId || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="1 or {{estimateId}}" 
+                            />
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="sendToCustomer" 
+                              checked={actionFormData.data.sendToCustomer === true} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    sendToCustomer: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="sendToCustomer">Send to customer immediately</Label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-end">
+                    <Button 
+                      type="button" 
+                      onClick={addAction}
+                      disabled={!actionFormData.type}
+                    >
+                      Add Action
+                    </Button>
+                  </CardFooter>
+                </Card>
               </div>
             </div>
             
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAutomationDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                disabled={
-                  createAutomationMutation.isPending || 
-                  updateAutomationMutation.isPending ||
-                  (formData.emailTemplateId === 0 && formData.smsTemplateId === 0)
-                }
-              >
-                {(createAutomationMutation.isPending || updateAutomationMutation.isPending) && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {selectedAutomation ? 'Update Workflow' : 'Create Workflow'}
-              </Button>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleCreateWorkflow}>Create Workflow</Button>
             </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </AdminLayout>
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Workflow</DialogTitle>
+              <DialogDescription>
+                Update the workflow configuration
+              </DialogDescription>
+            </DialogHeader>
+            
+            {/* Same form as create dialog */}
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Workflow Name</Label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleInputChange} 
+                    placeholder="E.g., Send welcome email" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="triggerType">Trigger Type</Label>
+                  <Select 
+                    value={formData.triggerType} 
+                    onValueChange={(value) => handleSelectChange('triggerType', value)}
+                  >
+                    <SelectTrigger id="triggerType">
+                      <SelectValue placeholder="Select a trigger" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Choose a trigger event</SelectLabel>
+                        {triggers.map(trigger => (
+                          <SelectItem key={trigger.name} value={trigger.type}>
+                            {trigger.description}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleInputChange} 
+                  placeholder="Describe what this workflow does" 
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="triggerCondition">Trigger Condition (Optional)</Label>
+                  <Input 
+                    id="triggerCondition" 
+                    name="triggerCondition" 
+                    value={formData.triggerCondition} 
+                    onChange={handleInputChange} 
+                    placeholder="E.g., approved" 
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Specific condition to match, like a status
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="delay">Delay (Hours)</Label>
+                  <Input 
+                    id="delay" 
+                    name="delay" 
+                    type="number" 
+                    min="0" 
+                    value={formData.delay} 
+                    onChange={handleInputChange} 
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Time to wait before executing actions
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="isActive">Workflow Active</Label>
+                  <Switch 
+                    id="isActive" 
+                    checked={formData.isActive} 
+                    onCheckedChange={(checked) => handleSwitchChange('isActive', checked)} 
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Only active workflows will be executed
+                </p>
+              </div>
+              
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Actions</h3>
+                  <Badge variant="outline">{formData.actions.length} actions</Badge>
+                </div>
+                
+                {formData.actions.length > 0 && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <ul className="space-y-4">
+                        {formData.actions.map((action, index) => (
+                          <li key={index} className="flex items-start justify-between border-b pb-2">
+                            <div>
+                              <div className="font-medium">{action.type}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {action.type === 'send_email' && (
+                                  action.data.templateId 
+                                    ? `Using template ID: ${action.data.templateId}` 
+                                    : `To: ${action.data.recipientEmail}`
+                                )}
+                                {action.type === 'create_customer_account' && (
+                                  `For contact ID: ${action.data.contactId}`
+                                )}
+                                {action.type === 'create_project' && (
+                                  `Project: ${action.data.title || 'from contract'}`
+                                )}
+                                {action.type === 'convert_to_contract' && (
+                                  `From estimate ID: ${action.data.estimateId}`
+                                )}
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeAction(index)}
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Add Action</CardTitle>
+                    <CardDescription>
+                      Define what should happen when the workflow is triggered
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="actionType">Action Type</Label>
+                        <Select 
+                          value={actionFormData.type} 
+                          onValueChange={(value) => handleActionSelectChange('type', value)}
+                        >
+                          <SelectTrigger id="actionType">
+                            <SelectValue placeholder="Select an action" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Choose an action</SelectLabel>
+                              {actions.map(action => (
+                                <SelectItem key={action.name} value={action.type}>
+                                  {action.description}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {actionFormData.type === 'send_email' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="templateId">Email Template (Optional)</Label>
+                              <Select 
+                                value={actionFormData.data.templateId} 
+                                onValueChange={(value) => handleActionSelectChange('data.templateId', value)}
+                              >
+                                <SelectTrigger id="templateId">
+                                  <SelectValue placeholder="Select a template" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectGroup>
+                                    <SelectLabel>Email Templates</SelectLabel>
+                                    {emailTemplates.map(template => (
+                                      <SelectItem key={template.id} value={template.id.toString()}>
+                                        {template.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="recipientEmail">Recipient Email (or Variable)</Label>
+                              <Input 
+                                id="recipientEmail" 
+                                name="data.recipientEmail" 
+                                value={actionFormData.data.recipientEmail || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="customer@example.com or {{email}}" 
+                              />
+                            </div>
+                          </div>
+                          
+                          {!actionFormData.data.templateId && (
+                            <>
+                              <div className="space-y-2">
+                                <Label htmlFor="customSubject">Email Subject</Label>
+                                <Input 
+                                  id="customSubject" 
+                                  name="data.customSubject" 
+                                  value={actionFormData.data.customSubject || ''} 
+                                  onChange={handleActionInputChange} 
+                                  placeholder="Your subject line" 
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="customBody">Email Body (HTML)</Label>
+                                <Textarea 
+                                  id="customBody" 
+                                  name="data.customBody" 
+                                  value={actionFormData.data.customBody || ''} 
+                                  onChange={handleActionInputChange} 
+                                  placeholder="<p>Your email content</p>" 
+                                  rows={5}
+                                />
+                              </div>
+                            </>
+                          )}
+                          
+                          <div className="space-y-2">
+                            <Label>Template Variables (Optional)</Label>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              Add key-value pairs for template variables
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input 
+                                name="data.variableKey" 
+                                value={actionFormData.data.variableKey || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Variable name (e.g., name)" 
+                              />
+                              <Input 
+                                name="data.variableValue" 
+                                value={actionFormData.data.variableValue || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Value or {{placeholder}}" 
+                              />
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                if (!actionFormData.data.variableKey) return;
+                                
+                                const variables = actionFormData.data.variables || {};
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    variables: {
+                                      ...variables,
+                                      [actionFormData.data.variableKey]: actionFormData.data.variableValue || ''
+                                    },
+                                    variableKey: '',
+                                    variableValue: ''
+                                  }
+                                });
+                              }}
+                            >
+                              Add Variable
+                            </Button>
+                            
+                            {actionFormData.data.variables && Object.keys(actionFormData.data.variables).length > 0 && (
+                              <div className="mt-2">
+                                <Label>Added Variables:</Label>
+                                <ul className="text-xs mt-1">
+                                  {Object.entries(actionFormData.data.variables).map(([key, value]) => (
+                                    <li key={key} className="text-muted-foreground">
+                                      {key}: {value}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'create_customer_account' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="contactId">Contact ID</Label>
+                            <Input 
+                              id="contactId" 
+                              name="data.contactId" 
+                              value={actionFormData.data.contactId || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="1 or {{contactId}}" 
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              The contact to create an account for
+                            </p>
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="sendWelcomeEmail" 
+                              checked={actionFormData.data.sendWelcomeEmail !== false} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    sendWelcomeEmail: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="sendWelcomeEmail">Send welcome email</Label>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'create_project' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="projectCustomerId">Customer ID</Label>
+                              <Input 
+                                id="projectCustomerId" 
+                                name="data.customerId" 
+                                value={actionFormData.data.customerId || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1 or {{customerUserId}}" 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="projectContactId">Contact ID (Optional)</Label>
+                              <Input 
+                                id="projectContactId" 
+                                name="data.contactId" 
+                                value={actionFormData.data.contactId || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1 or {{contactId}}" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="projectTitle">Project Title</Label>
+                            <Input 
+                              id="projectTitle" 
+                              name="data.title" 
+                              value={actionFormData.data.title || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="Project title or {{contractTitle}}" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="projectDescription">Description (Optional)</Label>
+                            <Textarea 
+                              id="projectDescription" 
+                              name="data.description" 
+                              value={actionFormData.data.description || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="Project description or {{contractDescription}}" 
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="flooringType">Flooring Type (Optional)</Label>
+                              <Input 
+                                id="flooringType" 
+                                name="data.flooringType" 
+                                value={actionFormData.data.flooringType || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="Hardwood or {{flooringType}}" 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="estimatedCost">Estimated Cost (Optional)</Label>
+                              <Input 
+                                id="estimatedCost" 
+                                name="data.estimatedCost" 
+                                value={actionFormData.data.estimatedCost || ''} 
+                                onChange={handleActionInputChange} 
+                                placeholder="1000.00 or {{contractAmount}}" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="notifyCustomer" 
+                              checked={actionFormData.data.notifyCustomer !== false} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    notifyCustomer: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="notifyCustomer">Notify customer</Label>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {actionFormData.type === 'convert_to_contract' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="estimateId">Estimate ID</Label>
+                            <Input 
+                              id="estimateId" 
+                              name="data.estimateId" 
+                              value={actionFormData.data.estimateId || ''} 
+                              onChange={handleActionInputChange} 
+                              placeholder="1 or {{estimateId}}" 
+                            />
+                          </div>
+                          <div className="space-y-2 flex items-center gap-2">
+                            <Switch 
+                              id="sendToCustomer" 
+                              checked={actionFormData.data.sendToCustomer === true} 
+                              onCheckedChange={(checked) => {
+                                setActionFormData({
+                                  ...actionFormData,
+                                  data: {
+                                    ...actionFormData.data,
+                                    sendToCustomer: checked
+                                  }
+                                });
+                              }} 
+                            />
+                            <Label htmlFor="sendToCustomer">Send to customer immediately</Label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-end">
+                    <Button 
+                      type="button" 
+                      onClick={addAction}
+                      disabled={!actionFormData.type}
+                    >
+                      Add Action
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleUpdateWorkflow}>Update Workflow</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Workflow Automation</CardTitle>
+          <CardDescription>
+            Configure automated workflows that run when specific events happen in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableCaption>
+              {isLoading ? 'Loading workflows...' : (
+                workflows.length === 0 ? 'No workflows found' : `Total ${workflows.length} workflows`
+              )}
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[250px]">Name</TableHead>
+                <TableHead>Trigger</TableHead>
+                <TableHead>Condition</TableHead>
+                <TableHead>Actions</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Options</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    Loading workflows...
+                  </TableCell>
+                </TableRow>
+              ) : workflows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    No workflows found. Create one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                workflows.map((workflow) => (
+                  <TableRow key={workflow.id}>
+                    <TableCell className="font-medium">
+                      {workflow.name}
+                      {workflow.description && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {workflow.description.substring(0, 60)}
+                          {workflow.description.length > 60 ? '...' : ''}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {triggers.find(t => t.type === workflow.triggerType)?.description || workflow.triggerType}
+                    </TableCell>
+                    <TableCell>
+                      {workflow.triggerCondition || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {Array.isArray(workflow.actions) 
+                          ? workflow.actions.length 
+                          : (typeof workflow.actions === 'object' && workflow.actions ? 1 : 0)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={workflow.isActive ? 'default' : 'secondary'}>
+                        {workflow.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                      {workflow.delay > 0 && (
+                        <Badge variant="outline" className="ml-2">
+                          {workflow.delay}h delay
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          title="Toggle active status"
+                          onClick={() => handleToggleWorkflow(workflow.id, workflow.isActive)}
+                        >
+                          {workflow.isActive ? 'Disable' : 'Enable'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          title="Run workflow manually"
+                          onClick={() => handleRunWorkflow(workflow.id)}
+                          disabled={isRunning}
+                        >
+                          <Play size={16} />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          title="Edit workflow"
+                          onClick={() => handleEditWorkflow(workflow)}
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          title="Delete workflow"
+                          onClick={() => handleDeleteWorkflow(workflow.id)}
+                          disabled={isDeleting}
+                        >
+                          <Trash size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
-};
-
-export default AutomationPage;
+}
