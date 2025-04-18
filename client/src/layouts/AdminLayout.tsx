@@ -85,6 +85,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       href: "/admin/crm/contacts",
       active: location.includes("/admin/crm/contacts") || location.includes("/admin/crm/leads")
     },
+    {
+      title: "Projects",
+      icon: <Folder className="h-5 w-5 mr-3" />,
+      href: "/admin/projects",
+      active: location.includes("/admin/projects") && !location.includes("/admin/customer-portal")
+    },
     { 
       title: "Messages", 
       icon: <MessageSquare className="h-5 w-5 mr-3" />, 
@@ -135,19 +141,19 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     },
     {
       title: "Customer Portal",
-      icon: <Folder className="h-5 w-5 mr-3" />,
-      href: "/admin/customer-portal/projects",
+      icon: <User className="h-5 w-5 mr-3" />,
+      href: "/admin/customer-portal/users",
       active: location.includes("/admin/customer-portal"),
       submenu: [
         {
-          title: "Projects",
-          href: "/admin/customer-portal/projects",
-          active: location.includes("/admin/customer-portal/projects")
-        },
-        {
-          title: "Users",
+          title: "Portal Users",
           href: "/admin/customer-portal/users",
           active: location.includes("/admin/customer-portal/users")
+        },
+        {
+          title: "Legacy Projects",
+          href: "/admin/customer-portal/projects",
+          active: location.includes("/admin/customer-portal/projects")
         }
       ]
     },

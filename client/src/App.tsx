@@ -45,6 +45,9 @@ import SmsTemplatesPage from "@/pages/admin/SmsTemplatesPage";
 // Admin pages - Settings
 import AutomationPage from "@/pages/admin/AutomationPage";
 
+// Admin pages - Project Management
+import ProjectsPage from "@/pages/admin/ProjectsPage";
+
 // Admin pages - Customer Portal
 import CustomerProjectsPage from "@/pages/admin/customer-portal/ProjectsPage";
 import CustomerUsersPage from "@/pages/admin/customer-portal/UsersPage";
@@ -104,6 +107,9 @@ function Router() {
       <SimpleProtectedRoute path="/admin/estimates" component={EstimatesPage} adminOnly={true} />
       <SimpleProtectedRoute path="/admin/contracts" component={ContractsPage} adminOnly={true} />
       <SimpleProtectedRoute path="/admin/invoices" component={InvoicesPage} adminOnly={true} />
+      
+      {/* Simple Admin Routes - Projects Management */}
+      <SimpleProtectedRoute path="/admin/projects" component={ProjectsPage} adminOnly={true} />
       
       {/* Simple Admin Routes - Customer Portal */}
       <SimpleProtectedRoute path="/admin/customer-portal/projects" component={CustomerProjectsPage} adminOnly={true} />
