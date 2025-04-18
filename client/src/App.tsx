@@ -13,6 +13,11 @@ import Contact from "@/pages/Contact";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 
+// Auth pages
+import AuthPage from "@/pages/auth-page";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
+
 // Admin pages - Core
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import DashboardPage from "@/pages/admin/DashboardPage";
@@ -68,6 +73,9 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPost} />
       
+      {/* Auth Routes */}
+      <Route path="/auth" component={AuthPage} />
+      
       {/* Customer Portal Routes */}
       <Route path="/customer/auth" component={CustomerAuth} />
       <ProtectedCustomerRoute path="/customer/dashboard" component={CustomerDashboard} />
@@ -77,34 +85,34 @@ function Router() {
       
       {/* Admin Routes - Core */}
       <Route path="/admin/login" component={AdminLoginPage} />
-      <Route path="/admin" component={DashboardPage} /> {/* Default route for /admin redirects to dashboard */}
-      <Route path="/admin/dashboard" component={DashboardPage} />
-      <Route path="/admin/contacts" component={ContactsPage} />
-      <Route path="/admin/messages" component={MessagesPage} />
-      <Route path="/admin/calendar" component={CalendarPage} />
-      <Route path="/admin/calendar/new" component={CalendarPage} />
+      <ProtectedRoute path="/admin" component={DashboardPage} /> {/* Default route for /admin redirects to dashboard */}
+      <ProtectedRoute path="/admin/dashboard" component={DashboardPage} />
+      <ProtectedRoute path="/admin/contacts" component={ContactsPage} />
+      <ProtectedRoute path="/admin/messages" component={MessagesPage} />
+      <ProtectedRoute path="/admin/calendar" component={CalendarPage} />
+      <ProtectedRoute path="/admin/calendar/new" component={CalendarPage} />
       
       {/* Admin Routes - CRM */}
-      <Route path="/admin/crm/contacts" component={CRMContactsPage} />
-      <Route path="/admin/crm/leads" component={CRMContactsPage} />
-      <Route path="/admin/form-submissions" component={ContactsPage} />
+      <ProtectedRoute path="/admin/crm/contacts" component={CRMContactsPage} />
+      <ProtectedRoute path="/admin/crm/leads" component={CRMContactsPage} />
+      <ProtectedRoute path="/admin/form-submissions" component={ContactsPage} />
       
       {/* Admin Routes - Communications */}
-      <Route path="/admin/email-templates" component={EmailTemplatesPage} />
-      <Route path="/admin/sms-templates" component={SmsTemplatesPage} />
+      <ProtectedRoute path="/admin/email-templates" component={EmailTemplatesPage} />
+      <ProtectedRoute path="/admin/sms-templates" component={SmsTemplatesPage} />
       
       {/* Admin Routes - Settings */}
-      <Route path="/admin/automation" component={AutomationPage} />
-      <Route path="/admin/account" component={ContactsPage} />
+      <ProtectedRoute path="/admin/automation" component={AutomationPage} />
+      <ProtectedRoute path="/admin/account" component={ContactsPage} />
       
       {/* Admin Routes - Sales Workflow */}
-      <Route path="/admin/estimates" component={EstimatesPage} />
-      <Route path="/admin/contracts" component={ContractsPage} />
-      <Route path="/admin/invoices" component={InvoicesPage} />
+      <ProtectedRoute path="/admin/estimates" component={EstimatesPage} />
+      <ProtectedRoute path="/admin/contracts" component={ContractsPage} />
+      <ProtectedRoute path="/admin/invoices" component={InvoicesPage} />
       
       {/* Admin Routes - Customer Portal */}
-      <Route path="/admin/customer-portal/projects" component={CustomerProjectsPage} />
-      <Route path="/admin/customer-portal/users" component={CustomerUsersPage} />
+      <ProtectedRoute path="/admin/customer-portal/projects" component={CustomerProjectsPage} />
+      <ProtectedRoute path="/admin/customer-portal/users" component={CustomerUsersPage} />
       
       {/* 404 Route */}
       <Route component={NotFound} />
