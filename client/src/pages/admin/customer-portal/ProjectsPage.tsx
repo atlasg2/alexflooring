@@ -132,7 +132,8 @@ export default function CustomerProjectsPage() {
   const initialProjectFormData: ProjectFormData = {
     title: "",
     status: "pending",
-    description: ""
+    description: "",
+    customerId: undefined // Will be set when creating a project
   };
   
   const initialProgressUpdateFormData: ProgressUpdateFormData = {
@@ -311,6 +312,25 @@ export default function CustomerProjectsPage() {
   
   // Handle create project
   const handleCreateProject = () => {
+    // Validate required fields
+    if (!projectFormData.title) {
+      toast({
+        title: "Validation error",
+        description: "Project title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!projectFormData.customerId) {
+      toast({
+        title: "Validation error",
+        description: "You must select a customer",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createProjectMutation.mutate(projectFormData);
   };
   
@@ -633,6 +653,28 @@ export default function CustomerProjectsPage() {
             </div>
             
             <div className="space-y-2">
+              <Label htmlFor="customer">Customer <span className="text-red-500">*</span></Label>
+              <Select
+                value={projectFormData.customerId?.toString() || ""}
+                onValueChange={(value) => setProjectFormData({...projectFormData, customerId: parseInt(value)})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customerUsers?.map(user => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.name} ({user.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                The customer who will have access to this project
+              </p>
+            </div>
+            
+            <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
@@ -720,30 +762,7 @@ export default function CustomerProjectsPage() {
               </p>
             </div>
             
-            {selectedProject && (
-              <div className="space-y-2">
-                <Label htmlFor="customer">Customer Portal User</Label>
-                <Select
-                  value={projectFormData.customerId?.toString() || ""}
-                  onValueChange={(value) => setProjectFormData({...projectFormData, customerId: parseInt(value)})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a customer user" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
-                    {customerUsers?.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name} ({user.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  Assign this project to an existing customer portal user
-                </p>
-              </div>
-            )}
+
           </div>
           
           <DialogFooter>
