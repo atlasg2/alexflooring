@@ -78,6 +78,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   service: text("service"),
   status: text("status").default("new").notNull(), // new, contacted, scheduled, completed
   type: text("type").default("contact").notNull(), // contact, quote, chat
+  smsOptIn: boolean("sms_opt_in").default(false),
   contactId: integer("contact_id").references(() => contacts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -92,10 +93,12 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
     type: true,
     status: true,
     contactId: true,
+    smsOptIn: true,
   })
   .partial({
     phone: true, // Make phone optional for chat messages
     contactId: true, // Make contactId optional
+    smsOptIn: true, // Make SMS opt-in optional
   });
 
 // Communication logs - track all emails, calls, texts

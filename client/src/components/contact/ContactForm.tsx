@@ -11,11 +11,13 @@ import {
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage 
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Select,
   SelectContent,
@@ -33,6 +35,7 @@ const formSchema = insertContactSubmissionSchema.extend({
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
   message: z.string().min(10, { message: "Message must be at least 10 characters." }),
   service: z.string().optional(),
+  smsOptIn: z.boolean().optional().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -49,6 +52,7 @@ const ContactForm = () => {
       phone: "",
       message: "",
       service: "",
+      smsOptIn: false,
     },
   });
 
@@ -166,6 +170,29 @@ const ContactForm = () => {
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="smsOptIn"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow bg-blue-50">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-sm font-medium">
+                  Receive SMS updates about your project
+                </FormLabel>
+                <FormDescription className="text-xs">
+                  By checking this box, you are providing your express written consent for APS Flooring LLC to contact you at the phone number provided above via SMS text message. You may receive project updates, appointment reminders, and promotional messages. Message frequency varies. Message and data rates may apply. Reply STOP to cancel at any time. This consent is not required to make a purchase.
+                </FormDescription>
+              </div>
             </FormItem>
           )}
         />
