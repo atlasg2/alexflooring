@@ -743,13 +743,16 @@ export default function CustomerProjectsPage() {
               <Label htmlFor="contact">Associated Contact</Label>
               <Select
                 value={projectFormData.contactId?.toString() || ""}
-                onValueChange={(value) => setProjectFormData({...projectFormData, contactId: parseInt(value)})}
+                onValueChange={(value) => setProjectFormData({
+                  ...projectFormData, 
+                  contactId: value === "none" ? undefined : parseInt(value)
+                })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a contact" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {contacts?.map((contact) => (
                     <SelectItem key={contact.id} value={contact.id.toString()}>
                       {contact.name} ({contact.email})

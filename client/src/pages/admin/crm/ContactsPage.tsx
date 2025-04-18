@@ -541,7 +541,7 @@ const ContactsPage = () => {
       
       {/* Add/Edit Contact Dialog */}
       <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
-        <DialogContent className={`${isMobile ? 'w-[95%] max-w-md p-4 sm:p-6' : 'max-w-2xl'}`}>
+        <DialogContent className={`${isMobile ? 'w-[95%] max-w-md p-4 sm:p-6' : 'max-w-2xl'} max-h-[85vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>{selectedContact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
             <DialogDescription>
