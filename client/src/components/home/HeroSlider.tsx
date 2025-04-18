@@ -16,11 +16,14 @@ interface Slide {
   learnMoreLink: string;
 }
 
+// Import the APS Flooring logo
+import apsLogo from "@assets/aps_logo.png";
+
 // Define hero slides with specific flooring types
 const heroSlides: Slide[] = [
   {
     id: "welcome",
-    image: "https://images.unsplash.com/photo-1581141889073-7d0beb6336d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    image: "https://images.unsplash.com/photo-1582024476677-217ddb3c6a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Welcome to APS Flooring",
     subtitle: "Specializing in premium residential and commercial flooring solutions tailored to your unique style and needs.",
     flooringType: "All",
@@ -124,9 +127,19 @@ const HeroSlider = () => {
           <div className={`absolute bottom-[25%] md:bottom-[25%] left-0 md:left-24 max-w-xl text-left z-20 px-6 md:px-0 transform transition-all duration-1000 ${
             index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'
           }`}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 md:mb-4 font-montserrat drop-shadow-md">
-              {slide.title}
-            </h1>
+            {index === 0 ? (
+              <div className="mb-5">
+                <img 
+                  src={apsLogo} 
+                  alt="APS Flooring Logo" 
+                  className="h-auto w-[280px] md:w-[320px] lg:w-[360px] drop-shadow-lg"
+                />
+              </div>
+            ) : (
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-3 md:mb-4 font-montserrat drop-shadow-md">
+                {slide.title}
+              </h1>
+            )}
             
             <p className="text-sm md:text-xl text-white/90 mb-5 md:mb-6 max-w-md leading-relaxed line-clamp-3 md:line-clamp-none">
               {slide.subtitle}
