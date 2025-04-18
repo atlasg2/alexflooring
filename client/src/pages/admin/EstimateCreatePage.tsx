@@ -16,10 +16,12 @@ import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { CalendarIcon, Plus, Trash, ArrowLeft, ChevronDown } from 'lucide-react';
+import { CalendarIcon, Plus, Trash, ArrowLeft, ChevronDown, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
+import { useMobile } from '@/hooks/use-mobile';
 
 // Types for forms
 type Contact = {
@@ -39,6 +41,84 @@ type LineItem = {
   totalPrice: string;
   category?: string;
   notes?: string;
+};
+
+// Flooring options with predefined costs
+interface FlooringOption {
+  name: string;
+  description: string;
+  materialCostPerSqFt: number;
+  laborCostPerSqFt: number;
+  defaultItems: {
+    description: string;
+    unit: string;
+    unitPrice: number;
+    category: string;
+  }[];
+}
+
+const flooringOptions: Record<string, FlooringOption> = {
+  hardwood: {
+    name: "Hardwood",
+    description: "Premium solid hardwood flooring installation",
+    materialCostPerSqFt: 8.75,
+    laborCostPerSqFt: 4.50,
+    defaultItems: [
+      { description: "Premium Oak Hardwood", unit: "sq ft", unitPrice: 8.75, category: "materials" },
+      { description: "Hardwood Installation", unit: "sq ft", unitPrice: 4.50, category: "labor" },
+      { description: "Floor Preparation", unit: "sq ft", unitPrice: 1.25, category: "labor" },
+      { description: "Waste Disposal", unit: "flat", unitPrice: 250, category: "service" }
+    ]
+  },
+  laminate: {
+    name: "Laminate",
+    description: "Durable laminate flooring installation",
+    materialCostPerSqFt: 4.50,
+    laborCostPerSqFt: 3.25,
+    defaultItems: [
+      { description: "Premium Laminate Planks", unit: "sq ft", unitPrice: 4.50, category: "materials" },
+      { description: "Laminate Installation", unit: "sq ft", unitPrice: 3.25, category: "labor" },
+      { description: "Moisture Barrier", unit: "sq ft", unitPrice: 0.75, category: "materials" },
+      { description: "Waste Disposal", unit: "flat", unitPrice: 200, category: "service" }
+    ]
+  },
+  vinyl: {
+    name: "Luxury Vinyl",
+    description: "Luxury vinyl plank or tile flooring installation",
+    materialCostPerSqFt: 5.25,
+    laborCostPerSqFt: 3.50,
+    defaultItems: [
+      { description: "Luxury Vinyl Planks", unit: "sq ft", unitPrice: 5.25, category: "materials" },
+      { description: "Vinyl Installation", unit: "sq ft", unitPrice: 3.50, category: "labor" },
+      { description: "Floor Preparation", unit: "sq ft", unitPrice: 1.00, category: "labor" },
+      { description: "Waste Disposal", unit: "flat", unitPrice: 180, category: "service" }
+    ]
+  },
+  tile: {
+    name: "Ceramic Tile",
+    description: "Ceramic or porcelain tile flooring installation",
+    materialCostPerSqFt: 6.50,
+    laborCostPerSqFt: 7.25,
+    defaultItems: [
+      { description: "Ceramic Tile", unit: "sq ft", unitPrice: 6.50, category: "materials" },
+      { description: "Tile Installation", unit: "sq ft", unitPrice: 7.25, category: "labor" },
+      { description: "Grout and Mortar", unit: "sq ft", unitPrice: 1.75, category: "materials" },
+      { description: "Floor Preparation", unit: "sq ft", unitPrice: 2.00, category: "labor" },
+      { description: "Waste Disposal", unit: "flat", unitPrice: 275, category: "service" }
+    ]
+  },
+  carpet: {
+    name: "Carpet",
+    description: "Residential or commercial carpet installation",
+    materialCostPerSqFt: 4.00,
+    laborCostPerSqFt: 2.50,
+    defaultItems: [
+      { description: "Residential Carpet", unit: "sq ft", unitPrice: 4.00, category: "materials" },
+      { description: "Carpet Padding", unit: "sq ft", unitPrice: 1.00, category: "materials" },
+      { description: "Carpet Installation", unit: "sq ft", unitPrice: 2.50, category: "labor" },
+      { description: "Waste Disposal", unit: "flat", unitPrice: 150, category: "service" }
+    ]
+  }
 };
 
 // Helper function to calculate totals
@@ -83,6 +163,9 @@ type EstimateFormValues = z.infer<typeof estimateFormSchema>;
 export default function EstimateCreatePage() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
+  const [selectedFlooringType, setSelectedFlooringType] = useState<string>("");
+  const [squareFootage, setSquareFootage] = useState<number>(0);
   
   // Default line item
   const defaultLineItem: LineItem = {
@@ -124,6 +207,8 @@ export default function EstimateCreatePage() {
   // Mutation to create estimate
   const createMutation = useMutation({
     mutationFn: async (data: EstimateFormValues) => {
+      console.log('Sending to server:', JSON.stringify(data, null, 2));
+      
       const response = await fetch('/api/admin/estimates', {
         method: 'POST',
         headers: {
@@ -133,7 +218,9 @@ export default function EstimateCreatePage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create estimate');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.error || 'Failed to create estimate');
       }
       
       return response.json();
@@ -146,7 +233,8 @@ export default function EstimateCreatePage() {
       });
       navigate('/admin/estimates');
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to create estimate',
@@ -166,6 +254,44 @@ export default function EstimateCreatePage() {
       unitPrice: '0.00',
       totalPrice: '0.00',
     }]);
+  };
+  
+  // Apply flooring option template with given square footage
+  const applyFlooringTemplate = (flooringType: string, sqFt: number) => {
+    if (!flooringType || !flooringOptions[flooringType] || sqFt <= 0) {
+      return;
+    }
+    
+    const template = flooringOptions[flooringType];
+    
+    // Generate line items from template
+    const newLineItems: LineItem[] = template.defaultItems.map(item => {
+      // Determine quantity based on the unit type
+      const quantity = item.unit === 'sq ft' ? sqFt : 1;
+      const totalPrice = (quantity * item.unitPrice).toFixed(2);
+      
+      return {
+        id: uuidv4(),
+        description: item.description,
+        quantity,
+        unit: item.unit,
+        unitPrice: item.unitPrice.toFixed(2),
+        totalPrice,
+        category: item.category
+      };
+    });
+    
+    // Set values in form
+    form.setValue('lineItems', newLineItems);
+    
+    // Generate title and description based on template
+    form.setValue('title', `${template.name} Flooring Installation`);
+    form.setValue('description', `${template.description} for approximately ${sqFt} square feet.`);
+    
+    // Recalculate totals
+    const { subtotal, total } = calculateLineTotals(newLineItems);
+    form.setValue('subtotal', subtotal);
+    form.setValue('total', total);
   };
   
   // Remove line item
@@ -215,8 +341,38 @@ export default function EstimateCreatePage() {
   };
   
   // Handle form submission
-  const onSubmit = (data: EstimateFormValues) => {
-    createMutation.mutate(data);
+  const onSubmit = async (data: EstimateFormValues) => {
+    try {
+      // Ensure all required fields are present
+      if (!data.contactId) {
+        toast({
+          title: 'Error',
+          description: 'Please select a customer',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // Convert string values to proper types
+      const formattedData = {
+        ...data,
+        // Ensure line items have proper types for quantity
+        lineItems: data.lineItems.map(item => ({
+          ...item,
+          quantity: typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity
+        }))
+      };
+      
+      console.log('Submitting estimate data:', formattedData);
+      createMutation.mutate(formattedData);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create estimate. Please check the form data.',
+        variant: 'destructive',
+      });
+    }
   };
   
   return (
@@ -273,6 +429,67 @@ export default function EstimateCreatePage() {
                         </FormItem>
                       )}
                     />
+                    
+                    {/* Flooring Type Selection with Templates */}
+                    <div className="p-4 border rounded-md bg-gray-50">
+                      <h3 className="font-medium mb-3 flex items-center">
+                        <span>Quick Fill Options</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" className="ml-2 h-5 w-5">
+                                <Info className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">Select a flooring type and enter square footage to auto-fill estimate line items with industry-standard pricing.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <Label htmlFor="flooringType">Flooring Type</Label>
+                          <Select
+                            value={selectedFlooringType}
+                            onValueChange={setSelectedFlooringType}
+                          >
+                            <SelectTrigger id="flooringType">
+                              <SelectValue placeholder="Select flooring type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(flooringOptions).map(([key, option]) => (
+                                <SelectItem key={key} value={key}>
+                                  {option.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="squareFootage">Square Footage</Label>
+                          <Input
+                            id="squareFootage"
+                            type="number"
+                            min="0"
+                            placeholder="e.g., 500"
+                            value={squareFootage || ''}
+                            onChange={(e) => setSquareFootage(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        type="button"
+                        onClick={() => applyFlooringTemplate(selectedFlooringType, squareFootage)}
+                        disabled={!selectedFlooringType || squareFootage <= 0}
+                        className="w-full"
+                      >
+                        Apply Template
+                      </Button>
+                    </div>
                     
                     <FormField
                       control={form.control}

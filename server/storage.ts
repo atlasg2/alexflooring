@@ -847,13 +847,37 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createEstimate(estimate: InsertEstimate): Promise<Estimate> {
-    // Generate estimate number if not provided
-    if (!estimate.estimateNumber) {
-      estimate.estimateNumber = await this.getNextEstimateNumber();
+    try {
+      console.log("Creating estimate with data:", JSON.stringify(estimate, null, 2));
+      
+      // Generate estimate number if not provided
+      if (!estimate.estimateNumber) {
+        estimate.estimateNumber = await this.getNextEstimateNumber();
+        console.log("Using estimate number:", estimate.estimateNumber);
+      }
+      
+      // Make sure lineItems is properly formatted as JSON
+      if (estimate.lineItems && typeof estimate.lineItems === 'string') {
+        try {
+          estimate.lineItems = JSON.parse(estimate.lineItems);
+        } catch (e) {
+          console.error("Error parsing lineItems string:", e);
+        }
+      }
+      
+      // Ensure lineItems is an array
+      if (!Array.isArray(estimate.lineItems)) {
+        console.warn("lineItems is not an array, setting to empty array");
+        estimate.lineItems = [];
+      }
+      
+      const [result] = await db.insert(estimates).values(estimate).returning();
+      console.log("Estimate created successfully with ID:", result.id);
+      return result;
+    } catch (error) {
+      console.error("Error in createEstimate:", error);
+      throw error;
     }
-    
-    const [result] = await db.insert(estimates).values(estimate).returning();
-    return result;
   }
   
   async updateEstimate(id: number, estimateData: Partial<InsertEstimate>): Promise<Estimate | undefined> {
@@ -934,24 +958,35 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getNextEstimateNumber(): Promise<string> {
-    // First try to get the highest estimate number from the database
-    const [result] = await db
-      .select({ maxEstimateNumber: sql<string>`MAX(${estimates.estimateNumber})` })
-      .from(estimates);
-    
-    const currentYear = new Date().getFullYear();
-    let nextNumber = 1;
-    
-    if (result?.maxEstimateNumber) {
-      // Extract the number part if it follows our format (EST-YYYY-XXXX)
-      const match = result.maxEstimateNumber.match(/EST-\d{4}-(\d+)/);
-      if (match && match[1]) {
-        nextNumber = parseInt(match[1], 10) + 1;
+    try {
+      console.log("Generating next estimate number");
+      // First try to get the highest estimate number from the database
+      const [result] = await db
+        .select({ maxEstimateNumber: sql<string>`MAX(${estimates.estimateNumber})` })
+        .from(estimates);
+      
+      const currentYear = new Date().getFullYear();
+      let nextNumber = 1;
+      
+      if (result?.maxEstimateNumber) {
+        // Extract the number part if it follows our format (EST-YYYY-XXXX)
+        const match = result.maxEstimateNumber.match(/EST-\d{4}-(\d+)/);
+        if (match && match[1]) {
+          nextNumber = parseInt(match[1], 10) + 1;
+        }
       }
+      
+      // Format: EST-YYYY-XXXX (e.g., EST-2025-0001)
+      const estimateNumber = `EST-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
+      console.log("Generated estimate number:", estimateNumber);
+      return estimateNumber;
+    } catch (error) {
+      console.error("Error generating estimate number:", error);
+      // Return a fallback estimate number if there's an error
+      const today = new Date();
+      const timestamp = Math.floor(today.getTime() / 1000);
+      return `EST-${timestamp}`;
     }
-    
-    // Format: EST-YYYY-XXXX (e.g., EST-2025-0001)
-    return `EST-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
   }
   
   // CONTRACT METHODS
