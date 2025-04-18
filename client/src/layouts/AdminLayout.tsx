@@ -38,6 +38,27 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
   const [, navigate] = useLocation();
   const [isOnLoginPage] = useRoute('/admin/login');
   
+  // Get mobile detection
+  const isMobileDetected = useIsMobile();
+  
+  // State for mobile navigation
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(isMobileDetected);
+  
+  // State for collapsible sections - some open by default on desktop
+  const [crmOpen, setCrmOpen] = useState(!isMobileDetected);
+  const [communicationsOpen, setCommunicationsOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Get unread message count
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Update mobile state when detection changes
+  useEffect(() => {
+    setIsMobile(isMobileDetected);
+  }, [isMobileDetected]);
+  
   // Check if user is logged in
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,33 +77,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     checkAuth();
   }, [navigate, isOnLoginPage]);
   
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await apiRequest('POST', '/api/logout');
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
-      });
-      navigate('/admin/login');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to logout",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // State for collapsible sections
-  const [crmOpen, setCrmOpen] = useState(false);
-  const [communicationsOpen, setCommunicationsOpen] = useState(false);
-  const [reviewsOpen, setReviewsOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  
-  // Get unread message count
-  const [unreadCount, setUnreadCount] = useState(0);
-  
+  // Fetch unread message count
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
@@ -102,10 +97,24 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // State for mobile navigation
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const isMobile = useIsMobile();
+  
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await apiRequest('POST', '/api/logout');
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+      navigate('/admin/login');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to logout",
+        variant: "destructive"
+      });
+    }
+  };
   
   // If on login page, just render the children without the admin layout
   if (isOnLoginPage) {
