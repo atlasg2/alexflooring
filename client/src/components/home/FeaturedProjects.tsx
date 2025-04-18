@@ -2,8 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { projects } from "@/data/projects";
-import { MapPin, Home, Store, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import Building from "lucide-react/Building"; // Added import for Building icon
+import { MapPin, Home, Store, ArrowRight, ChevronLeft, ChevronRight, Building } from "lucide-react";
 
 
 // Filter projects by category
