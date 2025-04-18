@@ -96,6 +96,8 @@ const ContactsPage = () => {
         : '/api/admin/crm/contacts';
       return await getQueryFn({ on401: 'throw' })(url);
     },
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
   
   // Create contact mutation

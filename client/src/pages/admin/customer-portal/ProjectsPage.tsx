@@ -710,12 +710,27 @@ export default function CustomerProjectsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="flooringType">Flooring Type</Label>
-                <Input
-                  id="flooringType"
+                <Select
                   value={projectFormData.flooringType || ""}
-                  onChange={(e) => setProjectFormData({...projectFormData, flooringType: e.target.value})}
-                  placeholder="Hardwood, Laminate, Vinyl, etc."
-                />
+                  onValueChange={(value) => setProjectFormData({...projectFormData, flooringType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select flooring type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hardwood">Hardwood</SelectItem>
+                    <SelectItem value="laminate">Laminate</SelectItem>
+                    <SelectItem value="vinyl">Vinyl</SelectItem>
+                    <SelectItem value="tile">Tile</SelectItem>
+                    <SelectItem value="carpet">Carpet</SelectItem>
+                    <SelectItem value="stone">Stone</SelectItem>
+                    <SelectItem value="concrete">Concrete</SelectItem>
+                    <SelectItem value="engineered_wood">Engineered Wood</SelectItem>
+                    <SelectItem value="bamboo">Bamboo</SelectItem>
+                    <SelectItem value="cork">Cork</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
