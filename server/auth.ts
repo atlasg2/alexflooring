@@ -34,16 +34,24 @@ async function comparePasswords(supplied: string, stored: string) {
 
 // Initialize admin account if it doesn't exist
 async function ensureAdminExists() {
-  const adminUser = await storage.getUserByUsername("admin");
-  
-  if (!adminUser) {
-    console.log("Creating admin user");
-    const hashedPassword = await hashPassword("admin123");
-    await storage.createUser({
-      username: "admin",
-      password: hashedPassword,
-      role: "admin"
-    });
+  try {
+    console.log("Checking if admin user exists...");
+    const adminUser = await storage.getUserByUsername("admin");
+    
+    if (!adminUser) {
+      console.log("Creating admin user");
+      const hashedPassword = await hashPassword("admin123");
+      const user = await storage.createUser({
+        username: "admin",
+        password: hashedPassword,
+        role: "admin"
+      });
+      console.log("Admin user created:", user.id);
+    } else {
+      console.log("Admin user already exists:", adminUser.id);
+    }
+  } catch (error) {
+    console.error("Error ensuring admin exists:", error);
   }
 }
 
@@ -120,6 +128,56 @@ export function setupAuth(app: Express) {
     }
     
     res.json({ user: req.user });
+  });
+  
+  // Debug route to check admin
+  app.get("/api/debug/admin", async (req, res) => {
+    try {
+      const adminUser = await storage.getUserByUsername("admin");
+      if (adminUser) {
+        res.json({ 
+          exists: true, 
+          id: adminUser.id,
+          username: adminUser.username,
+          role: adminUser.role,
+          passwordLength: adminUser.password.length
+        });
+      } else {
+        res.json({ exists: false });
+      }
+    } catch (error) {
+      console.error("Error in debug route:", error);
+      res.status(500).json({ error: "Error checking admin user" });
+    }
+  });
+  
+  // Debug route to create admin
+  app.post("/api/debug/create-admin", async (req, res) => {
+    try {
+      const adminUser = await storage.getUserByUsername("admin");
+      
+      if (adminUser) {
+        return res.json({ 
+          message: "Admin already exists",
+          id: adminUser.id
+        });
+      }
+      
+      const hashedPassword = await hashPassword("admin123");
+      const user = await storage.createUser({
+        username: "admin",
+        password: hashedPassword,
+        role: "admin"
+      });
+      
+      res.json({ 
+        message: "Admin created successfully", 
+        id: user.id
+      });
+    } catch (error) {
+      console.error("Error creating admin:", error);
+      res.status(500).json({ error: "Error creating admin user" });
+    }
   });
 }
 
