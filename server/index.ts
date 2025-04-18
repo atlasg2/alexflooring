@@ -14,6 +14,7 @@ console.log("*******************************************");
 const isProduction = process.env.REPL_SLUG && process.env.REPL_OWNER;
 if (isProduction) {
   log("Running in production environment");
+  log("Environment variables available:", Object.keys(process.env).filter(key => !key.includes('SECRET')).join(', '));
   
   // Construct DATABASE_URL from parts if in production and not already set
   if (!process.env.DATABASE_URL && process.env.PGHOST && process.env.PGUSER && process.env.PGPASSWORD && process.env.PGDATABASE) {
@@ -25,6 +26,28 @@ if (isProduction) {
     
     process.env.DATABASE_URL = `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/${pgDatabase}?sslmode=require`;
     log("DATABASE_URL constructed from environment variables");
+  }
+  
+  // Verify DATABASE_URL is set
+  if (process.env.DATABASE_URL) {
+    log("DATABASE_URL is available");
+  } else {
+    log("WARNING: DATABASE_URL is not set - database connection will fail!");
+  }
+  
+  // Verify SESSION_SECRET is set
+  if (process.env.SESSION_SECRET) {
+    log("SESSION_SECRET is available");
+  } else {
+    // Set a fallback value to make sure sessions work
+    process.env.SESSION_SECRET = "jyrHf9HyQg3MvzsdBxB6rjwMrHEpuVm/A5zoDa0oKD8Gvee0Ltq6JogP3xicHPFch6fAuDHu9hvv/CAxEqBepg==";
+    log("WARNING: SESSION_SECRET not set - using fallback value");
+  }
+  
+  // Set NODE_ENV for proper cookie settings
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+    log("Set NODE_ENV to production");
   }
 }
 

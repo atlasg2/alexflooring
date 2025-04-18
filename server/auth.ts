@@ -64,7 +64,7 @@ export function setupAuth(app: Express) {
   
   // Session configuration
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "your-secret-key",
+    secret: process.env.SESSION_SECRET || "jyrHf9HyQg3MvzsdBxB6rjwMrHEpuVm/A5zoDa0oKD8Gvee0Ltq6JogP3xicHPFch6fAuDHu9hvv/CAxEqBepg==",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
@@ -72,6 +72,7 @@ export function setupAuth(app: Express) {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: 'lax' // Works better with redirects
     }
   };
 
