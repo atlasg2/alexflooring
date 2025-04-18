@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { addAuthHeaders, getAuthToken, isTokenAuthEnabled } from "./tokenAuth";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -12,13 +13,27 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // Start with the basic options
+  const options: RequestInit = {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
-  });
-
+  };
+  
+  // Add authorization header if token auth is enabled
+  if (isTokenAuthEnabled()) {
+    const token = getAuthToken();
+    if (token) {
+      // Create a new headers object by merging the existing headers
+      const headers = new Headers(options.headers as HeadersInit);
+      headers.set('Authorization', `Bearer ${token}`);
+      options.headers = Object.fromEntries(headers.entries());
+      console.log('Using token authentication for API request');
+    }
+  }
+  
+  const res = await fetch(url, options);
   await throwIfResNotOk(res);
   return res;
 }
@@ -29,9 +44,23 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // Start with basic options
+    const fetchOptions: RequestInit = {
       credentials: "include",
-    });
+    };
+    
+    // Add authorization headers if token auth is enabled
+    if (isTokenAuthEnabled()) {
+      const token = getAuthToken();
+      if (token) {
+        fetchOptions.headers = {
+          'Authorization': `Bearer ${token}`
+        };
+        console.log('Using token authentication for query');
+      }
+    }
+
+    const res = await fetch(queryKey[0] as string, fetchOptions);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
