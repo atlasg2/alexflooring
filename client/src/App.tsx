@@ -138,29 +138,38 @@ function App() {
   const isAdminRoute = location.startsWith('/admin');
   const isCustomerRoute = location.startsWith('/customer');
   
+  // Only wrap customer routes with CustomerAuthProvider to avoid unnecessary auth checks
+  const getRouterWithLayout = () => {
+    if (isAdminRoute) {
+      // Admin routes don't use MainLayout or CustomerAuthProvider
+      return <Router />;
+    } else if (isCustomerRoute) {
+      // Customer routes need CustomerAuthProvider but don't use MainLayout
+      return (
+        <CustomerAuthProvider>
+          <Router />
+        </CustomerAuthProvider>
+      );
+    } else {
+      // Public routes use MainLayout but don't need CustomerAuthProvider
+      return (
+        <MainLayout>
+          <Router />
+        </MainLayout>
+      );
+    }
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SimpleAuthProvider>
-          <CustomerAuthProvider>
-            {isAdminRoute ? (
-              // Admin routes don't use MainLayout
-              <Router />
-            ) : isCustomerRoute ? (
-              // Customer routes don't use MainLayout
-              <Router />
-            ) : (
-              // Public routes use MainLayout
-              <MainLayout>
-                <Router />
-              </MainLayout>
-            )}
-            
-            {/* Only show chat widget on public routes that are not customer routes */}
-            {!isAdminRoute && !isCustomerRoute && <ChatWidget />}
-            
-            <Toaster />
-          </CustomerAuthProvider>
+          {getRouterWithLayout()}
+          
+          {/* Only show chat widget on public routes that are not customer routes */}
+          {!isAdminRoute && !isCustomerRoute && <ChatWidget />}
+          
+          <Toaster />
         </SimpleAuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

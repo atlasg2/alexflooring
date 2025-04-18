@@ -497,8 +497,12 @@ export default function EstimatesPage() {
               <Label htmlFor="customer">Select Customer</Label>
               <Select
                 onValueChange={(value) => {
-                  // Set the selected customer ID in session storage
-                  sessionStorage.setItem('selectedCustomerId', value);
+                  try {
+                    // Store selected value in state instead of sessionStorage
+                    localStorage.setItem('selectedCustomerId', value);
+                  } catch (err) {
+                    console.error("Failed to store customer ID:", err);
+                  }
                 }}
               >
                 <SelectTrigger>

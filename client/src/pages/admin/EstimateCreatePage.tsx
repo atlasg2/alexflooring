@@ -167,10 +167,15 @@ export default function EstimateCreatePage() {
   const [selectedFlooringType, setSelectedFlooringType] = useState<string>("");
   const [squareFootage, setSquareFootage] = useState<number>(0);
   
-  // Get pre-selected customer ID from session storage
+  // Get pre-selected customer ID from local storage
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(() => {
-    const storedId = sessionStorage.getItem('selectedCustomerId');
-    return storedId ? parseInt(storedId, 10) : null;
+    try {
+      const storedId = localStorage.getItem('selectedCustomerId');
+      return storedId ? parseInt(storedId, 10) : null;
+    } catch (err) {
+      console.error("Failed to read customer ID from storage:", err);
+      return null;
+    }
   });
   
   // Default line item

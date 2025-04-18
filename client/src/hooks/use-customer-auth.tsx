@@ -55,10 +55,19 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/customer/me"],
     queryFn: async () => {
       try {
+        // Only run this query on customer routes to avoid unnecessary auth checks
+        const pathname = window.location.pathname;
+        if (!pathname.startsWith('/customer')) {
+          console.log("Skipping customer auth check for non-customer route:", pathname);
+          return null;
+        }
+        
+        console.log("Checking customer auth for customer route");
         const res = await apiRequest("GET", "/api/customer/me");
         if (res.ok) {
           return res.json();
         }
+        
         // Silently return null for unauthenticated users (401 error)
         return null;
       } catch (error) {
@@ -71,7 +80,12 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       }
     },
     // Reduce refetch attempts for unauthenticated users
-    retry: false
+    retry: false,
+    // Disable the query by default, only enable for customer routes
+    enabled: window.location.pathname.startsWith('/customer'),
+    // Reduce refetch frequency
+    refetchInterval: 60000, // 1 minute
+    refetchOnWindowFocus: false
   });
 
   const login = async (credentials: LoginCredentials): Promise<CustomerUser> => {
