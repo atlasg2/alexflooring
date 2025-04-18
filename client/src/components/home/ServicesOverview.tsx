@@ -126,25 +126,68 @@ const ServicesOverview = () => {
 
   return (
     <section id="services" className="relative">
-      {/* Hero intro section with background image */}
-      <div className="relative h-[500px] bg-black">
+      {/* About Us section with background image */}
+      <div className="relative h-[600px] bg-black">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-60"
+          className="absolute inset-0 bg-cover bg-center opacity-50"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1577401239170-897942555fb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90" />
         
-        <div className="relative h-full flex items-center justify-center">
-          <div className="text-center max-w-4xl mx-auto px-4">
-            <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
-                Expert Flooring Services
-              </span>
-            </h2>
-            <div className="h-1 w-32 bg-secondary mx-auto mb-8"></div>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4">
-              Premium flooring solutions for residential and commercial spaces throughout Louisiana
-            </p>
+        <div className="relative h-full flex items-center">
+          <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-4">
+            <div className="text-left" data-aos="fade-right">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
+                  About APS Flooring
+                </span>
+              </h2>
+              <div className="h-1 w-32 bg-secondary mb-8"></div>
+              <p className="text-lg text-white/90 mb-6 leading-relaxed">
+                Founded in 2015, APS Flooring has established itself as Louisiana's premier flooring specialist, committed to transforming spaces with premium materials and expert craftsmanship.
+              </p>
+              <p className="text-lg text-white/90 mb-6 leading-relaxed">
+                Our team combines decades of experience with a passion for quality, ensuring each project—from luxury residential to high-traffic commercial—receives the attention to detail it deserves.
+              </p>
+              <p className="text-lg text-white/90 leading-relaxed">
+                We believe great flooring is the foundation of every beautiful space, which is why we partner with homeowners and businesses throughout the Gulf Coast to deliver solutions that stand the test of time.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 h-[400px]" data-aos="fade-left">
+              <div className="space-y-4">
+                <div className="rounded-xl overflow-hidden shadow-lg h-64">
+                  <img 
+                    src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="APS Flooring Team" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-lg h-36">
+                  <img 
+                    src="https://images.unsplash.com/photo-1605774337664-7a846e9cdf17?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Flooring Installation" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4 pt-6">
+                <div className="rounded-xl overflow-hidden shadow-lg h-36">
+                  <img 
+                    src="https://images.unsplash.com/photo-1581782252198-1b27fa1af0c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Flooring Materials" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-lg h-64">
+                  <img 
+                    src="https://images.unsplash.com/photo-1581782250193-759c99d15d70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    alt="Completed Project" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -200,97 +243,129 @@ const ServicesOverview = () => {
         </div>
       </div>
       
-      {/* Completely redesigned commercial section */}
-      <div className="bg-gradient-to-b from-black to-gray-900 py-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left side: Content */}
-            <div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-4 bg-secondary/20 rounded-full">
-                  <Building className="h-8 w-8 text-secondary" />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-white">Commercial Flooring Solutions</h2>
+      {/* Completely redesigned commercial section with full-width image */}
+      <div className="py-24 relative">
+        <div className="absolute inset-0 bg-cover bg-fixed bg-center" 
+             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')" }}>
+          <div className="absolute inset-0 bg-black/80"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-block p-4 bg-secondary/20 rounded-full mb-6">
+              <Building className="h-12 w-12 text-secondary" />
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Commercial Flooring Excellence</h2>
+            <div className="h-1 w-36 bg-secondary mx-auto mb-8"></div>
+            <p className="text-white/90 text-xl max-w-3xl mx-auto leading-relaxed">
+              High-performance solutions that balance aesthetics with durability for any business environment
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Commercial Solution Cards */}
+            <div className="bg-black/50 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-500 hover:-translate-y-2 hover:shadow-lg hover:shadow-secondary/10 border border-white/10">
+              <div className="h-52 overflow-hidden rounded-lg mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  alt="Corporate Environments" 
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                />
               </div>
-              
-              <div className="h-1 w-24 bg-secondary mb-8"></div>
-              
-              <p className="text-white/80 text-lg mb-8 leading-relaxed">
-                We provide high-performance flooring designed specifically for commercial environments. 
-                Our solutions combine durability with aesthetics to create spaces that impress clients 
-                while withstanding heavy foot traffic and daily wear.
-              </p>
-              
-              <div className="space-y-4 mb-10">
-                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
-                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-white">Minimal Business Disruption</h4>
-                    <p className="text-white/70 text-sm">Flexible scheduling and efficient installation to keep your business running</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
-                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-white">ADA Compliance</h4>
-                    <p className="text-white/70 text-sm">Solutions that meet accessibility requirements and safety standards</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 bg-white/5 p-4 rounded-lg">
-                  <Check className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-white">Professional Installation</h4>
-                    <p className="text-white/70 text-sm">Expert installation teams with specific commercial flooring experience</p>
-                  </div>
-                </div>
-              </div>
-              
+              <h3 className="text-2xl font-bold text-white mb-4">Corporate Environments</h3>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Low maintenance flooring for high traffic</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Sound-dampening options for open offices</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Premium aesthetics for client-facing areas</span>
+                </li>
+              </ul>
               <Link 
-                href="/services/commercial"
-                className="inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                href="/services/commercial/corporate"
+                className="text-secondary hover:text-white transition-colors duration-300 flex items-center text-sm font-semibold"
               >
-                Explore Commercial Services
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Learn More <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
             
-            {/* Right side: Images */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div className="rounded-xl overflow-hidden shadow-lg h-64">
-                  <img 
-                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                    alt="Office Flooring" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="rounded-xl overflow-hidden shadow-lg h-36">
-                  <img 
-                    src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                    alt="Retail Flooring" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <div className="bg-black/50 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-500 hover:-translate-y-2 hover:shadow-lg hover:shadow-secondary/10 border border-white/10">
+              <div className="h-52 overflow-hidden rounded-lg mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1577401939270-df12522775ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  alt="Retail & Hospitality" 
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                />
               </div>
-              <div className="space-y-4 pt-6">
-                <div className="rounded-xl overflow-hidden shadow-lg h-36">
-                  <img 
-                    src="https://images.unsplash.com/photo-1600607687644-c7171b46426d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                    alt="Healthcare Flooring" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="rounded-xl overflow-hidden shadow-lg h-64">
-                  <img 
-                    src="https://images.unsplash.com/photo-1577401939270-df12522775ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                    alt="Restaurant Flooring" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Retail & Hospitality</h3>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Stain & spill resistant flooring solutions</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Design-forward options for brand expression</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Quick installation to minimize downtime</span>
+                </li>
+              </ul>
+              <Link 
+                href="/services/commercial/retail"
+                className="text-secondary hover:text-white transition-colors duration-300 flex items-center text-sm font-semibold"
+              >
+                Learn More <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </div>
+            
+            <div className="bg-black/50 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-500 hover:-translate-y-2 hover:shadow-lg hover:shadow-secondary/10 border border-white/10">
+              <div className="h-52 overflow-hidden rounded-lg mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1600607687644-c7171b46426d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  alt="Healthcare & Education" 
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Healthcare & Education</h3>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Antimicrobial flooring options</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">ADA compliant transitions and surfaces</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-secondary mt-1 flex-shrink-0" />
+                  <span className="text-white/80">Easy maintenance for busy facilities</span>
+                </li>
+              </ul>
+              <Link 
+                href="/services/commercial/healthcare"
+                className="text-secondary hover:text-white transition-colors duration-300 flex items-center text-sm font-semibold"
+              >
+                Learn More <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+          
+          <div className="mt-16 text-center">
+            <Link 
+              href="/services/commercial"
+              className="inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+            >
+              View All Commercial Solutions
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </div>
         </div>
       </div>

@@ -109,141 +109,118 @@ const FeaturedProjects = () => {
   };
 
   return (
-    <section id="projects" className="py-24 bg-black text-white">
+    <section id="projects" className="pt-36 pb-24 bg-gradient-to-b from-black via-gray-900 to-black">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white relative inline-block">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white relative inline-block">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/90 to-secondary/70">
-              Our Recent Projects
+              Featured Transformations
             </span>
           </h2>
-          <div className="h-1 w-24 bg-secondary mx-auto mt-4 mb-6"></div>
-          <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-            See the transformation in our flooring installations throughout Louisiana
+          <div className="h-1 w-32 bg-secondary mx-auto mt-5 mb-8"></div>
+          <p className="mt-4 text-xl text-white/80 max-w-2xl mx-auto">
+            Browse our portfolio of stunning flooring installations that showcase our expertise and attention to detail
           </p>
         </div>
 
-        {/* Residential Projects Section */}
-        <div className="mb-20">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-white">Residential Projects</h3>
-
-            {/* Navigation controls moved next to the heading */}
-            <div className="flex gap-3">
-              <button 
-                onClick={() => scrollResidential('left')}
-                disabled={activeResidentialIndex === 0}
-                className={`p-3 rounded-full ${activeResidentialIndex === 0 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
-                aria-label="Previous residential projects"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button 
-                onClick={() => scrollResidential('right')}
-                disabled={activeResidentialIndex === totalResidentialProjects - 1}
-                className={`p-3 rounded-full ${activeResidentialIndex === totalResidentialProjects - 1 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
-                aria-label="Next residential projects"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Residential Projects Carousel */}
-          <div className="relative mb-10 overflow-hidden">
+        {/* New masonry-style project grid for both residential and commercial */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {/* Featured Project - Large Highlight */}
+          <div className="lg:col-span-2 row-span-2 group relative overflow-hidden rounded-xl h-[600px] shadow-lg hover:shadow-xl transition-all duration-500" data-aos="fade-up">
             <div 
-              ref={residentialScrollRef}
-              className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar"
-            >
-              {residentialProjects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className="flex-none w-full md:w-[400px] lg:w-[450px] xl:w-[500px] snap-center"
-                  style={{scrollSnapAlign: 'start'}}
-                >
-                  <ResidentialProjectCard project={project} />
-                </div>
-              ))}
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
+              style={{ backgroundImage: `url(${residentialProjects[0]?.afterImage || "https://images.unsplash.com/photo-1600607686527-6fb886090705"})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80" />
+            
+            <div className="absolute inset-x-0 bottom-0 p-8">
+              <span className="inline-block bg-secondary/90 text-black px-3 py-1 rounded-full text-sm font-semibold mb-4">Featured Project</span>
+              <h3 className="text-3xl font-bold text-white mb-3">{residentialProjects[0]?.title || "Modern Home Transformation"}</h3>
+              <p className="text-white/90 text-lg mb-6 leading-relaxed max-w-xl">
+                {residentialProjects[0]?.description || "Complete home renovation featuring premium hardwood throughout the main living spaces with custom inlays and borders."}
+              </p>
+              <Link
+                href={`/projects/${residentialProjects[0]?.id || "1"}`}
+                className="inline-flex items-center bg-white/10 backdrop-blur-sm text-white py-3 px-6 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-white/20 transform hover:-translate-y-1 shadow-md hover:shadow-lg"
+              >
+                View Project Details <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </div>
           </div>
 
-          {/* Pagination dots */}
-          <div className="flex justify-center gap-2 mt-8">
-            {residentialProjects.map((_, index) => (
-              <button
-                key={`residential-dot-${index}`}
-                className={`w-8 h-1.5 rounded-sm transition-all ${
-                  index === activeResidentialIndex ? 'bg-secondary' : 'bg-white/20'
-                }`}
-                onClick={() => {
-                  if (residentialScrollRef.current) {
-                    const container = residentialScrollRef.current;
-                    const cardWidth = container.clientWidth;
-                    container.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
-                    setActiveResidentialIndex(index);
-                  }
-                }}
-                aria-label={`Go to residential project ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="/projects?category=residential"
-              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+          {/* Smaller Project Cards */}
+          {[...residentialProjects, ...commercialProjects].slice(1, 6).map((project, index) => (
+            <div 
+              key={project.id} 
+              className="group relative overflow-hidden rounded-xl h-[350px] shadow-lg hover:shadow-xl transition-all duration-500"
+              data-aos="fade-up"
+              data-aos-delay={100 * (index + 1)}
             >
-              View All Residential Projects
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </div>
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+                style={{ backgroundImage: `url(${project.afterImage})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-80" />
+              
+              <div className="absolute inset-x-0 bottom-0 p-6">
+                <span className="inline-block bg-black/50 backdrop-blur-sm text-secondary px-3 py-1 rounded-full text-xs font-medium mb-3">{project.category === 'residential' ? 'Residential' : 'Commercial'}</span>
+                <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+                <p className="text-white/80 text-sm mb-4 line-clamp-2">
+                  {project.description}
+                </p>
+                <Link
+                  href={`/projects/${project.id}`}
+                  className="inline-flex items-center text-secondary hover:text-white transition-colors duration-300 text-sm font-semibold"
+                >
+                  See Details <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Commercial Projects Section - Completely redesigned */}
-        <div className="pt-10 mt-16 relative border-t border-white/10">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-white">Commercial Projects</h3>
-
-            {/* Navigation controls moved next to the heading */}
-            <div className="flex gap-3">
-              <button 
-                onClick={() => scrollCommercial('left')}
-                disabled={activeCommercialIndex === 0}
-                className={`p-3 rounded-full ${activeCommercialIndex === 0 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
-                aria-label="Previous commercial projects"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button 
-                onClick={() => scrollCommercial('right')}
-                disabled={activeCommercialIndex === totalCommercialProjects - 1}
-                className={`p-3 rounded-full ${activeCommercialIndex === totalCommercialProjects - 1 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-secondary/20 text-secondary hover:bg-secondary/30'} transition-all duration-300`}
-                aria-label="Next commercial projects"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
+        {/* Before & After Showcase */}
+        <div className="rounded-xl overflow-hidden mb-16 bg-gray-900/50 p-1">
+          <div className="relative h-[500px] overflow-hidden rounded-lg">
+            {residentialProjects[1] && (
+              <>
+                <div className="absolute inset-0 bg-cover bg-center z-10" style={{ backgroundImage: `url(${residentialProjects[1].afterImage})` }}></div>
+                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${residentialProjects[1].beforeImage})` }}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-black/80 backdrop-blur-sm text-white px-6 py-3 rounded-full text-lg font-semibold">Before</div>
+                  </div>
+                </div>
+                
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-md rounded-full p-4 shadow-xl">
+                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
+                    <ArrowRight className="h-8 w-8 text-black" />
+                  </div>
+                </div>
+                
+                <div className="absolute bottom-6 right-6 z-20 bg-black/70 backdrop-blur-sm text-white px-6 py-3 rounded-full text-lg font-semibold">
+                  After
+                </div>
+              </>
+            )}
           </div>
-
-          {/* Commercial Projects Grid */}
-          <div 
-            ref={commercialScrollRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
+        </div>
+        
+        <div className="flex justify-center gap-6 flex-wrap">
+          <Link
+            href="/projects?category=residential"
+            className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
           >
-            {commercialProjects.map((project) => (
-              <CommercialProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="/projects?category=commercial"
-              className="group inline-flex items-center px-8 py-4 bg-secondary text-black rounded-lg hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
-            >
-              View All Commercial Projects
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </div>
+            Residential Projects
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+          
+          <Link
+            href="/projects?category=commercial"
+            className="group inline-flex items-center px-8 py-4 bg-black text-white border border-white/20 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+          >
+            Commercial Projects
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>

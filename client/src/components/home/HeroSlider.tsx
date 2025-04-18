@@ -22,16 +22,6 @@ import apsLogo from "@assets/aps_logo.png";
 // Define hero slides with specific flooring types
 const heroSlides: Slide[] = [
   {
-    id: "welcome",
-    image: "https://images.unsplash.com/photo-1582024476677-217ddb3c6a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-    title: "Welcome to APS Flooring",
-    subtitle: "Specializing in premium residential and commercial flooring solutions tailored to your unique style and needs.",
-    flooringType: "All",
-    description: "From elegant hardwood to practical luxury vinyl, APS Flooring delivers expert installation and exceptional quality for every project.",
-    ctaLink: "/contact",
-    learnMoreLink: "/services"
-  },
-  {
     id: "1",
     image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Hardwood Flooring",
