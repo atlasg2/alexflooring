@@ -87,29 +87,53 @@ const ContactsPage = () => {
     zipCode: '',
   });
   
+  // Local state for contacts to allow for immediate UI updates
+  const [localContacts, setLocalContacts] = useState<Contact[]>([]);
+  
   // Get contacts query
-  const { data: contacts = [], isLoading, refetch } = useQuery<Contact[]>({
+  const { data: fetchedContacts = [], isLoading, refetch } = useQuery<Contact[]>({
     queryKey: ['/api/admin/crm/contacts', searchQuery],
     queryFn: async () => {
       const url = searchQuery
         ? `/api/admin/crm/contacts/search?q=${encodeURIComponent(searchQuery)}`
         : '/api/admin/crm/contacts';
-      return await getQueryFn({ on401: 'throw' })(url);
+      const result = await getQueryFn({ on401: 'throw' })(url);
+      console.log("Fetched contacts:", result);
+      return result;
     },
     refetchOnWindowFocus: true,
     staleTime: 0,
     refetchInterval: 3000, // Refetch every 3 seconds to ensure we get updated data
   });
   
+  // Update local contacts whenever fetched contacts change
+  useEffect(() => {
+    if (fetchedContacts) {
+      setLocalContacts(fetchedContacts);
+    }
+  }, [fetchedContacts]);
+  
+  // Use localContacts for UI rendering
+  const contacts = localContacts;
+  
   // Create contact mutation
   const createContactMutation = useMutation({
     mutationFn: async (data: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
+      console.log("Creating contact from admin panel:", data);
       const response = await apiRequest('POST', '/api/admin/crm/contacts', data);
-      return await response.json();
+      const newContact = await response.json();
+      console.log("Successfully created contact:", newContact);
+      return newContact;
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/crm/contacts'] });
-      await refetch(); // Force immediate refetch
+    onSuccess: async (newContact) => {
+      // Force clear the cache completely
+      await queryClient.resetQueries({ queryKey: ['/api/admin/crm/contacts'] });
+      // Force a hard reload of the contacts data
+      await refetch({ throwOnError: true });
+      
+      // Update our local state as well to ensure immediate UI update
+      setLocalContacts(prev => [...prev, newContact]);
+      
       toast({
         title: 'Contact created',
         description: 'The contact was created successfully',

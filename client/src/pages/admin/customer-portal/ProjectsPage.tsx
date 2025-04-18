@@ -47,7 +47,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MoreHorizontal, FileText, Image, UserPlus, PlusCircle, CalendarRange, Edit, Trash } from "lucide-react";
+import { Loader2, MoreHorizontal, FileText, Image, UserPlus, PlusCircle, CalendarRange, Edit, Trash, ChevronDown } from "lucide-react";
 import AdminLayout from "@/layouts/AdminLayout";
 
 // Types
@@ -810,7 +810,7 @@ export default function CustomerProjectsPage() {
               <div className="flex justify-between items-center">
                 <Label htmlFor="contact">Associated Contact</Label>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <ArrowDown className="h-3 w-3 mr-1" />
+                  <ChevronDown className="h-3 w-3 mr-1" />
                   Select first, then create customer
                 </div>
               </div>
