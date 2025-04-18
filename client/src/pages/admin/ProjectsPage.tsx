@@ -420,8 +420,8 @@ export default function ProjectsPage() {
                         <FormItem>
                           <FormLabel>Customer</FormLabel>
                           <Select
-                            value={field.value?.toString() || ""}
-                            onValueChange={(value) => field.onChange(Number(value))}
+                            value={field.value?.toString() || "select-customer"}
+                            onValueChange={(value) => field.onChange(value === "select-customer" ? undefined : Number(value))}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -440,7 +440,7 @@ export default function ProjectsPage() {
                               ) : (
                                 customers.map((customer: CustomerUser) => (
                                   <SelectItem key={customer.id} value={customer.id.toString()}>
-                                    {customer.firstName} {customer.lastName}
+                                    {customer.name}
                                   </SelectItem>
                                 ))
                               )}
@@ -795,7 +795,7 @@ export default function ProjectsPage() {
                         ) : (
                           customers.map((customer: CustomerUser) => (
                             <SelectItem key={customer.id} value={customer.id.toString()}>
-                              {customer.firstName} {customer.lastName}
+                              {customer.name}
                             </SelectItem>
                           ))
                         )}
