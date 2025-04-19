@@ -181,8 +181,8 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook
-export function useSimpleAuth() {
+// Hook - Using const declaration for better HMR compatibility
+export const useSimpleAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useSimpleAuth must be used within a SimpleAuthProvider");

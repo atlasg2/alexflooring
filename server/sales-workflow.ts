@@ -636,7 +636,7 @@ export function setupSalesWorkflowRoutes(app: Express) {
               <p>Dear ${customer.name},</p>
               <p>A new invoice (${invoice.invoiceNumber}) is available for your review in your customer portal.</p>
               <p>Amount Due: $${invoice.amountDue}</p>
-              <p>Due Date: ${invoice.dueDate.toLocaleDateString()}</p>
+              <p>Due Date: ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</p>
               <p><a href="${process.env.APP_URL || 'https://apsflooring.info'}/customer/auth">View Invoice</a></p>
             `
           });

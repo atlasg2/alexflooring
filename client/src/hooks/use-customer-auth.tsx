@@ -186,8 +186,8 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook
-export function useCustomerAuth() {
+// Hook - Using const declaration for better HMR compatibility
+export const useCustomerAuth = () => {
   const context = useContext(CustomerAuthContext);
   if (!context) {
     throw new Error("useCustomerAuth must be used within a CustomerAuthProvider");

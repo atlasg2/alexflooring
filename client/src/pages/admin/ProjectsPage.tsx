@@ -265,10 +265,11 @@ export default function ProjectsPage() {
         description: selectedProject.description || "",
         notes: selectedProject.notes || "",
         startDate: selectedProject.startDate || new Date().toISOString().split('T')[0],
-        endDate: selectedProject.endDate || "",
-        budget: selectedProject.budget || "",
+        // Using optional chaining and type assertion for properties that might not exist in some instances
+        endDate: (selectedProject as any).endDate || "",
+        budget: (selectedProject as any).budget || "",
         location: selectedProject.location || "",
-        serviceType: selectedProject.serviceType || "",
+        serviceType: (selectedProject as any).serviceType || "",
         contactId: selectedProject.contactId || null,
       };
 
