@@ -88,6 +88,23 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // Add handler for uncaught exceptions
+  process.on('uncaughtException', (error) => {
+    console.error('UNCAUGHT EXCEPTION - keeping process alive:', error);
+    // Don't exit the process, just log the error
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Keep the process alive
+  });
+  
+  // Set reasonable memory limits
+  const memoryLimit = 1024; // MB
+  if (process.memoryUsage().rss > memoryLimit * 1024 * 1024) {
+    console.warn(`Memory usage exceeds ${memoryLimit}MB - potential memory leak`);
+  }
+  
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { throttle, trackComponentLifecycle } from '@/utils/performance';
 
 // Need to declare google maps types
 declare global {
   interface Window {
     google: any;
     initMap: () => void;
+    mapMarkers?: any[];
   }
 }
 
@@ -46,41 +48,56 @@ const GoogleMapWithPins = ({
   const [map, setMap] = useState<any>(null);
   const [markers, setMarkers] = useState<any[]>([]);
 
-  // Load Google Maps API
+  // Load Google Maps API - with performance tracking
   useEffect(() => {
-    // Only load if we haven't already
-    if (!window.google && !document.getElementById('google-maps-script')) {
-      // Set up the callback before creating the script
-      window.initMap = () => {
+    // Track this component for debugging memory leaks
+    return trackComponentLifecycle('GoogleMapWithPins', () => {
+      // Only load if we haven't already
+      if (!window.google && !document.getElementById('google-maps-script')) {
+        // Keep a global copy of markers to ensure proper cleanup
+        window.mapMarkers = [];
+        
+        // Set up the callback before creating the script
+        window.initMap = () => {
+          setMapLoaded(true);
+        };
+        
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
+        script.async = true; // Keep async to prevent render blocking
+        script.defer = true;
+        
+        document.head.appendChild(script);
+      } else if (window.google) {
+        // If already loaded
         setMapLoaded(true);
-      };
+      }
+    }, () => {
+      // Cleanup function - runs when component unmounts
+      console.log('GoogleMapWithPins unmounting - cleaning up resources');
       
-      const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
-      script.async = true; // Keep async to prevent render blocking
-      script.defer = true;
-      
-      document.head.appendChild(script);
-    } else if (window.google) {
-      // If already loaded
-      setMapLoaded(true);
-    }
-    
-    // Proper cleanup to prevent memory leaks
-    return () => {
-      // Remove any markers we created
-      if (markers.length > 0) {
-        markers.forEach(marker => marker.setMap(null));
+      // Remove any markers we created to prevent memory leaks
+      if (markers && markers.length > 0) {
+        markers.forEach(marker => {
+          if (marker && marker.setMap) marker.setMap(null);
+        });
         setMarkers([]);
       }
       
+      // Also clean global markers
+      if (window.mapMarkers && window.mapMarkers.length > 0) {
+        window.mapMarkers.forEach(marker => {
+          if (marker && marker.setMap) marker.setMap(null);
+        });
+        window.mapMarkers = [];
+      }
+      
       // Remove the global callback when component unmounts
-      // Using type assertion to fix the delete operator error
       if (window.initMap) {
         window.initMap = undefined as any;
       }
-    };
+    });
   }, []);
   
   // Initialize map when API is loaded
