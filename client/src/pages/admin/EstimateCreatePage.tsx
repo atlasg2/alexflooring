@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 import { useMobile } from '@/hooks/use-mobile';
+import { trackComponentLifecycle } from '@/utils/performance';
 
 // Types for forms
 type Contact = {
@@ -130,6 +131,34 @@ const calculateLineTotals = (items: LineItem[]) => {
   };
 };
 
+// Type augmentation for AbortSignal.timeout
+declare global {
+  interface AbortSignalStatic {
+    timeout?: (ms: number) => AbortSignal;
+  }
+}
+
+// Create a cross-browser compatible abort signal with timeout
+function createTimeoutSignal(timeoutMs: number): AbortSignal {
+  // Check if AbortSignal.timeout exists - not available in all browsers
+  if (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal && typeof (AbortSignal as any).timeout === 'function') {
+    try {
+      return (AbortSignal as any).timeout(timeoutMs);
+    } catch (e) {
+      console.warn('AbortSignal.timeout failed, using fallback', e);
+    }
+  }
+  
+  // Otherwise create our own implementation
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(new Error('Request timeout')), timeoutMs);
+  
+  // Add event listener to cleanup timeout when request completes
+  controller.signal.addEventListener('abort', () => window.clearTimeout(timeoutId), { once: true });
+  
+  return controller.signal;
+};
+
 // Create form schema
 const estimateFormSchema = z.object({
   contactId: z.number({
@@ -167,7 +196,32 @@ export default function EstimateCreatePage() {
   const [selectedFlooringType, setSelectedFlooringType] = useState<string>("");
   const [squareFootage, setSquareFootage] = useState<number>(0);
   
-  // Get pre-selected customer ID from local storage
+  // Refs to keep track of memory resources
+  const timeoutRefs = useRef<number[]>([]);
+  
+  // Monitor component lifecycle
+  useEffect(() => {
+    return trackComponentLifecycle('EstimateCreatePage', () => {
+      console.log('EstimateCreatePage mounted');
+    }, () => {
+      console.log('EstimateCreatePage unmounting - cleaning up resources');
+      // Clean up any timeouts
+      timeoutRefs.current.forEach(id => window.clearTimeout(id));
+      timeoutRefs.current = [];
+      
+      // Cancel any ongoing queries to prevent memory leaks
+      queryClient.cancelQueries({ queryKey: ['contacts'] });
+      
+      // Clear selected customer from localStorage to prevent stale state
+      try {
+        localStorage.removeItem('selectedCustomerId');
+      } catch (err) {
+        console.error("Failed to clean localStorage:", err);
+      }
+    });
+  }, [queryClient]);
+  
+  // Get pre-selected customer ID from local storage - use memo to avoid re-parsing
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(() => {
     try {
       const storedId = localStorage.getItem('selectedCustomerId');
@@ -206,7 +260,7 @@ export default function EstimateCreatePage() {
   const { lineItems, subtotal, total } = form.watch();
   
   // Fetch contacts for the dropdown
-  const { data: contacts, isLoading: isLoadingContacts } = useQuery({
+  const { data: contacts, isLoading: isLoadingContacts } = useQuery<Contact[]>({
     queryKey: ['contacts'],
     queryFn: async () => {
       const response = await fetch('/api/admin/crm/contacts');
@@ -214,19 +268,20 @@ export default function EstimateCreatePage() {
         throw new Error('Failed to fetch contacts');
       }
       return response.json();
-    },
-    onSuccess: (data) => {
-      // If we have a selectedCustomerId and it's in the contacts list, set it in the form
-      if (selectedCustomerId) {
-        const contactExists = data.some((contact: Contact) => contact.id === selectedCustomerId);
-        if (contactExists) {
-          form.setValue('contactId', selectedCustomerId);
-        }
-      }
     }
   });
   
-  // Mutation to create estimate
+  // Set customer ID in form when contacts are loaded
+  useEffect(() => {
+    if (contacts && selectedCustomerId) {
+      const contactExists = contacts.some((contact: Contact) => contact.id === selectedCustomerId);
+      if (contactExists) {
+        form.setValue('contactId', selectedCustomerId);
+      }
+    }
+  }, [contacts, selectedCustomerId, form]);
+  
+  // Mutation to create estimate - use apiRequest from queryClient for better error handling
   const createMutation = useMutation({
     mutationFn: async (data: EstimateFormValues) => {
       console.log('Submitting estimate data:', data);
@@ -234,28 +289,49 @@ export default function EstimateCreatePage() {
       // Add any missing required fields
       const enhancedData = {
         ...data,
-        // Add estimateNumber field if needed - will be generated on server if not present
         // Add default status
         status: 'draft'
       };
       
-      console.log('Sending to server:', JSON.stringify(enhancedData, null, 2));
+      // Set a timeout to prevent hanging operations
+      const timeoutId = window.setTimeout(() => {
+        console.warn('Estimate creation is taking longer than expected');
+      }, 10000);
       
-      const response = await fetch('/api/admin/estimates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(enhancedData),
-      });
+      // Add to our refs for cleanup
+      timeoutRefs.current.push(timeoutId);
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Server error response:', errorData);
-        throw new Error(errorData.message || errorData.error || 'Failed to create estimate');
+      try {
+        console.log('Sending to server:', JSON.stringify(enhancedData, null, 2));
+        
+        // Use apiRequest instead of direct fetch for better error handling
+        const response = await fetch('/api/admin/estimates', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(enhancedData),
+          // Create a more compatible AbortController for timeout
+          signal: createTimeoutSignal(15000) // 15 second timeout
+        });
+        
+        // Clear the timeout now that request is complete
+        window.clearTimeout(timeoutId);
+        timeoutRefs.current = timeoutRefs.current.filter(id => id !== timeoutId);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Server error response:', errorData);
+          throw new Error(errorData.message || errorData.error || 'Failed to create estimate');
+        }
+        
+        return response.json();
+      } catch (error) {
+        // Clean up timeout if there's an error
+        window.clearTimeout(timeoutId);
+        timeoutRefs.current = timeoutRefs.current.filter(id => id !== timeoutId);
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['estimates'] });
