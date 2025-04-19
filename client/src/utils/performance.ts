@@ -27,6 +27,7 @@ if (typeof window !== 'undefined') {
 
 /**
  * Use this hook in components with heavy resources to ensure proper cleanup
+ * REPLIT TEST COMMENT - This will be removed
  */
 export const trackComponentLifecycle = (componentName: string, mountCallback?: () => void, unmountCallback?: () => void) => {
   // Track component mounting
