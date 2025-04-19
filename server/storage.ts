@@ -906,6 +906,21 @@ export class DatabaseStorage implements IStorage {
       
       const [result] = await db.insert(estimates).values(estimate).returning();
       console.log("Estimate created successfully with ID:", result.id);
+      
+      // Check if we need to trigger workflow for new estimate
+      if (result) {
+        try {
+          // Import here to avoid circular dependency
+          const { workflowEvents } = await import("./workflow-automation");
+          // Trigger the workflow for a new estimate
+          await workflowEvents.onEstimateCreated(result.id);
+          console.log("Triggered estimate creation workflow for estimate ID:", result.id);
+        } catch (err) {
+          console.error("Error triggering estimate creation workflow:", err);
+          // Don't block the estimate creation if workflow fails
+        }
+      }
+      
       return result;
     } catch (error) {
       console.error("Error in createEstimate:", error);

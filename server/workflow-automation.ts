@@ -13,7 +13,7 @@ import { db } from "./db";
 interface WorkflowTrigger {
   name: string;
   description: string;
-  type: 'manual' | 'lead_stage_change' | 'appointment' | 'form_submission' | 'estimate_approval' | 'contract_signed' | 'schedule';
+  type: 'manual' | 'lead_stage_change' | 'appointment' | 'form_submission' | 'estimate_approval' | 'estimate_created' | 'contract_signed' | 'schedule';
 }
 
 interface WorkflowAction {
@@ -29,6 +29,11 @@ const WORKFLOW_TRIGGERS: WorkflowTrigger[] = [
     name: 'lead_stage_change',
     description: 'Triggered when a lead changes stage',
     type: 'lead_stage_change'
+  },
+  {
+    name: 'estimate_created',
+    description: 'Triggered when a new estimate is created',
+    type: 'estimate_created'
   },
   {
     name: 'estimate_approval',
@@ -453,6 +458,21 @@ export function setupWorkflowRoutes(app: Express) {
 
 // Event handlers for various triggers
 export const workflowEvents = {
+  // When a new estimate is created
+  onEstimateCreated: async (estimateId: number) => {
+    try {
+      const estimate = await storage.getEstimate(estimateId);
+      if (!estimate) return;
+      
+      await workflowEngine.runWorkflowsByTrigger('estimate_created', {
+        estimateId,
+        estimate
+      });
+    } catch (error) {
+      console.error("Error handling estimate creation workflow:", error);
+    }
+  },
+
   // When estimate is approved
   onEstimateApproved: async (estimateId: number) => {
     try {

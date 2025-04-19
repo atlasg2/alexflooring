@@ -10,6 +10,52 @@ const BASE_CONFIG = {
 
 // Email content templates
 const EMAIL_TEMPLATES = {
+  // New estimate notification with approval link
+  newEstimate: (data: { name: string; estimateNumber: string; estimateTotal: string; viewEstimateUrl: string; expirationDate: string }) => ({
+    subject: `Your APS Flooring Estimate #${data.estimateNumber} is Ready`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333333;">
+        <div style="background-color: #000000; padding: 20px; text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #D4AF37; margin: 0;">APS Flooring</h1>
+          <p style="color: #ffffff; margin: 10px 0 0 0;">Estimate #${data.estimateNumber}</p>
+        </div>
+        
+        <div style="padding: 20px; border: 1px solid #E5E5E5; border-radius: 5px;">
+          <h2 style="color: #000000; margin-top: 0;">Your Estimate is Ready</h2>
+          
+          <p>Dear ${data.name},</p>
+          
+          <p>Thank you for choosing APS Flooring. We're pleased to provide you with your estimate for your flooring project.</p>
+          
+          <div style="background-color: #F9F9F9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0;"><strong>Estimate Summary:</strong></p>
+            <p style="margin: 0 0 5px 0;"><strong>Estimate Number:</strong> ${data.estimateNumber}</p>
+            <p style="margin: 0 0 5px 0;"><strong>Total Amount:</strong> $${data.estimateTotal}</p>
+            <p style="margin: 0 0 5px 0;"><strong>Valid Until:</strong> ${data.expirationDate}</p>
+          </div>
+          
+          <p>Please review your estimate using the link below:</p>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${data.viewEstimateUrl}" style="background-color: #D4AF37; color: #000000; text-decoration: none; padding: 12px 30px; border-radius: 4px; font-weight: bold; display: inline-block;">View & Approve Estimate</a>
+          </p>
+          
+          <p>If you have any questions about this estimate or would like to discuss any details, please don't hesitate to contact us at <a href="mailto:estimates@apsflooring.info" style="color: #D4AF37;">estimates@apsflooring.info</a> or call us at (555) 123-4567.</p>
+          
+          <p>We look forward to working with you on your flooring project!</p>
+          
+          <p style="margin-top: 30px;">Warm regards,</p>
+          <p><strong>APS Flooring Team</strong></p>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; border-top: 1px solid #E5E5E5; text-align: center; font-size: 12px; color: #777777;">
+          <p>&copy; ${new Date().getFullYear()} APS Flooring LLC. All rights reserved.</p>
+          <p>123 Main Street, New Orleans, LA 12345</p>
+        </div>
+      </div>
+    `,
+  }),
+
   // Welcome email with login credentials
   customerPortalWelcome: (data: { name: string; email: string; password: string; loginUrl: string }) => ({
     subject: 'Welcome to APS Flooring Customer Portal',
@@ -151,6 +197,46 @@ const EMAIL_TEMPLATES = {
 
 // Email sending functions
 export const emailService = {
+  /**
+   * Send a new estimate notification with approval link
+   */
+  sendNewEstimate: async (options: {
+    to: string;
+    name: string;
+    estimateNumber: string;
+    estimateTotal: string;
+    estimateId?: number;
+    expirationDate?: string;
+    viewEstimateUrl?: string;
+  }) => {
+    const baseUrl = process.env.APP_URL || 'https://apsflooring.info';
+    const viewEstimateUrl = options.viewEstimateUrl || `${baseUrl}/estimate/${options.estimateId || '0'}`;
+    const expirationDate = options.expirationDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
+    
+    const template = EMAIL_TEMPLATES.newEstimate({
+      name: options.name,
+      estimateNumber: options.estimateNumber,
+      estimateTotal: options.estimateTotal,
+      viewEstimateUrl,
+      expirationDate,
+    });
+
+    try {
+      const result = await resend.emails.send({
+        ...BASE_CONFIG,
+        from: 'APS Flooring Estimates <estimates@apsflooring.info>',
+        to: options.to,
+        subject: template.subject,
+        html: template.html,
+      });
+      console.log('Sent new estimate email to', options.to, 'with result:', result);
+      return { success: true, messageId: result.data?.id || 'unknown' };
+    } catch (error) {
+      console.error('Failed to send estimate email:', error);
+      return { success: false, error };
+    }
+  },
+
   /**
    * Send an email with customer portal login credentials
    */
