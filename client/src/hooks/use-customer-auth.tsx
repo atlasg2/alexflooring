@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import {
   useQuery,
   useMutation,
@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { trackComponentLifecycle } from "@/utils/performance";
 
 // Types
 type CustomerUser = {
@@ -46,7 +47,31 @@ const CustomerAuthContext = createContext<CustomerAuthContextType | null>(null);
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
+  const [pathChecked, setPathChecked] = useState(false);
+  
+  // Keep track of active timeouts to clean them up
+  const timeoutRefs = useRef<number[]>([]);
+  
+  // Use performance tracking to monitor component lifecycle
+  useEffect(() => {
+    return trackComponentLifecycle('CustomerAuthProvider', () => {
+      console.log('CustomerAuthProvider mounted');
+      setPathChecked(true);
+    }, () => {
+      console.log('CustomerAuthProvider unmounting - cleaning up resources');
+      // Clean up any timeouts
+      timeoutRefs.current.forEach(timerId => window.clearTimeout(timerId));
+      timeoutRefs.current = [];
+      
+      // Help garbage collection
+      queryClient.cancelQueries({ queryKey: ["/api/customer/me"] });
+    });
+  }, []);
+  
+  // Route-based query enabling
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const isCustomerRoute = pathname.startsWith('/customer');
+  
   const {
     data: user,
     error,
@@ -56,13 +81,10 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       try {
         // Only run this query on customer routes to avoid unnecessary auth checks
-        const pathname = window.location.pathname;
-        if (!pathname.startsWith('/customer')) {
-          console.log("Skipping customer auth check for non-customer route:", pathname);
+        if (!isCustomerRoute) {
           return null;
         }
         
-        console.log("Checking customer auth for customer route");
         const res = await apiRequest("GET", "/api/customer/me");
         if (res.ok) {
           return res.json();
@@ -82,7 +104,7 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     // Reduce refetch attempts for unauthenticated users
     retry: false,
     // Disable the query by default, only enable for customer routes
-    enabled: window.location.pathname.startsWith('/customer'),
+    enabled: isCustomerRoute && pathChecked,
     // Completely disable automatic refetching
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -93,7 +115,25 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginCredentials): Promise<CustomerUser> => {
     try {
+      // Create a timeout to automatically cancel request after 10 seconds
+      const timeoutId = window.setTimeout(() => {
+        console.warn('Customer login request timed out');
+        toast({
+          title: "Login timeout",
+          description: "Request took too long. Please try again.",
+          variant: "destructive",
+        });
+      }, 10000);
+      
+      // Add to refs for cleanup
+      timeoutRefs.current.push(timeoutId);
+      
       const res = await apiRequest("POST", "/api/customer/login", credentials);
+      
+      // Clear timeout since request completed
+      window.clearTimeout(timeoutId);
+      timeoutRefs.current = timeoutRefs.current.filter(id => id !== timeoutId);
+      
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "Login failed");

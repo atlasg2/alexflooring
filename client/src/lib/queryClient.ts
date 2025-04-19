@@ -18,20 +18,24 @@ async function throwIfResNotOk(res: Response) {
 const cleanupRequestCache = throttle(() => {
   const now = Date.now();
   
-  // Cleanup ongoing requests
-  for (const [key, promise] of ongoingRequests.entries()) {
-    promise.then(
-      () => ongoingRequests.delete(key),
-      () => ongoingRequests.delete(key)
-    );
-  }
+  // Cleanup ongoing requests - using Array.from to avoid iterator issues
+  Array.from(ongoingRequests.keys()).forEach(key => {
+    const promise = ongoingRequests.get(key);
+    if (promise) {
+      promise.then(
+        () => ongoingRequests.delete(key),
+        () => ongoingRequests.delete(key)
+      );
+    }
+  });
   
-  // Cleanup expired server errors
-  for (const [key, entry] of serverErrorCache.entries()) {
-    if (now - entry.timestamp > SERVER_ERROR_CACHE_TTL) {
+  // Cleanup expired server errors - using Array.from to avoid iterator issues 
+  Array.from(serverErrorCache.keys()).forEach(key => {
+    const entry = serverErrorCache.get(key);
+    if (entry && now - entry.timestamp > SERVER_ERROR_CACHE_TTL) {
       serverErrorCache.delete(key);
     }
-  }
+  });
 }, 5000); // Run cleanup every 5 seconds at most
 
 export async function apiRequest(
