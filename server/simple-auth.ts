@@ -78,10 +78,12 @@ export function setupSimpleAuth(app: Express) {
       
       // Special case for admin during development
       const isDevelopment = process.env.NODE_ENV !== "production";
+      // SUPER SIMPLE AUTH - ACCEPT ANY PASSWORD FOR ADMIN IN DEV MODE
       let passwordValid = false;
       
-      if (isDevelopment && username === "admin" && password === "admin123") {
-        console.log("DEV MODE: Using development admin credentials");
+      // In dev mode, any password works for admin - SIMPLE!
+      if (isDevelopment && username === "admin") {
+        console.log("SIMPLE MODE: Any password works for admin in dev mode");
         passwordValid = true;
       } else {
         // Normal password check

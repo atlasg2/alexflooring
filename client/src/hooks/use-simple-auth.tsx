@@ -40,20 +40,32 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Fetch user data with token
+  // Fetch user data with token - SUPER SIMPLE VERSION
   const fetchUserData = async (authToken: string) => {
     try {
       setIsLoading(true);
       
-      // Skip token validation on non-admin routes
+      // Skip token validation on non-admin routes to reduce API calls
       const pathname = window.location.pathname;
       if (!pathname.startsWith('/admin')) {
-        console.log("Skipping admin auth validation for non-admin route:", pathname);
+        console.log("Skipping admin auth validation for non-admin route");
         setIsLoading(false);
         return;
       }
       
-      console.log("Validating admin auth token");
+      // In dev mode, just use hardcoded admin user without API call
+      if (process.env.NODE_ENV === 'development') {
+        console.log("DEV MODE: Using hardcoded admin user without API call");
+        setUser({
+          id: 999,
+          username: "admin",
+          role: "admin"
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Only make API call in production
       const response = await fetch("/api/user", {
         headers: {
           Authorization: `Bearer ${authToken}`,
