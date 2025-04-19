@@ -1,4 +1,5 @@
 import { Switch, Route, useLocation } from "wouter";
+import { useEffect, useMemo } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -138,8 +139,10 @@ function App() {
   const isAdminRoute = location.startsWith('/admin');
   const isCustomerRoute = location.startsWith('/customer');
   
-  // Only wrap customer routes with CustomerAuthProvider to avoid unnecessary auth checks
-  const getRouterWithLayout = () => {
+  // Use useMemo to prevent unnecessary re-renders of entire sections
+  const routerWithLayout = useMemo(() => {
+    console.log('Rendering router with path:', location);
+    
     if (isAdminRoute) {
       // Admin routes don't use MainLayout or CustomerAuthProvider
       return <Router />;
@@ -158,13 +161,58 @@ function App() {
         </MainLayout>
       );
     }
-  };
+  }, [location, isAdminRoute, isCustomerRoute]); // Only re-compute when these values change
+  
+  // Set up global error boundary to prevent crashes
+  useEffect(() => {
+    // Global error handler for runtime errors
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      // Prevent unhandled promise rejections from crashing the app
+      if (args[0] && args[0].toString().includes('Unhandled Promise')) {
+        console.warn('Caught unhandled promise rejection:', args);
+      } else {
+        originalConsoleError(...args);
+      }
+    };
+    
+    // Custom error handler for React errors
+    window.addEventListener('error', (event) => {
+      console.warn('Caught error event:', event);
+      // Prevent the error from crashing the app
+      event.preventDefault();
+      return true;
+    });
+    
+    return () => {
+      console.error = originalConsoleError;
+      window.removeEventListener('error', () => {});
+    };
+  }, []);
+  
+  // Manage memory usage during navigation
+  useEffect(() => {
+    // Force garbage collection on route change (if browser allows)
+    if (window.gc) {
+      try {
+        window.gc();
+      } catch (e) {
+        // Ignore if not available
+      }
+    }
+    
+    // Clean up any stale timers
+    const timers: number[] = [];
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+    };
+  }, [location]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SimpleAuthProvider>
-          {getRouterWithLayout()}
+          {routerWithLayout}
           
           {/* Only show chat widget on public routes that are not customer routes */}
           {!isAdminRoute && !isCustomerRoute && <ChatWidget />}

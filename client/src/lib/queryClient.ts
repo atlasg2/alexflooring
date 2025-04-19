@@ -1,5 +1,11 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { addAuthHeaders, getAuthToken, isTokenAuthEnabled } from "./tokenAuth";
+import { throttle } from '@/utils/performance';
+
+// Track ongoing requests to prevent duplicates
+const ongoingRequests = new Map<string, Promise<Response>>();
+const serverErrorCache = new Map<string, {timestamp: number, error: Error}>();
+const SERVER_ERROR_CACHE_TTL = 10000; // 10 seconds TTL for server errors
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -8,11 +14,45 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Debounced cache cleanup function
+const cleanupRequestCache = throttle(() => {
+  const now = Date.now();
+  
+  // Cleanup ongoing requests
+  for (const [key, promise] of ongoingRequests.entries()) {
+    promise.then(
+      () => ongoingRequests.delete(key),
+      () => ongoingRequests.delete(key)
+    );
+  }
+  
+  // Cleanup expired server errors
+  for (const [key, entry] of serverErrorCache.entries()) {
+    if (now - entry.timestamp > SERVER_ERROR_CACHE_TTL) {
+      serverErrorCache.delete(key);
+    }
+  }
+}, 5000); // Run cleanup every 5 seconds at most
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const requestKey = method === "GET" ? url : `${method}:${url}:${JSON.stringify(data || {})}`;
+  
+  // Reuse in-flight GET requests
+  if (method === "GET" && ongoingRequests.has(requestKey)) {
+    return ongoingRequests.get(requestKey)!.then(res => res.clone());
+  }
+  
+  // Check for cached server errors
+  const cachedError = serverErrorCache.get(requestKey);
+  if (cachedError && Date.now() - cachedError.timestamp < SERVER_ERROR_CACHE_TTL) {
+    console.warn(`Using cached error for ${requestKey}`);
+    return Promise.reject(cachedError.error);
+  }
+  
   // Start with the basic options
   const options: RequestInit = {
     method,
@@ -29,13 +69,57 @@ export async function apiRequest(
       const headers = new Headers(options.headers as HeadersInit);
       headers.set('Authorization', `Bearer ${token}`);
       options.headers = Object.fromEntries(headers.entries());
-      console.log('Using token authentication for API request');
     }
   }
   
-  const res = await fetch(url, options);
-  await throwIfResNotOk(res);
-  return res;
+  // Create request and store it for deduplication
+  const requestPromise = fetch(url, options).then(async response => {
+    // Remove from ongoing requests when completed
+    ongoingRequests.delete(requestKey);
+    
+    // For server errors, cache them briefly to prevent hammering the server
+    if (response.status >= 500) {
+      try {
+        const text = await response.clone().text();
+        const error = new Error(`${response.status}: ${text || response.statusText}`);
+        serverErrorCache.set(requestKey, { 
+          timestamp: Date.now(), 
+          error 
+        });
+      } catch (e) {
+        console.error('Error caching server error:', e);
+      }
+    }
+    
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`${response.status}: ${text || response.statusText}`);
+    }
+    
+    return response;
+  }).catch(error => {
+    // Remove from ongoing requests on error
+    ongoingRequests.delete(requestKey);
+    
+    // Cache server errors for a short time
+    if (error.message.startsWith('5')) {
+      serverErrorCache.set(requestKey, { 
+        timestamp: Date.now(), 
+        error 
+      });
+    }
+    
+    throw error;
+  });
+  
+  // Store GET requests for deduplication
+  if (method === "GET") {
+    ongoingRequests.set(requestKey, requestPromise);
+    // Schedule cache cleanup
+    cleanupRequestCache();
+  }
+  
+  return requestPromise;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
