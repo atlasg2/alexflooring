@@ -31,10 +31,14 @@ console.log(`[DB] Connecting to PostgreSQL database ${isProduction ? 'in product
 
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  // Add connection pool settings for better performance in production
-  max: isProduction ? 10 : 3, // More connections for production
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  // Optimized connection pool settings for better performance and stability
+  max: isProduction ? 15 : 5, // Increase max connections for production
+  min: isProduction ? 2 : 1, // Keep minimum connections alive
+  idleTimeoutMillis: 15000, // Reduce idle timeout to recycle connections faster
+  connectionTimeoutMillis: 10000, // Increase timeout for initial connections
+  allowExitOnIdle: false, // Don't allow exiting when idle
+  keepAlive: true, // Enable TCP keepalive
+  statement_timeout: 30000, // Timeout long-running queries after 30 seconds
 });
 
 export const db = drizzle({ client: pool, schema });

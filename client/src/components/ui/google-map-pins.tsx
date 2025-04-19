@@ -50,16 +50,16 @@ const GoogleMapWithPins = ({
   useEffect(() => {
     // Only load if we haven't already
     if (!window.google && !document.getElementById('google-maps-script')) {
-      const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      
-      // Define callback in window scope
+      // Set up the callback before creating the script
       window.initMap = () => {
         setMapLoaded(true);
       };
+      
+      const script = document.createElement('script');
+      script.id = 'google-maps-script';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
+      script.async = true; // Keep async to prevent render blocking
+      script.defer = true;
       
       document.head.appendChild(script);
     } else if (window.google) {
@@ -67,11 +67,18 @@ const GoogleMapWithPins = ({
       setMapLoaded(true);
     }
     
-    // Cleanup
+    // Proper cleanup to prevent memory leaks
     return () => {
       // Remove any markers we created
       if (markers.length > 0) {
         markers.forEach(marker => marker.setMap(null));
+        setMarkers([]);
+      }
+      
+      // Remove the global callback when component unmounts
+      // Using type assertion to fix the delete operator error
+      if (window.initMap) {
+        window.initMap = undefined as any;
       }
     };
   }, []);

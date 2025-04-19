@@ -76,10 +76,9 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false, // Prevent refetching on window focus which can cause lag
-      staleTime: 60000, // Keep data fresh for 1 minute to reduce refetches
+      staleTime: 300000, // Keep data fresh for 5 minutes to reduce refetches (increased from 1 minute)
       retry: 1,
-      // Add caching strategy
-      cacheTime: 300000, // Cache data for 5 minutes
+      gcTime: 600000 // Keep unused data in cache for 10 minutes before garbage collection
     },
     mutations: {
       retry: 1,
